@@ -1,0 +1,1976 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>注音救援隊</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #26647E; touch-action: none; user-select: none; -webkit-user-select: none; }
+body { font-family: "Microsoft JhengHei", "Noto Sans TC", "PingFang TC", sans-serif; }
+button { font-family: inherit; border: 0; background: none; cursor: pointer; touch-action: manipulation; }
+.hidden { display: none !important; }
+
+/* 舞台 1200×800，等比縮放置中 */
+#stage { position: absolute; left: 0; top: 0; width: 1200px; height: 800px; transform-origin: 0 0; overflow: hidden; }
+.screen { position: absolute; inset: 0; display: none; }
+.screen.active { display: block; }
+.scene { position: absolute; left: 0; top: 0; }
+.home-sky, .result-bg { position: absolute; inset: 0; }
+
+/* 雲慢慢飄、太陽光慢慢轉 */
+.cloud-wrap.c1 { animation: drift 38s linear infinite; }
+.cloud-wrap.c2 { animation: drift 52s linear infinite reverse; }
+.cloud-wrap.c3 { animation: drift 45s linear infinite; }
+@keyframes drift { 0% { transform: translateX(-80px); } 100% { transform: translateX(80px); } }
+.sun-rays { transform-origin: 1020px 130px; animation: spin 90s linear infinite; }
+.home-sky .sun-rays, .result-bg .sun-rays { transform-origin: 1060px 90px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.waves .w1 { animation: wave 6s ease-in-out infinite; }
+.waves .w2 { animation: wave 7.5s ease-in-out infinite reverse; }
+.waves .w3 { animation: wave 9s ease-in-out infinite; }
+@keyframes wave { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-70px); } }
+.fish { animation: swim 14s ease-in-out infinite; }
+@keyframes swim { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-120px); } }
+
+/* 齒輪 */
+.gear { position: absolute; right: 18px; top: 14px; width: 56px; height: 56px; border-radius: 50%; background: rgba(27,43,75,0.28); display: flex; align-items: center; justify-content: center; }
+.gear:active { background: rgba(27,43,75,0.6); }
+.gear-hint { position: absolute; right: 84px; top: 22px; background: #1B2B4B; color: #fff; font-size: 22px; padding: 8px 16px; border-radius: 12px; white-space: nowrap; pointer-events: none; }
+
+/* 大按鈕共用：厚底陰影、按下去會沉 */
+.chunky { border-radius: 32px; background: #fff; border: 6px solid #fff; box-shadow: 0 12px 0 #A9BFCF, 0 18px 30px rgba(20,60,110,0.18); transition: transform .1s, box-shadow .1s; }
+.chunky:active { transform: translateY(8px); box-shadow: 0 4px 0 #A9BFCF, 0 8px 16px rgba(20,60,110,0.18); }
+
+/* ---- 選人 ---- */
+.profiles { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 44px; flex-wrap: wrap; padding: 60px 100px 120px; }
+.profile-card { width: 250px; height: 330px; border-radius: 36px; background: #fff; border: 6px solid #fff; box-shadow: 0 12px 0 #A9BFCF, 0 18px 30px rgba(20,60,110,0.18); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; transition: transform .1s, box-shadow .1s; }
+.profile-card:active { transform: translateY(8px); box-shadow: 0 4px 0 #A9BFCF; }
+.profile-avatar { width: 200px; height: 200px; border-radius: 50%; display: flex; align-items: flex-end; justify-content: center; overflow: hidden; }
+.profile-avatar .dog { width: 170px; height: 196px; margin-bottom: -10px; }
+.profile-avatar .rod { display: none; }
+.profile-name { font-size: 40px; font-weight: 900; color: #2B3A4A; }
+.profile-card.add { background: rgba(255,255,255,0.4); border: 6px dashed rgba(255,255,255,0.95); box-shadow: none; }
+.profile-card.add:active { transform: scale(0.96); }
+.profile-plus { font-size: 130px; color: #fff; font-weight: 900; text-shadow: 0 4px 0 rgba(20,60,110,0.2); }
+.profile-form { position: absolute; inset: 0; background: rgba(27,43,75,0.5); display: flex; align-items: center; justify-content: center; }
+.profile-form-box { background: #fff; border-radius: 32px; padding: 40px; display: flex; flex-direction: column; gap: 26px; align-items: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+.color-pick { display: flex; gap: 16px; }
+.color-dot { width: 60px; height: 60px; border-radius: 50%; border: 6px solid #fff; box-shadow: 0 0 0 3px #E3ECF5; }
+.color-dot.on { box-shadow: 0 0 0 5px #1B2B4B; }
+#profile-name { font-size: 40px; padding: 10px 20px; border: 4px solid #C9DDF0; border-radius: 18px; width: 380px; text-align: center; font-weight: 900; color: #1B2B4B; }
+.profile-form-actions { display: flex; gap: 20px; }
+.profile-form-actions button { font-size: 30px; padding: 12px 44px; border-radius: 18px; background: #E8EEF5; color: #1B2B4B; font-weight: 700; box-shadow: 0 6px 0 #C9D6E4; }
+.profile-form-actions button.primary { background: #6B9E6B; color: #fff; box-shadow: 0 6px 0 #4E7A4E; }
+.profile-form-actions button:active { transform: translateY(4px); box-shadow: none; }
+
+/* ---- 首頁 ---- */
+.who { position: absolute; left: 26px; top: 18px; display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 60px; padding: 6px 30px 6px 6px; box-shadow: 0 6px 0 #A9BFCF; }
+.who:active { transform: translateY(4px); box-shadow: none; }
+.who-avatar { width: 84px; height: 84px; border-radius: 50%; background: #EAF1EC; overflow: hidden; display: flex; align-items: flex-end; justify-content: center; }
+.who-avatar .dog { width: 74px; height: 86px; margin-bottom: -6px; }
+.who-avatar .rod { display: none; }
+.who-name { font-size: 34px; font-weight: 900; color: #2B3A4A; }
+.cards { position: absolute; left: 0; right: 0; top: 170px; display: flex; justify-content: center; align-items: flex-end; gap: 54px; }
+.card { position: relative; width: 300px; height: 400px; border-radius: 40px; background: #fff; border: 8px solid #fff; overflow: hidden; box-shadow: 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,0.22); transition: transform .12s, box-shadow .12s; }
+.card:nth-child(1) { transform: rotate(-3deg); }
+.card:nth-child(3) { transform: rotate(3deg); }
+.card:active { transform: translateY(10px) scale(0.98); box-shadow: 0 4px 0 #A9BFCF; }
+.card.locked .card-pic { filter: grayscale(0.9) brightness(0.9); opacity: 0.55; }
+.card-pic { width: 100%; height: 100%; border-radius: 30px; overflow: hidden; }
+.card-pic svg { width: 100%; height: 100%; display: block; }
+.card-lock { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.card-lock svg { filter: drop-shadow(0 4px 0 rgba(0,0,0,0.25)); }
+
+/* ---- 遊戲 ---- */
+.play-area { position: absolute; inset: 0; }
+.dog-wrap { position: absolute; left: 170px; top: 226px; width: 260px; height: 300px; transform-origin: 50% 100%; filter: drop-shadow(0 8px 0 rgba(0,0,0,0.12)); }
+.dog-wrap.jump { animation: jump .7s ease-out; }
+.dog-wrap.tilt { animation: tilt .6s ease-in-out; }
+@keyframes jump { 0% { transform: translateY(0); } 35% { transform: translateY(-70px) rotate(-6deg); } 70% { transform: translateY(0); } 85% { transform: translateY(-16px); } 100% { transform: translateY(0); } }
+@keyframes tilt { 0%,100% { transform: rotate(0); } 40% { transform: rotate(14deg); } }
+
+.bubbles { position: absolute; inset: 0; }
+.bubble { position: absolute; width: 176px; height: 176px; border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #FFFDF7 0 12%, rgba(246,243,230,0.85) 40%, rgba(207,234,240,0.85) 72%, rgba(143,199,210,0.95));
+  border: 7px solid #F6F3E6; box-shadow: 0 12px 26px rgba(0,60,120,0.28), inset 0 -14px 24px rgba(60,150,220,0.35);
+  display: flex; align-items: center; justify-content: center; animation: bob 2.8s ease-in-out infinite; transition: transform .7s cubic-bezier(.3,.9,.4,1.1), opacity .3s; }
+.bubble::after { content: ""; position: absolute; left: 26px; top: 20px; width: 40px; height: 22px; border-radius: 50%; background: rgba(255,255,255,0.95); transform: rotate(-30deg); }
+.bubble span { font-size: 112px; font-weight: 900; color: #2B3A4A; line-height: 1; pointer-events: none; text-shadow: 0 3px 0 rgba(255,255,255,0.8); }
+@keyframes bob { 0%,100% { margin-top: 0; } 50% { margin-top: -18px; } }
+.bubble.hint-loop { animation: bob 2.8s ease-in-out infinite, wiggle 1.2s ease-in-out infinite; }
+.bubble.hint-once { animation: bob 2.8s ease-in-out infinite, wiggle 1.2s ease-in-out 1; }
+@keyframes wiggle { 0%,100% { box-shadow: 0 12px 26px rgba(0,60,120,0.28), inset 0 -14px 24px rgba(60,150,220,0.35); } 50% { box-shadow: 0 0 0 18px rgba(232,200,106,0.9), 0 12px 26px rgba(0,60,120,0.28); } }
+.bubble.shake { animation: bob 2.8s ease-in-out infinite, shake .45s ease-in-out; }
+@keyframes shake { 0%,100% { margin-left: 0; } 20% { margin-left: -16px; } 40% { margin-left: 14px; } 60% { margin-left: -10px; } 80% { margin-left: 8px; } }
+.bubble.caught { animation: none; z-index: 5; }
+.bubble.gone { opacity: 0; }
+
+.topbar { position: absolute; left: 0; right: 0; top: 0; height: 110px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; pointer-events: none; }
+.topbar > * { pointer-events: auto; }
+.round-btn { width: 100px; height: 100px; border-radius: 50%; background: #E0955B; border: 6px solid #F6F3E6; box-shadow: 0 8px 0 #B07242, 0 14px 24px rgba(0,0,0,0.18); display: flex; align-items: center; justify-content: center; transition: transform .1s, box-shadow .1s; }
+.round-btn:active { transform: translateY(6px); box-shadow: 0 2px 0 #B07242; }
+.round-btn.home { background: #6B9E6B; box-shadow: 0 8px 0 #4E7A4E, 0 14px 24px rgba(0,0,0,0.18); }
+.round-btn.quit { background: rgba(27,43,75,0.35); border-color: rgba(255,255,255,0.7); box-shadow: none; width: 70px; height: 70px; }
+.progress-stars { position: absolute; left: 0; right: 0; bottom: 14px; display: flex; justify-content: center; gap: 16px; pointer-events: none; }
+.progress-stars .star { font-size: 66px; color: rgba(255,255,255,0.45); text-shadow: 0 3px 0 rgba(20,60,110,0.25); }
+.progress-stars .star.lit { color: #E8C86A; text-shadow: 0 4px 0 #B99A44; animation: pop .5s; }
+.progress-stars .star.dim { color: rgba(255,255,255,0.9); }
+@keyframes pop { 0% { transform: scale(0.4); } 60% { transform: scale(1.35); } 100% { transform: scale(1); } }
+
+/* ---- 結算 ---- */
+.result-burst { position: absolute; left: 50%; top: 250px; width: 900px; height: 900px; margin-left: -450px; margin-top: -450px; border-radius: 50%;
+  background: repeating-conic-gradient(rgba(255,253,247,0.22) 0 8deg, rgba(255,255,255,0) 8deg 20deg); animation: spin 40s linear infinite; }
+.result-dogs { position: absolute; left: 0; right: 0; top: 330px; display: flex; justify-content: center; gap: 30px; }
+.result-dogs .dog { animation: bounce 1s ease-in-out infinite; filter: drop-shadow(0 8px 0 rgba(0,0,0,0.12)); }
+.result-dogs .dog:nth-child(2) { animation-delay: .2s; }
+.result-dogs .dog:nth-child(3) { animation-delay: .4s; }
+.result-dogs .rod { display: none; }
+@keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-40px); } }
+.result-stars { position: absolute; left: 0; right: 0; top: 110px; display: flex; justify-content: center; gap: 22px; }
+.result-stars .star { font-size: 124px; color: rgba(27,43,75,0.15); }
+.result-stars .star.lit { color: #E8C86A; text-shadow: 0 6px 0 #B99A44, 0 10px 20px rgba(0,0,0,0.15); animation: pop .5s; }
+.result-actions { position: absolute; left: 0; right: 0; bottom: 40px; display: flex; justify-content: center; gap: 60px; }
+.result-actions .round-btn { width: 130px; height: 130px; }
+.confetti-wrap { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.confetti { position: absolute; top: -24px; width: 14px; height: 26px; border-radius: 3px; animation: fall 3s linear infinite; }
+.confetti.petal { width: 16px; height: 20px; border-radius: 50% 0 50% 0; }
+@keyframes fall { to { top: 110%; transform: rotate(720deg) translateX(40px); } }
+
+/* ---- 大人面板 ---- */
+#screen-panel { background: #F4F7FB; overflow: auto; touch-action: pan-y; user-select: text; }
+.panel { padding: 24px 40px 60px; color: #1B2B4B; font-size: 18px; }
+.panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.panel-head h2 { font-size: 30px; }
+.panel-head small { font-size: 20px; color: #5A6B85; font-weight: 400; }
+.panel-close { font-size: 22px; padding: 10px 28px; background: #1B2B4B; color: #fff; border-radius: 12px; }
+.panel-row { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; background: #fff; border-radius: 14px; padding: 14px 20px; margin-bottom: 12px; }
+.panel-row button, .panel-row .file-btn { font-size: 18px; padding: 8px 18px; background: #E8EEF5; border-radius: 10px; cursor: pointer; }
+.panel-row button.danger { background: #FFE0E0; color: #B5232F; }
+.panel-row button.danger.armed { background: #B5232F; color: #fff; }
+.panel-msg { color: #B5232F; }
+.panel-difficulty { flex-direction: column; align-items: flex-start; gap: 12px; }
+.range-pick { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
+.range-groups { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.range-groups.dimmed, .range-pick label.dimmed { opacity: 0.45; }
+.range-groups label { font-size: 17px; }
+.panel-row button.mini { padding: 2px 12px; font-size: 20px; line-height: 1.2; margin: 0 2px; }
+.panel-row button.mini:disabled { opacity: 0.35; cursor: default; }
+.panel-users { gap: 14px 28px; }
+.puser { display: flex; align-items: center; gap: 10px; }
+.puser-dot { width: 18px; height: 18px; border-radius: 50%; display: inline-block; }
+.puser-name { font-weight: 700; }
+.panel-row input[type=file] { display: none; }
+.panel-row select, .panel-row input[type=range] { font-size: 18px; }
+.panel-hint { color: #5A6B85; margin: 8px 0 16px; }
+.pgroup { margin-bottom: 18px; }
+.pgroup-title { font-weight: 700; margin-bottom: 8px; }
+.ptiles { display: flex; gap: 12px; flex-wrap: wrap; }
+.ptile { width: 190px; background: #fff; border-radius: 14px; padding: 10px; border-left: 12px solid #ccc; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; align-items: center; }
+.ptile.red { border-color: #FF6B6B; } .ptile.yellow { border-color: #FFD23F; } .ptile.green { border-color: #3CB371; }
+.ptile-sym { font-size: 52px; font-weight: 900; grid-row: span 2; color: #1B2B4B; }
+.ptile-stars { font-size: 16px; color: #D9AE1F; letter-spacing: 1px; }
+.ptile-hist { font-size: 14px; color: #5A6B85; }
+.ptile-known { font-size: 15px; }
+.ptile-rep { width: 56px; font-size: 20px; text-align: center; border: 2px solid #C9DDF0; border-radius: 8px; justify-self: end; }
+
+/* ---- 圖片插槽：img/ 有圖就蓋掉向量圖 ---- */
+.art-slot { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.has-art > svg { visibility: hidden; }
+.dog-slot { position: relative; display: inline-block; width: 100%; height: 100%; }
+.dog-slot .art-slot { object-fit: contain; }
+.card-pic { position: relative; }
+.home-sky, .result-bg, .play-area { position: absolute; }
+
+/* ---- 餵狗狗 ---- */
+.feed-dog { left: 120px; top: 170px; width: 360px; height: 415px; }
+.feed-dog .dog { width: 360px; height: 415px; }
+.feed-dog .dog-slot .art-slot { width: 360px; height: 415px; }
+.feed-dog.chomp { animation: chomp .6s ease-out; }
+@keyframes chomp { 0% { transform: scale(1); } 30% { transform: scale(1.08) translateY(-16px); } 55% { transform: scale(0.97) translateY(4px); } 100% { transform: scale(1); } }
+.bowl { position: absolute; left: 170px; top: 590px; pointer-events: none; }
+.biscuits { position: absolute; inset: 0; }
+.biscuit { position: absolute; width: 180px; height: 96px; display: flex; align-items: center; justify-content: center; touch-action: none; cursor: grab; filter: drop-shadow(0 8px 0 rgba(60,40,20,0.28)) drop-shadow(0 0 2px rgba(60,40,20,0.5)); animation: bob 2.8s ease-in-out infinite; }
+.biscuit .bone-art { position: absolute; left: 0; top: 0; }
+.biscuit span { position: relative; font-size: 60px; font-weight: 900; color: #2B3A4A; line-height: 1; pointer-events: none; }
+.biscuit.dragging { animation: none; cursor: grabbing; z-index: 6; filter: drop-shadow(0 14px 10px rgba(0,0,0,0.25)); transform: scale(1.08); }
+.biscuit.returning { transition: left .3s ease-out, top .3s ease-out; animation: none; }
+.biscuit.hint-loop .bone-art, .biscuit.hint-once .bone-art { animation: glow 1.2s ease-in-out infinite; }
+.biscuit.hint-once .bone-art { animation-iteration-count: 1; }
+@keyframes glow { 0%,100% { filter: none; } 50% { filter: drop-shadow(0 0 14px #E8C86A) drop-shadow(0 0 4px #E8C86A); } }
+.biscuit.shake { animation: shake .45s ease-in-out; }
+.biscuit.eaten { transition: left .45s ease-in, top .45s ease-in, transform .45s ease-in, opacity .2s .4s; transform: scale(0.3); animation: none; z-index: 6; }
+.biscuit.gone { opacity: 0; }
+
+/* ---- 翻牌 ---- */
+.cards-grid { position: absolute; inset: 0; }
+.mcard { position: absolute; width: 190px; height: 230px; perspective: 900px; cursor: pointer; animation: dealIn .4s ease-out both; }
+@keyframes dealIn { from { opacity: 0; transform: translateY(40px) scale(0.8); } to { opacity: 1; transform: none; } }
+.mcard-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .45s cubic-bezier(.4,.2,.2,1); }
+.mcard.open .mcard-inner, .mcard.matched .mcard-inner { transform: rotateY(180deg); }
+.mcard-back, .mcard-front { position: absolute; inset: 0; border-radius: 26px; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; border: 6px solid #F6F3E6; box-shadow: 0 10px 0 rgba(0,0,0,0.12), 0 14px 24px rgba(0,0,0,0.15); }
+.mcard-back { background: linear-gradient(160deg, #6B9E6B, #4E7A4E); }
+.mcard-front { background: #FFFDF7; transform: rotateY(180deg); }
+.mcard-front span { font-size: 120px; font-weight: 900; color: #2B3A4A; line-height: 1; }
+.mcard.matched .mcard-front { background: #F6E7C8; box-shadow: 0 0 0 10px rgba(232,200,106,0.7), 0 10px 0 rgba(0,0,0,0.12); }
+.mcard.matched { animation: pop .5s; }
+
+</style>
+</head>
+<body>
+<div id="stage">
+  <section class="screen" id="screen-profiles"></section>
+  <section class="screen" id="screen-home"></section>
+  <section class="screen" id="screen-game">
+    <div class="play-area"></div>
+    <div class="topbar">
+      <button class="round-btn quit" id="btn-quit" aria-label="回首頁">
+        <svg viewBox="0 0 24 24" width="40" height="40" fill="#fff"><path d="M12 3 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
+      </button>
+      <button class="round-btn" id="btn-replay" aria-label="再聽一次">
+        <svg viewBox="0 0 24 24" width="60" height="60" fill="#fff"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>
+      </button>
+    </div>
+    <div class="progress-stars"></div>
+  </section>
+  <section class="screen" id="screen-result"></section>
+  <section class="screen" id="screen-panel"></section>
+</div>
+<script>
+// ===== data.js =====
+// 37 個注音符號與相關靜態資料。純資料，不含邏輯。
+
+const SYMBOLS = [
+  'ㄅ', 'ㄆ', 'ㄇ', 'ㄈ', 'ㄉ', 'ㄊ', 'ㄋ', 'ㄌ', 'ㄍ', 'ㄎ', 'ㄏ',
+  'ㄐ', 'ㄑ', 'ㄒ', 'ㄓ', 'ㄔ', 'ㄕ', 'ㄖ', 'ㄗ', 'ㄘ', 'ㄙ',
+  'ㄚ', 'ㄛ', 'ㄜ', 'ㄝ', 'ㄞ', 'ㄟ', 'ㄠ', 'ㄡ', 'ㄢ', 'ㄣ', 'ㄤ', 'ㄥ', 'ㄦ',
+  'ㄧ', 'ㄨ', 'ㄩ',
+]
+
+// 預設解鎖順序：韻符先、聲符後。大人面板「跟課本走」填了就以那份為準。
+const GROUPS = [
+  ['ㄚ', 'ㄛ', 'ㄜ', 'ㄝ'],
+  ['ㄧ', 'ㄨ', 'ㄩ'],
+  ['ㄞ', 'ㄟ', 'ㄠ', 'ㄡ'],
+  ['ㄢ', 'ㄣ', 'ㄤ', 'ㄥ', 'ㄦ'],
+  ['ㄅ', 'ㄆ', 'ㄇ', 'ㄈ'],
+  ['ㄉ', 'ㄊ', 'ㄋ', 'ㄌ'],
+  ['ㄍ', 'ㄎ', 'ㄏ'],
+  ['ㄐ', 'ㄑ', 'ㄒ'],
+  ['ㄓ', 'ㄔ', 'ㄕ', 'ㄖ'],
+  ['ㄗ', 'ㄘ', 'ㄙ'],
+]
+
+// 語音合成唸不好單一符號，改唸代表字（注音教學的標準唸法）。
+// ㄝ、ㄥ 沒有常用單字，先放字典用字，試聽頁可改。
+const REP_CHAR = {
+  ㄅ: '玻', ㄆ: '坡', ㄇ: '摸', ㄈ: '佛',
+  ㄉ: '得', ㄊ: '特', ㄋ: '訥', ㄌ: '勒',
+  ㄍ: '哥', ㄎ: '科', ㄏ: '喝',
+  ㄐ: '基', ㄑ: '欺', ㄒ: '希',
+  ㄓ: '知', ㄔ: '吃', ㄕ: '詩', ㄖ: '日',
+  ㄗ: '資', ㄘ: '雌', ㄙ: '思',
+  ㄚ: '阿', ㄛ: '喔', ㄜ: '鵝', ㄝ: '誒',
+  ㄞ: '哀', ㄟ: '欸', ㄠ: '凹', ㄡ: '歐',
+  ㄢ: '安', ㄣ: '恩', ㄤ: '昂', ㄥ: '鞥', ㄦ: '兒',
+  ㄧ: '衣', ㄨ: '烏', ㄩ: '迂',
+}
+
+// 長得像的對，用來當刁鑽的干擾項。
+const SIMILAR_SHAPE = [
+  ['ㄅ', 'ㄆ'], ['ㄉ', 'ㄊ'], ['ㄋ', 'ㄇ'], ['ㄈ', 'ㄏ'], ['ㄐ', 'ㄑ'],
+  ['ㄕ', 'ㄢ'], ['ㄗ', 'ㄘ'], ['ㄛ', 'ㄜ'], ['ㄞ', 'ㄟ'],
+]
+
+// 聽起來像的對。
+const SIMILAR_SOUND = [
+  ['ㄅ', 'ㄆ'], ['ㄉ', 'ㄊ'], ['ㄍ', 'ㄎ'], ['ㄓ', 'ㄔ'], ['ㄗ', 'ㄘ'],
+  ['ㄣ', 'ㄥ'], ['ㄛ', 'ㄡ'], ['ㄝ', 'ㄟ'], ['ㄋ', 'ㄌ'], ['ㄕ', 'ㄙ'], ['ㄓ', 'ㄗ'],
+]
+
+// ===== scheduler.js =====
+// 出題邏輯：熟練度、解鎖、加權出題、混淆對加練、階級升降。
+// 純函式，不碰 DOM，不碰 localStorage。所有函式回傳新狀態，不改舊的。
+
+
+const HISTORY_CAP = 10
+const RECENT_CAP = 10
+const ROUND_SIZE = 5
+const UNLOCK_STARS = 4
+const DRILL_CLEAR_STREAK = 3
+
+// 一個數字代表整體難度，往上走選項變多、干擾項變刁、提示變少。
+const TIERS = [
+  { options: 2, distract: 'random', hint: 2 },
+  { options: 3, distract: 'random', hint: 2 },
+  { options: 3, distract: 'shape', hint: 1 },
+  { options: 4, distract: 'shape', hint: 1 },
+  { options: 4, distract: 'sound', hint: 0 },
+  { options: 6, distract: 'sound', hint: 0 },
+]
+
+function createState ({ known = [], groups = null } = {}) {
+  return {
+    version: 1,
+    mastery: {},
+    known: [...known],
+    confusions: {},
+    tier: 0,
+    recent: [],
+    groups,
+    lockTier: null, // 家長鎖定的階級；null 表示自動
+    rangeGroups: null, // 家長指定的練習組別索引；null 或空表示自動解鎖
+    unlockedUpTo: null, // 家長手動跳級：至少解鎖到第幾組（1 起算）；null 表示不干預
+  }
+}
+
+// 自動解鎖到第幾組（1 起算）：練熟一組開下一組，再跟家長手動跳級的值取大者
+function unlockedCount (state) {
+  const groups = state.groups || GROUPS
+  let n = 1
+  while (n < groups.length && groupAverage(state, groups[n - 1]) >= UNLOCK_STARS) n++
+  const manual = typeof state.unlockedUpTo === 'number' ? state.unlockedUpTo : 1
+  return Math.min(groups.length, Math.max(n, manual))
+}
+
+// 清除練習紀錄：星星、混淆對、階級、最近答題全部歸零。名字、認得、難度鎖、範圍都保留。
+function resetProgress (state) {
+  return { ...state, mastery: {}, confusions: {}, tier: 0, recent: [] }
+}
+
+// 出題實際用的階級：家長有鎖就用鎖的，否則用自動升降的
+function effectiveTier (state) {
+  return typeof state.lockTier === 'number' ? state.lockTier : state.tier
+}
+
+// 0–5 星。只看最近 10 次；樣本少時星星不會超過樣本數，避免答對一次就 5 星。
+function stars (state, symbol) {
+  const history = (state.mastery[symbol] && state.mastery[symbol].history) || []
+  if (history.length === 0) return state.known.includes(symbol) ? 3 : 0
+  const okCount = history.filter(h => h.ok).length
+  return Math.min(Math.round((okCount / history.length) * 5), history.length)
+}
+
+function groupAverage (state, group) {
+  return group.reduce((sum, s) => sum + stars(state, s), 0) / group.length
+}
+
+// 目前可出題的符號。家長有指定範圍就只出那幾組；否則是已解鎖的組 + 家長勾「已經認得」的。
+function activePool (state) {
+  const groups = state.groups || GROUPS
+  if (Array.isArray(state.rangeGroups) && state.rangeGroups.length) {
+    return state.rangeGroups.filter(i => groups[i]).flatMap(i => groups[i])
+  }
+  const pool = groups.slice(0, unlockedCount(state)).flat()
+  for (const s of state.known) {
+    if (!pool.includes(s)) pool.push(s)
+  }
+  return pool
+}
+
+function weightedPick (items, weightOf, rng) {
+  const weights = items.map(weightOf)
+  const total = weights.reduce((a, b) => a + b, 0)
+  let r = rng() * total
+  for (let i = 0; i < items.length; i++) {
+    r -= weights[i]
+    if (r < 0) return items[i]
+  }
+  return items[items.length - 1]
+}
+
+function shuffle (arr, rng) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+function partnersOf (symbol, pairs) {
+  const out = []
+  for (const [a, b] of pairs) {
+    if (a === symbol) out.push(b)
+    else if (b === symbol) out.push(a)
+  }
+  return out
+}
+
+function pickDistractors (target, pool, count, mode, rng) {
+  const candidates = pool.filter(s => s !== target)
+  const preferred = []
+  if (mode === 'sound') preferred.push(...partnersOf(target, SIMILAR_SOUND))
+  if (mode === 'sound' || mode === 'shape') preferred.push(...partnersOf(target, SIMILAR_SHAPE))
+  const chosen = []
+  for (const p of preferred) {
+    if (chosen.length >= count) break
+    if (candidates.includes(p) && !chosen.includes(p)) chosen.push(p)
+  }
+  const rest = shuffle(candidates.filter(s => !chosen.includes(s)), rng)
+  while (chosen.length < count && rest.length) chosen.push(rest.pop())
+  return chosen
+}
+
+function pairKey (a, b) {
+  return [a, b].sort().join('|')
+}
+
+// 一局 5 題。至少 2 題來自最弱的三個符號；有混淆對時，插一題二選一加練。
+function buildRound (state, rng, size = ROUND_SIZE) {
+  const pool = activePool(state)
+  const tier = TIERS[effectiveTier(state)]
+  const optionCount = Math.min(tier.options, pool.length)
+  const weakest = [...pool].sort((a, b) => stars(state, a) - stars(state, b)).slice(0, 3)
+  const weightOf = s => Math.pow(6 - stars(state, s), 2)
+
+  const slots = shuffle([...Array(size).keys()], rng)
+  const forced = new Set(slots.slice(0, 2))
+  const drillKeys = Object.keys(state.confusions)
+  const drillSlot = drillKeys.length ? slots[2] : -1
+
+  const round = []
+  for (let i = 0; i < size; i++) {
+    if (i === drillSlot) {
+      const key = drillKeys[Math.floor(rng() * drillKeys.length)]
+      const pair = key.split('|')
+      const target = pair[Math.floor(rng() * 2)]
+      round.push({ target, options: shuffle(pair, rng), hint: tier.hint, drill: key })
+      continue
+    }
+    const source = forced.has(i) ? weakest : pool
+    const target = weightedPick(source, weightOf, rng)
+    const distractors = pickDistractors(target, pool, optionCount - 1, tier.distract, rng)
+    round.push({ target, options: shuffle([target, ...distractors], rng), hint: tier.hint, drill: null })
+  }
+  return round
+}
+
+// 翻牌用：從出題池挑 n 個不重複的符號，弱的優先。池子不夠就全給。
+function pickSymbols (state, rng, n) {
+  let candidates = activePool(state)
+  const weightOf = s => Math.pow(6 - stars(state, s), 2)
+  const chosen = []
+  while (chosen.length < n && candidates.length) {
+    const s = weightedPick(candidates, weightOf, rng)
+    chosen.push(s)
+    candidates = candidates.filter(x => x !== s)
+  }
+  return chosen
+}
+
+function adjustTier (tier, recent) {
+  if (recent.length < RECENT_CAP) return { tier, recent }
+  const okCount = recent.filter(Boolean).length
+  if (okCount >= 9) return { tier: Math.min(tier + 1, TIERS.length - 1), recent: [] }
+  if (okCount < 6) return { tier: Math.max(tier - 1, 0), recent: [] }
+  return { tier, recent }
+}
+
+// 每題只記第一次點的結果。picked 是她點的符號；drill 是這題若為加練題的混淆對 key。
+function recordAnswer (state, { target, ok, picked, ms, drill = null }) {
+  const oldHistory = (state.mastery[target] && state.mastery[target].history) || []
+  const history = [...oldHistory, { ok, ms }].slice(-HISTORY_CAP)
+  const mastery = { ...state.mastery, [target]: { history } }
+
+  const confusions = { ...state.confusions }
+  if (!ok && picked && picked !== target) {
+    confusions[pairKey(target, picked)] = { streak: 0 }
+  }
+  if (drill && confusions[drill]) {
+    if (!ok) {
+      confusions[drill] = { streak: 0 }
+    } else {
+      const streak = confusions[drill].streak + 1
+      if (streak >= DRILL_CLEAR_STREAK) delete confusions[drill]
+      else confusions[drill] = { streak }
+    }
+  }
+
+  const { tier, recent } = adjustTier(state.tier, [...state.recent, ok].slice(-RECENT_CAP))
+  return { ...state, mastery, confusions, tier, recent }
+}
+
+// ===== store.js =====
+// 進度存取：多位使用者、每人一份進度、匯出匯入。storage 用參數傳進來，測試時換成假的。
+
+
+const PREFIX = 'zhuyin-rescue:'
+const PROFILES_KEY = 'zhuyin-rescue-profiles'
+
+function isValidState (s) {
+  return s && typeof s === 'object' && s.version === 1 && s.mastery && s.confusions
+}
+
+function readJson (storage, key, fallback) {
+  try {
+    const raw = storage.getItem(key)
+    return raw ? JSON.parse(raw) : fallback
+  } catch (err) {
+    return fallback
+  }
+}
+
+function createStore (storage) {
+  function loadProfiles () {
+    const p = readJson(storage, PROFILES_KEY, null)
+    if (!p || !Array.isArray(p.list)) return { list: [], current: null }
+    return { list: p.list, current: p.current || null }
+  }
+  function saveProfiles (p) {
+    storage.setItem(PROFILES_KEY, JSON.stringify(p))
+  }
+
+  return {
+    load (profileId) {
+      const s = readJson(storage, PREFIX + profileId, null)
+      return isValidState(s) ? s : createState()
+    },
+    save (profileId, state) {
+      storage.setItem(PREFIX + profileId, JSON.stringify(state))
+    },
+    exportJson (state) {
+      return JSON.stringify(state, null, 2)
+    },
+    importJson (text) {
+      const s = JSON.parse(text)
+      if (!isValidState(s)) throw new Error('不是注音救援隊的存檔')
+      return s
+    },
+
+    loadProfiles,
+    addProfile ({ name, color }) {
+      const p = loadProfiles()
+      const profile = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, color }
+      p.list.push(profile)
+      p.current = profile.id
+      saveProfiles(p)
+      return profile
+    },
+    setCurrent (id) {
+      const p = loadProfiles()
+      p.current = id
+      saveProfiles(p)
+    },
+    removeProfile (id) {
+      const p = loadProfiles()
+      p.list = p.list.filter(x => x.id !== id)
+      if (p.current === id) p.current = p.list.length ? p.list[0].id : null
+      saveProfiles(p)
+      storage.removeItem(PREFIX + id)
+    },
+  }
+}
+
+// ===== audio.js =====
+// 發音與音效。語音合成唸代表字；audio/ 資料夾有錄音就改播錄音；音效全部現場合成。
+
+
+// getSettings 回傳目前設定 { voiceName, rate, repChar }，每次唸都重新拿，面板改了馬上生效。
+function createAudio (getSettings) {
+  let ctx = null
+  let voices = []
+  const recordingExists = {} // 符號 → true/false，第一次試過就記住
+
+  function refreshVoices () {
+    if (!('speechSynthesis' in window)) return
+    voices = window.speechSynthesis.getVoices()
+  }
+  if ('speechSynthesis' in window) {
+    refreshVoices()
+    window.speechSynthesis.onvoiceschanged = refreshVoices
+  }
+
+  function pickVoice () {
+    refreshVoices()
+    const settings = getSettings()
+    if (settings.voiceName) {
+      const chosen = voices.find(v => v.name === settings.voiceName)
+      if (chosen) return chosen
+    }
+    const tw = voices.filter(v => /zh[-_]TW/i.test(v.lang))
+    return tw.find(v => /Google/i.test(v.name)) || tw[0] ||
+      voices.find(v => /^zh/i.test(v.lang)) || null
+  }
+
+  // 第一次觸碰時呼叫：建立 AudioContext、暖機語音合成。
+  function unlock () {
+    if (!ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext
+      if (AC) ctx = new AC()
+    }
+    if (ctx && ctx.state === 'suspended') ctx.resume()
+    if ('speechSynthesis' in window) {
+      const u = new SpeechSynthesisUtterance(' ')
+      u.volume = 0
+      window.speechSynthesis.speak(u)
+    }
+  }
+
+  function speakTts (text) {
+    return new Promise(resolve => {
+      if (!('speechSynthesis' in window)) return resolve()
+      window.speechSynthesis.cancel()
+      const u = new SpeechSynthesisUtterance(text)
+      u.lang = 'zh-TW'
+      u.rate = getSettings().rate || 0.8
+      const v = pickVoice()
+      if (v) u.voice = v
+      let done = false
+      const finish = () => { if (!done) { done = true; resolve() } }
+      u.onend = finish
+      u.onerror = finish
+      setTimeout(finish, 3000) // 語音卡住也不要卡遊戲
+      window.speechSynthesis.speak(u)
+    })
+  }
+
+  const RECORDING_EXTS = ['wav', 'mp3']
+  let currentEl = null // 正在播的錄音，換題時先停掉
+
+  // onStart 在聲音真的開始出來時呼叫，讓遊戲可以提早開放點擊
+  function playFile (url, onStart) {
+    return new Promise(resolve => {
+      const el = new Audio(url)
+      currentEl = el
+      el.onplaying = () => { if (onStart) onStart() }
+      el.onended = () => resolve(true)
+      el.onpause = () => resolve(true) // 被 stop() 中斷也要讓等待的人繼續
+      el.onerror = () => resolve(false)
+      el.play().catch(() => resolve(false))
+    })
+  }
+
+  // audio/ㄅ.wav 或 audio/ㄅ.mp3，哪個有就播哪個。找過一次的結果記住，不重複試。
+  async function playRecording (symbol, onStart) {
+    const known = recordingExists[symbol]
+    if (known === false) return false
+    if (typeof known === 'string') return playFile(known, onStart)
+    for (const ext of RECORDING_EXTS) {
+      const url = 'audio/' + encodeURIComponent(symbol) + '.' + ext
+      if (await playFile(url, onStart)) { recordingExists[symbol] = url; return true }
+    }
+    recordingExists[symbol] = false
+    return false
+  }
+
+  function stop () {
+    if (currentEl) { currentEl.pause(); currentEl = null }
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel()
+  }
+
+  // 唸一個符號。回傳 Promise，唸完才 resolve。有官方錄音就播錄音，沒有才用語音合成。
+  async function say (symbol, { onStart } = {}) {
+    stop()
+    if (await playRecording(symbol, onStart)) return
+    const settings = getSettings()
+    const text = (settings.repChar && settings.repChar[symbol]) || REP_CHAR[symbol] || symbol
+    if (onStart) onStart()
+    await speakTts(text)
+  }
+
+  function tone (freq, start, dur, type = 'sine', gain = 0.25) {
+    if (!ctx) return
+    const o = ctx.createOscillator()
+    const g = ctx.createGain()
+    o.type = type
+    o.frequency.setValueAtTime(freq, ctx.currentTime + start)
+    g.gain.setValueAtTime(0, ctx.currentTime + start)
+    g.gain.linearRampToValueAtTime(gain, ctx.currentTime + start + 0.02)
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur)
+    o.connect(g).connect(ctx.destination)
+    o.start(ctx.currentTime + start)
+    o.stop(ctx.currentTime + start + dur + 0.05)
+  }
+
+  function ding () { tone(880, 0, 0.18); tone(1320, 0.12, 0.3) }
+  function wrong () {
+    if (!ctx) return
+    const o = ctx.createOscillator()
+    const g = ctx.createGain()
+    o.type = 'triangle'
+    o.frequency.setValueAtTime(300, ctx.currentTime)
+    o.frequency.linearRampToValueAtTime(380, ctx.currentTime + 0.25)
+    g.gain.setValueAtTime(0.2, ctx.currentTime)
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35)
+    o.connect(g).connect(ctx.destination)
+    o.start()
+    o.stop(ctx.currentTime + 0.4)
+  }
+  function splash () {
+    if (!ctx) return
+    const len = ctx.sampleRate * 0.35
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate)
+    const d = buf.getChannelData(0)
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2)
+    const src = ctx.createBufferSource()
+    src.buffer = buf
+    const f = ctx.createBiquadFilter()
+    f.type = 'bandpass'
+    f.frequency.value = 1200
+    const g = ctx.createGain()
+    g.gain.value = 0.4
+    src.connect(f).connect(g).connect(ctx.destination)
+    src.start()
+  }
+  // 咬餅乾：短短的雜訊
+  function crunch () {
+    if (!ctx) return
+    const len = Math.floor(ctx.sampleRate * 0.12)
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate)
+    const d = buf.getChannelData(0)
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 1.5)
+    const src = ctx.createBufferSource()
+    src.buffer = buf
+    const f = ctx.createBiquadFilter()
+    f.type = 'lowpass'
+    f.frequency.value = 2200
+    const g = ctx.createGain()
+    g.gain.value = 0.5
+    src.connect(f).connect(g).connect(ctx.destination)
+    src.start()
+    tone(180, 0.02, 0.1, 'square', 0.08)
+  }
+  // 翻牌：輕輕一聲
+  function flip () { tone(660, 0, 0.07, 'triangle', 0.15) }
+  function cheer () {
+    const notes = [523, 659, 784, 1047]
+    notes.forEach((n, i) => tone(n, i * 0.12, 0.35, 'triangle', 0.2))
+    tone(1319, 0.5, 0.6, 'triangle', 0.2)
+  }
+
+  return { unlock, say, stop, ding, wrong, splash, crunch, flip, cheer, listVoices: () => { refreshVoices(); return voices } }
+}
+
+// ===== art.js =====
+// SVG 圖：場景、狗狗、卡片插圖。全部是字串，塞進 innerHTML。
+// 風格：借宮崎駿動畫的氛圍。水彩天空、厚積雲、層疊山丘、青綠海面、褪色木頭、柔光，不用粗描邊。
+
+// 六隻救援狗的配色：帽子／背心顏色，深色版做陰影
+const DOG_COLORS = [
+  { main: '#4A6FA5', dark: '#34507A' }, // 藍 警察
+  { main: '#C8553D', dark: '#96402D' }, // 紅 消防
+  { main: '#E39AA8', dark: '#B87483' }, // 粉 飛行
+  { main: '#6B9E6B', dark: '#4E7A4E' }, // 綠 回收
+  { main: '#E0955B', dark: '#B07242' }, // 橘 工程
+  { main: '#E8C86A', dark: '#B99A44' }, // 黃 鬆餅
+]
+
+// 水彩紙紋：疊在色塊上的細顆粒
+const PAPER_FILTER = `
+  <filter id="paper" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0.08 0" result="g"/>
+    <feBlend in="SourceGraphic" in2="g" mode="multiply"/>
+  </filter>
+  <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6"/></filter>
+  <filter id="softer" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="16"/></filter>`
+
+// 一朵積雲：底部帶淡藍陰影
+function cloud (x, y, s = 1) {
+  return `
+  <g class="cloud" transform="translate(${x} ${y}) scale(${s})">
+    <ellipse cx="0" cy="18" rx="120" ry="30" fill="#C9D9E8" opacity="0.8"/>
+    <ellipse cx="-50" cy="0" rx="58" ry="46" fill="#FFFDF7"/>
+    <ellipse cx="10" cy="-18" rx="70" ry="58" fill="#FFFDF7"/>
+    <ellipse cx="70" cy="2" rx="52" ry="42" fill="#FFFDF7"/>
+    <ellipse cx="0" cy="22" rx="118" ry="26" fill="#FFFDF7"/>
+    <ellipse cx="-30" cy="26" rx="70" ry="14" fill="#DCE7F0" opacity="0.7"/>
+  </g>`
+}
+
+// 草叢：山丘邊緣的一小撮草
+function grassTuft (x, y, color) {
+  return `<path d="M${x} ${y} q3 -18 6 0 q3 -22 6 0 q3 -16 6 0 q2 -20 5 0" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round"/>`
+}
+
+// 救援狗。viewBox 260×300，原點在左上。color 是 DOG_COLORS 的索引。
+function dogSvg (color = 0) {
+  const c = DOG_COLORS[color % DOG_COLORS.length]
+  return `<span class="dog-slot"><img class="art-slot" src="img/dog-${color % DOG_COLORS.length}.png" width="260" height="300" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+<svg class="dog" viewBox="0 0 260 300" width="260" height="300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="fur${color}" cx="0.4" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#D9A86C"/><stop offset="1" stop-color="#A8703C"/>
+    </radialGradient>
+  </defs>
+  <g class="dog-body">
+    <path class="tail" d="M62 228 q-46 -28 -26 -76" stroke="#8A5A2B" stroke-width="18" fill="none" stroke-linecap="round"/>
+    <ellipse cx="130" cy="238" rx="80" ry="56" fill="url(#fur${color})"/>
+    <ellipse cx="130" cy="252" rx="46" ry="32" fill="#F1DFC0"/>
+    <path d="M64 216 q66 -46 132 0 v42 q-66 24 -132 0z" fill="${c.main}"/>
+    <path d="M64 216 q66 -46 132 0 v10 q-66 -30 -132 0z" fill="${c.dark}" opacity="0.5"/>
+    <rect x="114" y="226" width="32" height="32" rx="6" fill="#F3E3B0"/>
+    <ellipse cx="86" cy="288" rx="28" ry="13" fill="#9C6534"/>
+    <ellipse cx="174" cy="288" rx="28" ry="13" fill="#9C6534"/>
+    <g class="dog-head">
+      <ellipse cx="58" cy="142" rx="30" ry="54" fill="#6E4522" transform="rotate(14 58 142)"/>
+      <ellipse cx="202" cy="142" rx="30" ry="54" fill="#6E4522" transform="rotate(-14 202 142)"/>
+      <circle cx="130" cy="132" r="74" fill="url(#fur${color})"/>
+      <ellipse cx="130" cy="166" rx="44" ry="30" fill="#F1DFC0"/>
+      <circle cx="86" cy="158" r="13" fill="#E9A59A" opacity="0.6"/>
+      <circle cx="174" cy="158" r="13" fill="#E9A59A" opacity="0.6"/>
+      <g class="eyes">
+        <ellipse cx="104" cy="122" rx="11" ry="13" fill="#2B1D12"/>
+        <ellipse cx="156" cy="122" rx="11" ry="13" fill="#2B1D12"/>
+        <circle cx="108" cy="117" r="4" fill="#fff"/>
+        <circle cx="160" cy="117" r="4" fill="#fff"/>
+      </g>
+      <path d="M118 152 q12 -10 24 0 q-6 12 -12 12 q-6 0 -12 -12z" fill="#2B1D12"/>
+      <path class="mouth" d="M112 172 q18 16 36 0" fill="none" stroke="#5A3A20" stroke-width="4" stroke-linecap="round"/>
+      <path d="M58 96 q72 -76 144 0 l-8 -30 q-64 -52 -128 0z" fill="${c.main}"/>
+      <rect x="46" y="86" width="168" height="20" rx="10" fill="${c.dark}"/>
+      <circle cx="130" cy="58" r="12" fill="#F3E3B0"/>
+    </g>
+  </g>
+  <g class="rod">
+    <line x1="192" y1="238" x2="256" y2="52" stroke="#5A3A20" stroke-width="9" stroke-linecap="round"/>
+    <line x1="194" y1="236" x2="254" y2="56" stroke="#A9713A" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg></span>`
+}
+
+// 遊戲背景：水彩天、積雲、層疊山丘、青綠海、褪色碼頭。1200×800。
+function sceneSvg () {
+  return `<img class="art-slot" src="img/scene.png" width="1200" height="800" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+<svg class="scene" viewBox="0 0 1200 800" width="1200" height="800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+  <defs>
+    ${PAPER_FILTER}
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5B8FC7"/><stop offset="0.45" stop-color="#9CC4E4"/><stop offset="0.8" stop-color="#DCEBF2"/><stop offset="1" stop-color="#F6EBD3"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6FB3C4"/><stop offset="0.35" stop-color="#3E8FA6"/><stop offset="1" stop-color="#26647E"/>
+    </linearGradient>
+    <linearGradient id="hillFar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9DBFA6"/><stop offset="1" stop-color="#7FA58B"/></linearGradient>
+    <linearGradient id="hillMid" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FAF6E"/><stop offset="1" stop-color="#5E8E52"/></linearGradient>
+    <linearGradient id="hillNear" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6E9C58"/><stop offset="1" stop-color="#4F7A40"/></linearGradient>
+  </defs>
+  <g filter="url(#paper)">
+    <rect width="1200" height="800" fill="url(#sky)"/>
+    <ellipse cx="1000" cy="150" rx="260" ry="200" fill="#FFF4D0" opacity="0.55" filter="url(#softer)"/>
+    <circle cx="1000" cy="150" r="46" fill="#FFF7DC"/>
+    <circle cx="1000" cy="150" r="70" fill="#FFF7DC" opacity="0.35" filter="url(#soft)"/>
+    <g class="clouds">
+      <g class="cloud-wrap c1">${cloud(260, 150, 1.05)}</g>
+      <g class="cloud-wrap c2">${cloud(700, 210, 0.75)}</g>
+      <g class="cloud-wrap c3">${cloud(1080, 300, 0.55)}</g>
+    </g>
+    <!-- 遠山：帶霧 -->
+    <path d="M0 420 q120 -130 260 -60 q100 -90 220 -30 q140 -120 300 -40 q160 -80 420 20 v80 H0z" fill="url(#hillFar)" opacity="0.85"/>
+    <rect y="380" width="1200" height="60" fill="#DCEBF2" opacity="0.35"/>
+    <!-- 中山 -->
+    <path d="M0 460 q160 -90 340 -20 q150 -70 320 0 q160 -60 340 10 q120 -20 200 20 v40 H0z" fill="url(#hillMid)"/>
+    <g opacity="0.5">${[80, 260, 420, 610, 800, 980, 1120].map(x => grassTuft(x, 452, '#4F7A40')).join('')}</g>
+    <!-- 樹叢 -->
+    <g fill="#4F7A40"><ellipse cx="560" cy="446" rx="46" ry="26"/><ellipse cx="600" cy="440" rx="34" ry="30"/><ellipse cx="900" cy="450" rx="40" ry="22"/></g>
+    <g fill="#6E9C58"><ellipse cx="548" cy="440" rx="26" ry="16"/><ellipse cx="892" cy="444" rx="22" ry="12"/></g>
+    <!-- 海 -->
+    <rect y="470" width="1200" height="330" fill="url(#sea)"/>
+    <path d="M0 470 h1200 v10 q-300 14 -600 0 t-600 0z" fill="#8FC7D2" opacity="0.7"/>
+    <g class="waves" fill="none" stroke="#CFEAF0" stroke-width="5" stroke-linecap="round" opacity="0.5">
+      <path class="w1" d="M380 540 q40 -14 80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0"/>
+      <path class="w2" d="M360 650 q40 -14 80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0"/>
+      <path class="w3" d="M400 750 q40 -14 80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0"/>
+    </g>
+    <g class="sea-sparkle" fill="#F6F3E6" opacity="0.55">
+      <ellipse cx="560" cy="500" rx="44" ry="4"/><ellipse cx="820" cy="512" rx="60" ry="5"/><ellipse cx="1060" cy="496" rx="36" ry="4"/>
+    </g>
+    <g class="fish" fill="#F0B27A" opacity="0.45">
+      <path d="M1000 720 q30 -22 60 0 q-30 22 -60 0z"/><polygon points="1060,720 1082,706 1082,734"/>
+    </g>
+    <!-- 碼頭：褪色木頭 -->
+    <g>
+      <rect x="70" y="560" width="24" height="220" rx="3" fill="#6E4F35"/>
+      <rect x="215" y="560" width="24" height="220" rx="3" fill="#6E4F35"/>
+      <rect x="360" y="560" width="24" height="220" rx="3" fill="#6E4F35"/>
+      <rect x="0" y="524" width="410" height="42" rx="6" fill="#B08A63"/>
+      <rect x="0" y="524" width="410" height="8" rx="4" fill="#CBA783"/>
+      <rect x="0" y="562" width="410" height="14" fill="#7E5E40"/>
+      <g stroke="#8E6D4C" stroke-width="3" opacity="0.8">
+        <line x1="60" y1="524" x2="60" y2="566"/><line x1="130" y1="524" x2="130" y2="566"/><line x1="200" y1="524" x2="200" y2="566"/>
+        <line x1="270" y1="524" x2="270" y2="566"/><line x1="340" y1="524" x2="340" y2="566"/>
+      </g>
+      <path d="M395 516 v-44" stroke="#5A3A20" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="395" cy="514" r="13" fill="#C8553D"/>
+      <g>
+        <path d="M300 492 l8 40 h44 l8 -40z" fill="#6F8FA3"/>
+        <ellipse cx="330" cy="492" rx="30" ry="8" fill="#9EC3D1"/>
+        <path d="M304 490 q26 -34 52 0" fill="none" stroke="#3E5A6A" stroke-width="3"/>
+      </g>
+      <ellipse cx="200" cy="580" rx="230" ry="14" fill="#26647E" opacity="0.35"/>
+    </g>
+  </g>
+</svg>`
+}
+
+// 首頁／選人／結算的背景：水彩天、積雲、草原。1200×800。
+function homeBgSvg () {
+  return `<img class="art-slot" src="img/home.png" width="1200" height="800" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+<svg class="scene" viewBox="0 0 1200 800" width="1200" height="800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+  <defs>
+    ${PAPER_FILTER}
+    <linearGradient id="hsky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5B8FC7"/><stop offset="0.55" stop-color="#A9CDE6"/><stop offset="1" stop-color="#EAF1EC"/>
+    </linearGradient>
+    <linearGradient id="meadow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8DBB74"/><stop offset="1" stop-color="#5E8E52"/></linearGradient>
+  </defs>
+  <g filter="url(#paper)">
+    <rect width="1200" height="800" fill="url(#hsky)"/>
+    <ellipse cx="1040" cy="110" rx="240" ry="180" fill="#FFF4D0" opacity="0.5" filter="url(#softer)"/>
+    <circle cx="1040" cy="110" r="42" fill="#FFF7DC"/>
+    <g class="clouds">
+      <g class="cloud-wrap c1">${cloud(230, 170, 1.1)}</g>
+      <g class="cloud-wrap c2">${cloud(780, 130, 0.8)}</g>
+      <g class="cloud-wrap c3">${cloud(560, 260, 0.5)}</g>
+    </g>
+    <path d="M0 560 q200 -70 420 -20 q200 -60 400 -10 q180 -40 380 10 v40 H0z" fill="#9DBFA6" opacity="0.8"/>
+    <path d="M0 620 q300 -90 600 -10 t600 0 v200 H0z" fill="url(#meadow)"/>
+    <path d="M0 690 q300 -60 600 0 t600 0 v110 H0z" fill="#4F7A40" opacity="0.9"/>
+    <g opacity="0.7">${[60, 180, 330, 470, 620, 760, 900, 1050, 1150].map(x => grassTuft(x, 688, '#3E6A34')).join('')}</g>
+    <g fill="#F6F3E6" opacity="0.9"><circle cx="160" cy="724" r="5"/><circle cx="420" cy="746" r="5"/><circle cx="900" cy="732" r="5"/><circle cx="1100" cy="756" r="5"/><circle cx="660" cy="722" r="5"/></g>
+    <g fill="#E8C86A" opacity="0.9"><circle cx="300" cy="756" r="4"/><circle cx="760" cy="740" r="4"/><circle cx="1010" cy="770" r="4"/></g>
+  </g>
+</svg>`
+}
+
+// 三張玩法卡的插圖。300×400。
+function cardArt (kind) {
+  if (kind === 'fishing') {
+    return `<img class="art-slot" src="img/card-fishing.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="csky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6F9FD0"/><stop offset="1" stop-color="#DCEBF2"/></linearGradient></defs>
+  <rect width="300" height="400" fill="url(#csky)"/>
+  <circle cx="230" cy="70" r="30" fill="#FFF7DC"/>
+  ${cloud(90, 80, 0.45)}
+  <path d="M0 190 q80 -60 160 -10 q70 -50 140 0 v40 H0z" fill="#7FAF6E"/>
+  <rect y="210" width="300" height="190" fill="#3E8FA6"/>
+  <g fill="none" stroke="#CFEAF0" stroke-width="5" stroke-linecap="round" opacity="0.6">
+    <path d="M40 260 q20 -12 40 0 t40 0"/><path d="M180 340 q20 -12 40 0 t40 0"/>
+  </g>
+  <rect x="0" y="240" width="120" height="18" rx="5" fill="#B08A63"/>
+  <rect x="20" y="258" width="12" height="80" fill="#6E4F35"/><rect x="86" y="258" width="12" height="80" fill="#6E4F35"/>
+  <line x1="70" y1="242" x2="150" y2="130" stroke="#5A3A20" stroke-width="7" stroke-linecap="round"/>
+  <line x1="150" y1="130" x2="200" y2="270" stroke="#F6F3E6" stroke-width="2.5"/>
+  <circle cx="200" cy="300" r="52" fill="#F6F3E6" opacity="0.92"/>
+  <text x="200" y="322" text-anchor="middle" font-size="64" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄅ</text>
+</svg>`
+  }
+  if (kind === 'feeding') {
+    return `<img class="art-slot" src="img/card-feeding.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="400" fill="#F3E4C2"/>
+  <path d="M0 300 h300 v100 H0z" fill="#8DBB74"/>
+  <ellipse cx="150" cy="330" rx="90" ry="26" fill="#C8553D"/>
+  <ellipse cx="150" cy="322" rx="70" ry="16" fill="#96402D"/>
+  <circle cx="150" cy="180" r="70" fill="#C99A63"/>
+  <ellipse cx="150" cy="212" rx="40" ry="26" fill="#F1DFC0"/>
+  <ellipse cx="86" cy="190" rx="26" ry="48" fill="#6E4522" transform="rotate(14 86 190)"/>
+  <ellipse cx="214" cy="190" rx="26" ry="48" fill="#6E4522" transform="rotate(-14 214 190)"/>
+  <ellipse cx="128" cy="170" rx="10" ry="12" fill="#2B1D12"/><ellipse cx="172" cy="170" rx="10" ry="12" fill="#2B1D12"/>
+  <path d="M150 226 q-20 0 -20 -10 h40 q0 10 -20 10z" fill="#2B1D12"/>
+  <path d="M138 234 q12 22 24 0" fill="#D97F8A"/>
+  <g fill="#F6F3E6">
+    <rect x="110" y="270" width="80" height="24" rx="12"/>
+    <circle cx="110" cy="274" r="12"/><circle cx="110" cy="290" r="12"/><circle cx="190" cy="274" r="12"/><circle cx="190" cy="290" r="12"/>
+  </g>
+  <text x="150" y="290" text-anchor="middle" font-size="24" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄇ</text>
+</svg>`
+  }
+  return `<img class="art-slot" src="img/card-memory.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="400" fill="#BFD8B0"/>
+  <g>
+    <rect x="40" y="80" width="90" height="120" rx="14" fill="#E39AA8"/>
+    <rect x="170" y="80" width="90" height="120" rx="14" fill="#6F9FD0"/>
+    <rect x="40" y="220" width="90" height="120" rx="14" fill="#E8C86A"/>
+    <rect x="170" y="220" width="90" height="120" rx="14" fill="#F6F3E6"/>
+  </g>
+  <g fill="#F6F3E6" opacity="0.7"><circle cx="85" cy="140" r="22"/><circle cx="215" cy="140" r="22"/><circle cx="85" cy="280" r="22"/></g>
+  <text x="215" y="300" text-anchor="middle" font-size="60" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄉ</text>
+</svg>`
+}
+
+// 結算頁的彩帶：像花瓣、樹葉，顏色收斂
+function confettiHtml (count = 44) {
+  const colors = ['#E39AA8', '#E8C86A', '#8FC7D2', '#8DBB74', '#F6F3E6', '#E0955B']
+  let html = ''
+  for (let i = 0; i < count; i++) {
+    const left = Math.random() * 100
+    const delay = Math.random() * 2
+    const dur = 3.5 + Math.random() * 2.5
+    const color = colors[i % colors.length]
+    const rot = Math.floor(Math.random() * 360)
+    const shape = i % 2 === 0 ? 'petal' : ''
+    html += `<i class="confetti ${shape}" style="left:${left}%;animation-delay:${delay}s;animation-duration:${dur}s;background:${color};transform:rotate(${rot}deg)"></i>`
+  }
+  return html
+}
+
+// ===== fishing.js =====
+// 釣魚玩法。負責畫泡泡、接點擊、播動畫；對錯的判斷與記錄交給 main.js。
+// 介面（跟餵狗狗共用）：start(question)、lock/unlock、hint、shake、flashCorrect、celebrate(symbol)→Promise、sad、onAnswer(fn)、destroy。
+
+
+// 各選項數的泡泡位置（1200×800 舞台座標）
+const SLOTS = {
+  2: [[620, 600], [960, 600]],
+  3: [[560, 620], [800, 560], [1040, 640]],
+  4: [[540, 560], [780, 640], [1000, 560], [820, 480]],
+  5: [[520, 580], [720, 660], [900, 540], [1060, 660], [700, 490]],
+  6: [[500, 560], [680, 650], [860, 540], [1040, 650], [640, 480], [960, 470]],
+}
+
+function createFishing (root, { color = 0 } = {}) {
+  root.innerHTML = sceneSvg() +
+    '<div class="dog-wrap">' + dogSvg(color) + '</div>' +
+    '<div class="bubbles"></div>'
+  const bubblesEl = root.querySelector('.bubbles')
+  const dogWrap = root.querySelector('.dog-wrap')
+  let handler = null
+  let locked = true
+  let current = null
+
+  bubblesEl.addEventListener('pointerdown', e => {
+    const b = e.target.closest('.bubble')
+    if (!b || locked || !handler) return
+    handler(b.dataset.symbol, b)
+  })
+
+  function start (question) {
+    current = question
+    locked = true
+    bubblesEl.innerHTML = ''
+    const slots = SLOTS[question.options.length] || SLOTS[6]
+    question.options.forEach((sym, i) => {
+      const [x, y] = slots[i]
+      const b = document.createElement('div')
+      b.className = 'bubble'
+      b.dataset.symbol = sym
+      b.style.left = (x - 85) + 'px'
+      b.style.top = (y - 85) + 'px'
+      b.style.animationDelay = (i * 0.35) + 's'
+      b.innerHTML = '<span>' + sym + '</span>'
+      bubblesEl.appendChild(b)
+    })
+  }
+
+  function bubbleOf (symbol) {
+    return bubblesEl.querySelector('.bubble[data-symbol="' + symbol + '"]')
+  }
+
+  function unlock () { locked = false }
+  function lock () { locked = true }
+
+  // 提示：hint 2 一直晃、1 晃一次、0 不晃
+  function hint (level) {
+    const b = bubbleOf(current.target)
+    if (!b) return
+    b.classList.remove('hint-once', 'hint-loop')
+    if (level >= 2) b.classList.add('hint-loop')
+    else if (level === 1) b.classList.add('hint-once')
+  }
+
+  function shake (symbol) {
+    const b = bubbleOf(symbol)
+    if (!b) return
+    b.classList.remove('shake')
+    void b.offsetWidth
+    b.classList.add('shake')
+  }
+
+  function flashCorrect () {
+    const b = bubbleOf(current.target)
+    if (b) { b.classList.remove('hint-once'); b.classList.add('hint-loop') }
+  }
+
+  // 釣起來：泡泡飛向釣竿尖端，狗狗跳一下
+  function celebrate (symbol) {
+    return new Promise(resolve => {
+      const b = bubbleOf(symbol)
+      if (!b) return resolve()
+      b.classList.remove('hint-loop', 'hint-once', 'shake')
+      b.classList.add('caught')
+      const x = parseFloat(b.style.left)
+      const y = parseFloat(b.style.top)
+      // 釣竿尖端大約在舞台 (426, 278)：dog-wrap 左上 (170, 226) 加上竿尖 (256, 52)
+      b.style.transform = `translate(${426 - 88 - x}px, ${278 - 88 - y}px) scale(0.5)`
+      dogWrap.classList.remove('jump')
+      void dogWrap.offsetWidth
+      dogWrap.classList.add('jump')
+      setTimeout(() => {
+        b.classList.add('gone')
+        resolve()
+      }, 700)
+    })
+  }
+
+  function sad () {
+    dogWrap.classList.remove('tilt')
+    void dogWrap.offsetWidth
+    dogWrap.classList.add('tilt')
+  }
+
+  function onAnswer (fn) { handler = fn }
+  function destroy () { root.innerHTML = ''; handler = null }
+
+  return { start, unlock, lock, hint, shake, flashCorrect, celebrate, sad, onAnswer, destroy }
+}
+
+// ===== feeding.js =====
+// 餵狗狗玩法。骨頭餅乾印著符號，拖到狗狗嘴邊才算答；對錯判斷交給 main.js。
+// 介面跟釣魚一樣：start、lock/unlock、hint、shake、flashCorrect、celebrate、sad、onAnswer、destroy。
+
+
+// 狗狗嘴巴附近的落點（舞台座標）
+const MOUTH = { x: 300, y: 400, r: 150 }
+// 各選項數的餅乾位置（中心點）
+const BONE_SLOTS = {
+  2: [[700, 640], [980, 640]],
+  3: [[620, 640], [840, 640], [1060, 640]],
+  4: [[620, 560], [860, 560], [740, 700], [980, 700]],
+  5: [[600, 560], [840, 560], [1080, 560], [720, 700], [960, 700]],
+  6: [[600, 560], [840, 560], [1080, 560], [600, 700], [840, 700], [1080, 700]],
+}
+
+function boneHtml (symbol) {
+  return `
+<svg class="bone-art" viewBox="0 0 180 96" width="180" height="96" xmlns="http://www.w3.org/2000/svg">
+  <rect x="34" y="30" width="112" height="36" rx="18" fill="#F6E7C8"/>
+  <circle cx="36" cy="30" r="22" fill="#F6E7C8"/><circle cx="36" cy="66" r="22" fill="#F6E7C8"/>
+  <circle cx="144" cy="30" r="22" fill="#F6E7C8"/><circle cx="144" cy="66" r="22" fill="#F6E7C8"/>
+  <path d="M34 30 h112 M34 66 h112" stroke="#E2C89A" stroke-width="3" fill="none"/>
+</svg>
+<span>${symbol}</span>`
+}
+
+function createFeeding (root, { color = 0 } = {}) {
+  root.innerHTML = homeBgSvg() +
+    `<svg class="bowl" viewBox="0 0 260 90" width="260" height="90" xmlns="http://www.w3.org/2000/svg">
+       <ellipse cx="130" cy="60" rx="120" ry="28" fill="#C8553D"/>
+       <ellipse cx="130" cy="52" rx="96" ry="18" fill="#96402D"/>
+       <ellipse cx="130" cy="76" rx="120" ry="12" fill="#3E6A34" opacity="0.35"/>
+     </svg>` +
+    '<div class="dog-wrap feed-dog">' + dogSvg(color) + '</div>' +
+    '<div class="biscuits"></div>'
+  // 碗畫在狗狗前面
+  root.appendChild(root.querySelector('.bowl'))
+  const biscuitsEl = root.querySelector('.biscuits')
+  const dogWrap = root.querySelector('.feed-dog')
+  let handler = null
+  let locked = true
+  let current = null
+  let drag = null
+
+  function stageScale () {
+    const stage = document.getElementById('stage')
+    return stage.getBoundingClientRect().width / 1200
+  }
+
+  biscuitsEl.addEventListener('pointerdown', e => {
+    const b = e.target.closest('.biscuit')
+    if (!b || locked) return
+    drag = { b, startX: e.clientX, startY: e.clientY, ox: parseFloat(b.style.left), oy: parseFloat(b.style.top), moved: false }
+    b.classList.add('dragging')
+    try { b.setPointerCapture(e.pointerId) } catch (err) { /* 有些裝置不給鎖指標，靠 biscuits 容器接 move 也能拖 */ }
+  })
+  biscuitsEl.addEventListener('pointermove', e => {
+    if (!drag) return
+    const s = stageScale()
+    const dx = (e.clientX - drag.startX) / s
+    const dy = (e.clientY - drag.startY) / s
+    if (Math.abs(dx) + Math.abs(dy) > 6) drag.moved = true
+    drag.b.style.left = (drag.ox + dx) + 'px'
+    drag.b.style.top = (drag.oy + dy) + 'px'
+  })
+  function endDrag (e) {
+    if (!drag) return
+    const { b, ox, oy } = drag
+    drag = null
+    b.classList.remove('dragging')
+    const cx = parseFloat(b.style.left) + 90
+    const cy = parseFloat(b.style.top) + 48
+    const inMouth = Math.hypot(cx - MOUTH.x, cy - MOUTH.y) < MOUTH.r
+    if (inMouth && handler) {
+      handler(b.dataset.symbol, b)
+      return
+    }
+    // 沒放到嘴邊：滑回原位
+    b.classList.add('returning')
+    b.style.left = ox + 'px'
+    b.style.top = oy + 'px'
+    setTimeout(() => b.classList.remove('returning'), 350)
+  }
+  biscuitsEl.addEventListener('pointerup', endDrag)
+  biscuitsEl.addEventListener('pointercancel', endDrag)
+
+  function start (question) {
+    current = question
+    locked = true
+    biscuitsEl.innerHTML = ''
+    const slots = BONE_SLOTS[question.options.length] || BONE_SLOTS[6]
+    question.options.forEach((sym, i) => {
+      const [x, y] = slots[i]
+      const b = document.createElement('div')
+      b.className = 'biscuit'
+      b.dataset.symbol = sym
+      b.style.left = (x - 90) + 'px'
+      b.style.top = (y - 48) + 'px'
+      b.style.animationDelay = (i * 0.3) + 's'
+      b.innerHTML = boneHtml(sym)
+      biscuitsEl.appendChild(b)
+    })
+  }
+
+  function biscuitOf (symbol) {
+    return biscuitsEl.querySelector('.biscuit[data-symbol="' + symbol + '"]')
+  }
+  function unlock () { locked = false }
+  function lock () { locked = true }
+  function hint (level) {
+    const b = biscuitOf(current.target)
+    if (!b) return
+    b.classList.remove('hint-once', 'hint-loop')
+    if (level >= 2) b.classList.add('hint-loop')
+    else if (level === 1) b.classList.add('hint-once')
+  }
+  function shake (symbol) {
+    const b = biscuitOf(symbol)
+    if (!b) return
+    // 放錯的餅乾先彈回原位再晃
+    const [x, y] = (BONE_SLOTS[current.options.length] || BONE_SLOTS[6])[current.options.indexOf(symbol)]
+    b.classList.add('returning')
+    b.style.left = (x - 90) + 'px'
+    b.style.top = (y - 48) + 'px'
+    setTimeout(() => { b.classList.remove('returning'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake') }, 300)
+  }
+  function flashCorrect () {
+    const b = biscuitOf(current.target)
+    if (b) { b.classList.remove('hint-once'); b.classList.add('hint-loop') }
+  }
+  // 吃掉：餅乾飛到嘴邊縮小消失，狗狗跳一下
+  function celebrate (symbol) {
+    return new Promise(resolve => {
+      const b = biscuitOf(symbol)
+      if (!b) return resolve()
+      b.classList.remove('hint-loop', 'hint-once', 'shake')
+      b.classList.add('eaten')
+      b.style.left = (MOUTH.x - 90) + 'px'
+      b.style.top = (MOUTH.y - 48) + 'px'
+      dogWrap.classList.remove('jump')
+      void dogWrap.offsetWidth
+      dogWrap.classList.add('chomp')
+      setTimeout(() => { b.classList.add('gone'); dogWrap.classList.remove('chomp'); resolve() }, 600)
+    })
+  }
+  function sad () {
+    dogWrap.classList.remove('tilt')
+    void dogWrap.offsetWidth
+    dogWrap.classList.add('tilt')
+  }
+  function onAnswer (fn) { handler = fn }
+  function destroy () { root.innerHTML = ''; handler = null }
+
+  return { start, unlock, lock, hint, shake, flashCorrect, celebrate, sad, onAnswer, destroy }
+}
+
+// ===== memory.js =====
+// 翻牌配對。幾對相同的符號蓋著，翻開唸音；找到一樣的兩張就配對成功。
+// 介面：start(symbols)、onFlip(fn)、onPair(fn)、onDone(fn)、destroy。配對邏輯在這裡，main.js 只管聲音和星星。
+
+
+// 卡片位置：依張數排格子（中心點）
+function layout (count) {
+  const cols = count <= 6 ? 3 : count <= 8 ? 4 : 5
+  const rows = Math.ceil(count / cols)
+  const cw = 190
+  const ch = 230
+  const gapX = 30
+  const gapY = 30
+  const totalW = cols * cw + (cols - 1) * gapX
+  const totalH = rows * ch + (rows - 1) * gapY
+  const x0 = (1200 - totalW) / 2
+  const y0 = 120 + (560 - totalH) / 2
+  const out = []
+  for (let i = 0; i < count; i++) {
+    const c = i % cols
+    const r = Math.floor(i / cols)
+    out.push([x0 + c * (cw + gapX), y0 + r * (ch + gapY)])
+  }
+  return out
+}
+
+function shuffleCards (arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+const PAW = `<svg viewBox="0 0 100 100" width="90" height="90" xmlns="http://www.w3.org/2000/svg" fill="#F6E7C8" opacity="0.9">
+  <ellipse cx="50" cy="66" rx="24" ry="20"/><circle cx="24" cy="44" r="10"/><circle cx="42" cy="30" r="10"/><circle cx="60" cy="30" r="10"/><circle cx="77" cy="44" r="10"/></svg>`
+
+function createMemory (root) {
+  root.innerHTML = homeBgSvg() + '<div class="cards-grid"></div>'
+  const grid = root.querySelector('.cards-grid')
+  let onFlipFn = null
+  let onPairFn = null
+  let onDoneFn = null
+  let open = [] // 目前翻開、還沒配對的卡
+  let locked = false
+  let remaining = 0
+
+  grid.addEventListener('pointerdown', e => {
+    const card = e.target.closest('.mcard')
+    if (!card || locked || card.classList.contains('open') || card.classList.contains('matched')) return
+    card.classList.add('open')
+    open.push(card)
+    if (onFlipFn) onFlipFn(card.dataset.symbol)
+    if (open.length < 2) return
+    locked = true
+    const [a, b] = open
+    open = []
+    if (a.dataset.symbol === b.dataset.symbol) {
+      setTimeout(() => {
+        a.classList.add('matched'); b.classList.add('matched')
+        remaining--
+        locked = false
+        if (onPairFn) onPairFn(a.dataset.symbol)
+        if (remaining === 0 && onDoneFn) setTimeout(onDoneFn, 600)
+      }, 500)
+    } else {
+      setTimeout(() => {
+        a.classList.remove('open'); b.classList.remove('open')
+        locked = false
+      }, 1100)
+    }
+  })
+
+  function start (symbols) {
+    grid.innerHTML = ''
+    open = []
+    locked = false
+    remaining = symbols.length
+    const cards = shuffleCards(symbols.flatMap(s => [s, s]))
+    const pos = layout(cards.length)
+    cards.forEach((sym, i) => {
+      const el = document.createElement('div')
+      el.className = 'mcard'
+      el.dataset.symbol = sym
+      el.style.left = pos[i][0] + 'px'
+      el.style.top = pos[i][1] + 'px'
+      el.style.animationDelay = (i * 0.06) + 's'
+      el.innerHTML = `<div class="mcard-inner"><div class="mcard-back">${PAW}</div><div class="mcard-front"><span>${sym}</span></div></div>`
+      grid.appendChild(el)
+    })
+  }
+
+  return {
+    start,
+    onFlip (fn) { onFlipFn = fn },
+    onPair (fn) { onPairFn = fn },
+    onDone (fn) { onDoneFn = fn },
+    destroy () { root.innerHTML = ''; onFlipFn = onPairFn = onDoneFn = null },
+  }
+}
+
+// ===== ui.js =====
+// 選人、首頁、結算、大人面板、舞台縮放。
+
+
+
+// 舞台固定 1200×800，依視窗等比縮放置中
+function fitStage (stage) {
+  const scale = Math.min(window.innerWidth / 1200, window.innerHeight / 800)
+  const x = (window.innerWidth - 1200 * scale) / 2
+  const y = (window.innerHeight - 800 * scale) / 2
+  stage.style.transform = `translate(${x}px, ${y}px) scale(${scale})`
+}
+
+function showScreen (name) {
+  document.querySelectorAll('.screen').forEach(el => {
+    el.classList.toggle('active', el.id === 'screen-' + name)
+  })
+}
+
+const GEAR_SVG = `<svg viewBox="0 0 24 24" width="40" height="40" fill="#fff"><path d="M19.4 13a7.6 7.6 0 0 0 .1-1 7.6 7.6 0 0 0-.1-1l2.1-1.6a.5.5 0 0 0 .1-.6l-2-3.5a.5.5 0 0 0-.6-.2l-2.5 1a7.3 7.3 0 0 0-1.7-1l-.4-2.6a.5.5 0 0 0-.5-.4h-4a.5.5 0 0 0-.5.4l-.4 2.6a7.3 7.3 0 0 0-1.7 1l-2.5-1a.5.5 0 0 0-.6.2l-2 3.5a.5.5 0 0 0 .1.6L4.6 11a7.6 7.6 0 0 0-.1 1 7.6 7.6 0 0 0 .1 1l-2.1 1.6a.5.5 0 0 0-.1.6l2 3.5a.5.5 0 0 0 .6.2l2.5-1a7.3 7.3 0 0 0 1.7 1l.4 2.6a.5.5 0 0 0 .5.4h4a.5.5 0 0 0 .5-.4l.4-2.6a7.3 7.3 0 0 0 1.7-1l2.5 1a.5.5 0 0 0 .6-.2l2-3.5a.5.5 0 0 0-.1-.6L19.4 13zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>`
+
+// 選人畫面：每人一張卡（狗狗頭像＋名字），最後一張是「＋」
+function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
+  root.innerHTML = `
+    <div class="home-sky">${homeBgSvg()}</div>
+    <div class="profiles">
+      ${profiles.list.map(p => `
+        <button class="profile-card" data-id="${p.id}" aria-label="${p.name}">
+          <div class="profile-avatar" style="background:${DOG_COLORS[p.color % DOG_COLORS.length].main}22">${dogSvg(p.color)}</div>
+          <div class="profile-name">${escapeHtml(p.name)}</div>
+        </button>`).join('')}
+      <button class="profile-card add" id="btn-add-profile" aria-label="新增">
+        <div class="profile-plus">＋</div>
+      </button>
+    </div>
+    <div class="profile-form hidden" id="profile-form">
+      <div class="profile-form-box">
+        <div class="color-pick">${DOG_COLORS.map((c, i) => `
+          <button class="color-dot ${i === 0 ? 'on' : ''}" data-color="${i}" style="background:${c.main}"></button>`).join('')}
+        </div>
+        <input id="profile-name" maxlength="6" placeholder="名字">
+        <div class="profile-form-actions">
+          <button id="profile-cancel">取消</button>
+          <button id="profile-ok" class="primary">好</button>
+        </div>
+      </div>
+    </div>
+    <button class="gear" id="btn-gear" aria-label="大人面板">${GEAR_SVG}</button>`
+
+  root.querySelectorAll('.profile-card[data-id]').forEach(b => {
+    b.addEventListener('pointerdown', () => onPick(b.dataset.id))
+  })
+  const form = root.querySelector('#profile-form')
+  let color = 0
+  root.querySelector('#btn-add-profile').addEventListener('pointerdown', () => {
+    form.classList.remove('hidden')
+    root.querySelector('#profile-name').focus()
+  })
+  root.querySelectorAll('.color-dot').forEach(d => {
+    d.onclick = () => {
+      color = parseInt(d.dataset.color, 10)
+      root.querySelectorAll('.color-dot').forEach(x => x.classList.toggle('on', x === d))
+    }
+  })
+  root.querySelector('#profile-cancel').onclick = () => form.classList.add('hidden')
+  root.querySelector('#profile-ok').onclick = () => {
+    const name = root.querySelector('#profile-name').value.trim()
+    if (!name) return
+    onAdd({ name, color })
+  }
+  root.querySelector('#btn-gear').addEventListener('pointerdown', onGear)
+}
+
+// 首頁：目前使用者的狗狗、三張玩法卡
+function renderHome (root, { profile }) {
+  root.innerHTML = `
+    <div class="home-sky">${homeBgSvg()}</div>
+    <button class="who" id="btn-who" aria-label="換人">
+      <div class="who-avatar">${dogSvg(profile.color)}</div>
+      <div class="who-name">${escapeHtml(profile.name)}</div>
+    </button>
+    <div class="cards" id="cards">
+      <button class="card" data-game="fishing" aria-label="釣魚">
+        <div class="card-pic">${cardArt('fishing')}</div>
+      </button>
+      <button class="card" data-game="feeding" aria-label="餵狗狗">
+        <div class="card-pic">${cardArt('feeding')}</div>
+      </button>
+      <button class="card" data-game="memory" aria-label="翻牌">
+        <div class="card-pic">${cardArt('memory')}</div>
+      </button>
+    </div>
+    <button class="gear" id="btn-gear" aria-label="大人面板">${GEAR_SVG}</button>`
+}
+
+function renderResult (root, color = 0) {
+  root.innerHTML = `
+    <div class="result-bg">${homeBgSvg()}</div>
+    <div class="result-burst"></div>
+    <div class="confetti-wrap">${confettiHtml()}</div>
+    <div class="result-dogs">${dogSvg(color)}${dogSvg((color + 1) % 6)}${dogSvg((color + 2) % 6)}</div>
+    <div class="result-stars">${'<span class="star">★</span>'.repeat(5)}</div>
+    <div class="result-actions hidden" id="result-actions">
+      <button class="round-btn" id="btn-again" aria-label="再玩一次">
+        <svg viewBox="0 0 24 24" width="64" height="64" fill="#fff"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
+      </button>
+      <button class="round-btn home" id="btn-home" aria-label="回首頁">
+        <svg viewBox="0 0 24 24" width="64" height="64" fill="#fff"><path d="M12 3 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
+      </button>
+    </div>`
+}
+
+// 結算動畫：星星一顆顆亮，3 秒後出按鈕
+function playResult (root, earned) {
+  const starEls = root.querySelectorAll('.result-stars .star')
+  starEls.forEach(s => s.classList.remove('lit'))
+  earned.forEach((ok, i) => {
+    if (!ok) return
+    setTimeout(() => starEls[i].classList.add('lit'), 400 + i * 350)
+  })
+  root.querySelector('#result-actions').classList.add('hidden')
+  setTimeout(() => root.querySelector('#result-actions').classList.remove('hidden'), 3000)
+}
+
+function starColor (n) {
+  if (n >= 4) return 'green'
+  if (n >= 2) return 'yellow'
+  return 'red'
+}
+
+function escapeHtml (s) {
+  return String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]))
+}
+
+// 大人面板：目前使用者的熟練度色塊、已經認得、試聽設定、匯出匯入、刪除使用者
+const TIER_LABELS = ['2 選項，隨機干擾，一直提示', '3 選項，隨機干擾，一直提示', '3 選項，形似干擾，提示一次', '4 選項，形似干擾，提示一次', '4 選項，音似干擾，不提示', '6 選項，音似干擾，不提示']
+const DISTRACT_LABEL = { random: '隨機', shape: '形似', sound: '音似' }
+const HINT_LABEL = ['不提示', '提示一次', '一直提示']
+
+// 兩段式確認：第一下按鈕變成確認文字，4 秒內再按一下才執行。不用瀏覽器對話框。
+function armButton (btn, confirmText, onConfirm) {
+  const original = btn.textContent
+  let timer = null
+  btn.onclick = () => {
+    if (btn.classList.contains('armed')) {
+      clearTimeout(timer)
+      onConfirm()
+      return
+    }
+    btn.classList.add('armed')
+    btn.textContent = confirmText
+    timer = setTimeout(() => { btn.classList.remove('armed'); btn.textContent = original }, 4000)
+  }
+}
+
+function renderPanel (root, { profile, profiles, state, settings, voices, onKnownChange, onSettings, onStateChange, onExport, onImport, onResetProgress, onRemoveProfile, onClose, onSay }) {
+  const usersHtml = profiles.list.length
+    ? profiles.list.map(p => `
+      <div class="puser">
+        <span class="puser-dot" style="background:${DOG_COLORS[p.color % DOG_COLORS.length].main}"></span>
+        <span class="puser-name">${escapeHtml(p.name)}${profile && profile.id === p.id ? '（目前）' : ''}</span>
+        <button class="danger" data-remove="${p.id}">刪除</button>
+      </div>`).join('')
+    : '<span>還沒有使用者</span>'
+  const pool = state ? activePool(state) : []
+  const groupsHtml = !state ? '' : GROUPS.map((g, gi) => `
+    <div class="pgroup">
+      <div class="pgroup-title">第 ${gi + 1} 組${g.every(s => pool.includes(s)) ? '' : '（未解鎖）'}</div>
+      <div class="ptiles">${g.map(s => {
+        const n = stars(state, s)
+        const known = state.known.includes(s)
+        const hist = (state.mastery[s] && state.mastery[s].history) || []
+        return `<div class="ptile ${starColor(n)}">
+          <button class="ptile-sym" data-say="${s}" title="點一下試聽">${s}</button>
+          <div class="ptile-stars">${'★'.repeat(n)}${'☆'.repeat(5 - n)}</div>
+          <div class="ptile-hist">${hist.length ? hist.filter(h => h.ok).length + '/' + hist.length : '沒練過'}</div>
+          <label class="ptile-known"><input type="checkbox" data-known="${s}" ${known ? 'checked' : ''}> 認得</label>
+          <input class="ptile-rep" data-rep="${s}" value="${(settings.repChar && settings.repChar[s]) || REP_CHAR[s]}" maxlength="2" title="唸成什麼字">
+        </div>`
+      }).join('')}</div>
+    </div>`).join('')
+
+  const confusions = state ? Object.keys(state.confusions) : []
+  const voiceOptions = voices.map(v =>
+    `<option value="${v.name}" ${settings.voiceName === v.name ? 'selected' : ''}>${v.name} (${v.lang})</option>`).join('')
+
+  root.innerHTML = `
+    <div class="panel">
+      <div class="panel-head">
+        <h2>大人面板　<small>${profile ? '目前：' + escapeHtml(profile.name) : '尚未選人'}</small></h2>
+        <button class="panel-close" id="panel-close">關閉</button>
+      </div>
+      <div class="panel-row panel-users">
+        <b>使用者</b>${usersHtml}
+      </div>
+      ${profile ? `
+      <div class="panel-row">
+        <div>目前出題階級：<b>${effectiveTier(state) + 1}</b> / 6（${TIER_LABELS[effectiveTier(state)]}）</div>
+        <div>自動判定：第 <b>${state.tier + 1}</b> 階
+          <button class="mini" id="tier-down" title="降一階" ${state.tier <= 0 ? 'disabled' : ''}>−</button>
+          <button class="mini" id="tier-up" title="跳一階" ${state.tier >= TIERS.length - 1 ? 'disabled' : ''}>＋</button>
+          ，最近 10 題 ${state.recent.filter(Boolean).length}/${state.recent.length} 對</div>
+        <div>混淆中：${confusions.length ? confusions.map(k => k.replace('|', '／')).join('、') : '沒有'}</div>
+      </div>
+      <div class="panel-row panel-difficulty">
+        <label>難度
+          <select id="sel-tier">
+            <option value="" ${state.lockTier == null ? 'selected' : ''}>自動（連對升、連錯降）</option>
+            ${TIERS.map((t, i) => `<option value="${i}" ${state.lockTier === i ? 'selected' : ''}>鎖在第 ${i + 1} 階：${t.options} 選項、${DISTRACT_LABEL[t.distract]}干擾、${HINT_LABEL[t.hint]}</option>`).join('')}
+          </select>
+        </label>
+        <div class="range-pick">
+          <label><input type="checkbox" id="range-auto" ${!(state.rangeGroups && state.rangeGroups.length) ? 'checked' : ''}> 範圍自動解鎖</label>
+          <label class="${(state.rangeGroups && state.rangeGroups.length) ? 'dimmed' : ''}">已解鎖到第
+            <select id="sel-unlocked" ${(state.rangeGroups && state.rangeGroups.length) ? 'disabled' : ''}>
+              ${GROUPS.map((g, i) => `<option value="${i + 1}" ${unlockedCount(state) === i + 1 ? 'selected' : ''}>${i + 1} 組（${g.join('')}）</option>`).join('')}
+            </select>，之後照常自動往後解鎖
+          </label>
+          <span class="range-groups ${!(state.rangeGroups && state.rangeGroups.length) ? 'dimmed' : ''}">
+            ${GROUPS.map((g, i) => `<label><input type="checkbox" data-range="${i}" ${(state.rangeGroups || []).includes(i) ? 'checked' : ''}> ${g.join('')}</label>`).join('')}
+          </span>
+        </div>
+      </div>` : ''}
+      <div class="panel-row">
+        <label>語音
+          <select id="sel-voice"><option value="">自動</option>${voiceOptions}</select>
+        </label>
+        <label>語速 <input type="range" id="rng-rate" min="0.5" max="1.2" step="0.05" value="${settings.rate || 0.8}"> <span id="rate-val">${settings.rate || 0.8}</span></label>
+        ${profile ? `
+        <button id="btn-export">匯出進度</button>
+        <label class="file-btn">匯入進度<input type="file" id="file-import" accept=".json"></label>
+        <button id="btn-reset" class="danger">清除練習紀錄</button>` : ''}
+        <span id="panel-msg" class="panel-msg"></span>
+      </div>
+      <p class="panel-hint">點符號可以試聽。「認得」勾起來的符號從 3 星起算並直接進入出題。每格右下方的字是語音合成實際唸的代表字，唸得怪可以改。</p>
+      ${profile ? groupsHtml : '<p class="panel-hint">先回選人畫面選一個人，才看得到進度。</p>'}
+    </div>`
+
+  root.querySelector('#panel-close').onclick = onClose
+  root.querySelectorAll('[data-say]').forEach(b => { b.onclick = () => onSay(b.dataset.say) })
+  root.querySelectorAll('[data-known]').forEach(cb => {
+    cb.onchange = () => onKnownChange(cb.dataset.known, cb.checked)
+  })
+  root.querySelectorAll('[data-rep]').forEach(inp => {
+    inp.onchange = () => {
+      const repChar = { ...(settings.repChar || {}) }
+      const v = inp.value.trim()
+      if (v && v !== REP_CHAR[inp.dataset.rep]) repChar[inp.dataset.rep] = v
+      else delete repChar[inp.dataset.rep]
+      onSettings({ ...settings, repChar })
+    }
+  })
+  root.querySelector('#sel-voice').onchange = e => onSettings({ ...settings, voiceName: e.target.value })
+  const rng = root.querySelector('#rng-rate')
+  rng.oninput = () => { root.querySelector('#rate-val').textContent = rng.value }
+  rng.onchange = () => onSettings({ ...settings, rate: parseFloat(rng.value) })
+  if (profile) {
+    root.querySelector('#sel-tier').onchange = e => {
+      onStateChange({ lockTier: e.target.value === '' ? null : parseInt(e.target.value, 10) })
+    }
+    root.querySelector('#tier-down').onclick = () => onStateChange({ tier: Math.max(0, state.tier - 1), recent: [] })
+    root.querySelector('#tier-up').onclick = () => onStateChange({ tier: Math.min(TIERS.length - 1, state.tier + 1), recent: [] })
+    root.querySelector('#sel-unlocked').onchange = e => onStateChange({ unlockedUpTo: parseInt(e.target.value, 10) })
+    const readRange = () => [...root.querySelectorAll('[data-range]:checked')].map(cb => parseInt(cb.dataset.range, 10))
+    root.querySelector('#range-auto').onchange = e => {
+      if (e.target.checked) onStateChange({ rangeGroups: null })
+      else onStateChange({ rangeGroups: readRange().length ? readRange() : [0] })
+    }
+    root.querySelectorAll('[data-range]').forEach(cb => {
+      cb.onchange = () => onStateChange({ rangeGroups: readRange() })
+    })
+    root.querySelector('#btn-export').onclick = onExport
+    armButton(root.querySelector('#btn-reset'), '確定清除？星星和混淆紀錄會歸零，認得與難度設定保留', onResetProgress)
+    root.querySelector('#file-import').onchange = e => {
+      const f = e.target.files[0]
+      if (!f) return
+      const reader = new FileReader()
+      reader.onload = () => onImport(String(reader.result))
+      reader.readAsText(f)
+    }
+  }
+  root.querySelectorAll('[data-remove]').forEach(btn => {
+    armButton(btn, '確定刪除？連進度一起刪', () => onRemoveProfile(btn.dataset.remove))
+  })
+}
+
+function panelMessage (root, text) {
+  const el = root.querySelector('#panel-msg')
+  if (el) el.textContent = text
+}
+
+// ===== main.js =====
+// 把所有模組接起來：使用者、狀態、出題、三種玩法、畫面切換。
+
+
+const SETTINGS_KEY = 'zhuyin-rescue-settings'
+const MEMORY_PAIRS = 5
+
+function loadSettings () {
+  try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {} } catch (err) { return {} }
+}
+function saveSettings (s) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)) }
+
+function main () {
+  const stage = document.getElementById('stage')
+  fitStage(stage)
+  window.addEventListener('resize', () => fitStage(stage))
+
+  const store = createStore(localStorage)
+  let settings = loadSettings()
+  const audio = createAudio(() => settings)
+
+  let profile = null
+  let state = null
+
+  const profilesEl = document.getElementById('screen-profiles')
+  const homeEl = document.getElementById('screen-home')
+  const gameEl = document.getElementById('screen-game')
+  const resultEl = document.getElementById('screen-result')
+  const panelEl = document.getElementById('screen-panel')
+
+  // ---- 選人 ----
+  function goProfiles () {
+    renderProfiles(profilesEl, {
+      profiles: store.loadProfiles(),
+      onPick (id) { audio.unlock(); pickProfile(id) },
+      onAdd (info) { audio.unlock(); const p = store.addProfile(info); pickProfile(p.id) },
+      onGear: gearTap,
+    })
+    showScreen('profiles')
+  }
+
+  function pickProfile (id) {
+    const profiles = store.loadProfiles()
+    profile = profiles.list.find(p => p.id === id)
+    if (!profile) return goProfiles()
+    store.setCurrent(id)
+    state = store.load(id)
+    goHome()
+  }
+
+  // ---- 首頁 ----
+  function goHome () {
+    destroyGame()
+    renderHome(homeEl, { profile })
+    homeEl.querySelector('#btn-who').addEventListener('pointerdown', goProfiles)
+    homeEl.querySelectorAll('[data-game]').forEach(card => {
+      card.addEventListener('pointerdown', () => { audio.unlock(); startGame(card.dataset.game) })
+    })
+    homeEl.querySelector('#btn-gear').addEventListener('pointerdown', gearTap)
+    showScreen('home')
+  }
+
+  // 齒輪 2 秒內連點三下才開大人面板。每點一下齒輪旁顯示還差幾下，讓大人知道它沒壞。
+  let gearTaps = []
+  let gearHintTimer = null
+  function gearTap (e) {
+    const now = Date.now()
+    gearTaps = gearTaps.filter(t => now - t < 2000)
+    gearTaps.push(now)
+    if (gearTaps.length >= 3) { gearTaps = []; hideGearHint(); openPanel(); return }
+    const gear = e.currentTarget
+    let hint = gear.parentElement.querySelector('.gear-hint')
+    if (!hint) {
+      hint = document.createElement('div')
+      hint.className = 'gear-hint'
+      gear.parentElement.appendChild(hint)
+    }
+    hint.textContent = '再點 ' + (3 - gearTaps.length) + ' 下進家長區'
+    clearTimeout(gearHintTimer)
+    gearHintTimer = setTimeout(hideGearHint, 2000)
+  }
+  function hideGearHint () {
+    document.querySelectorAll('.gear-hint').forEach(el => el.remove())
+  }
+
+  // ---- 遊戲共用 ----
+  const playArea = gameEl.querySelector('.play-area')
+  const starsEl = gameEl.querySelector('.progress-stars')
+  const replayBtn = gameEl.querySelector('#btn-replay')
+  let game = null
+  let kind = null
+  let earned = []
+  let starTotal = 5
+
+  function setStars () {
+    starsEl.innerHTML = ''
+    for (let i = 0; i < starTotal; i++) {
+      const s = document.createElement('span')
+      s.className = 'star' + (i < earned.length ? (earned[i] ? ' lit' : ' dim') : '')
+      s.textContent = '★'
+      starsEl.appendChild(s)
+    }
+  }
+
+  function destroyGame () {
+    if (game) game.destroy()
+    game = null
+    audio.stop()
+  }
+
+  function startGame (which) {
+    destroyGame()
+    kind = which
+    earned = []
+    showScreen('game')
+    if (which === 'memory') return runMemory()
+    runQuestions(which)
+  }
+
+  gameEl.querySelector('#btn-quit').addEventListener('pointerdown', () => { busy = false; goHome() })
+
+  function commit (answer) {
+    state = recordAnswer(state, answer)
+    store.save(profile.id, state)
+  }
+
+  function finishRound () {
+    destroyGame()
+    renderResult(resultEl, profile.color)
+    resultEl.querySelector('#btn-again').addEventListener('pointerdown', () => startGame(kind))
+    resultEl.querySelector('#btn-home').addEventListener('pointerdown', goHome)
+    showScreen('result')
+    audio.cheer()
+    playResult(resultEl, earned)
+  }
+
+  // ---- 釣魚、餵狗狗：聽音選形 ----
+  let round = []
+  let index = 0
+  let firstAttempt = true
+  let askedAt = 0
+  let busy = false
+
+  function runQuestions (which) {
+    game = which === 'feeding'
+      ? createFeeding(playArea, { color: profile.color })
+      : createFishing(playArea, { color: profile.color })
+    replayBtn.classList.remove('hidden')
+    round = buildRound(state, Math.random)
+    index = 0
+    starTotal = round.length
+    setStars()
+    game.onAnswer(onPick)
+    askQuestion()
+  }
+
+  // 聲音一出來就開放點擊，不等唸完；提示晃動等唸完才開始
+  async function askQuestion () {
+    const q = round[index]
+    const myIndex = index
+    const myGame = game
+    firstAttempt = true
+    busy = true
+    game.start(q)
+    game.lock()
+    await wait(350)
+    let opened = false
+    const open = () => {
+      if (opened || index !== myIndex || game !== myGame) return
+      opened = true
+      game.unlock()
+      askedAt = Date.now()
+      busy = false
+    }
+    await audio.say(q.target, { onStart: open })
+    open()
+    if (index === myIndex && game === myGame) game.hint(q.hint)
+  }
+
+  replayBtn.addEventListener('pointerdown', () => {
+    if (busy || kind === 'memory' || !round[index]) return
+    audio.say(round[index].target)
+  })
+
+  async function onPick (symbol) {
+    if (busy) return
+    const q = round[index]
+    const ms = Date.now() - askedAt
+    if (symbol === q.target) {
+      busy = true
+      game.lock()
+      if (firstAttempt) commit({ target: q.target, ok: true, picked: symbol, ms, drill: q.drill })
+      earned.push(firstAttempt)
+      setStars()
+      audio.stop()
+      if (kind === 'feeding') audio.crunch(); else audio.splash()
+      await game.celebrate(symbol)
+      if (!game) return // 中途按了回首頁
+      audio.ding()
+      await wait(250)
+      if (!game) return
+      index++
+      if (index >= round.length) return finishRound()
+      askQuestion()
+      return
+    }
+    // 答錯：第一次才記錄；選項晃、狗狗歪頭、正確的開始閃
+    if (firstAttempt) {
+      commit({ target: q.target, ok: false, picked: symbol, ms, drill: q.drill })
+      firstAttempt = false
+    }
+    audio.wrong()
+    game.shake(symbol)
+    game.sad()
+    game.flashCorrect()
+  }
+
+  // ---- 翻牌：配對，不記進度 ----
+  function runMemory () {
+    game = createMemory(playArea)
+    replayBtn.classList.add('hidden')
+    const symbols = pickSymbols(state, Math.random, MEMORY_PAIRS)
+    starTotal = symbols.length
+    setStars()
+    game.onFlip(sym => { audio.flip(); audio.say(sym) })
+    game.onPair(() => { earned.push(true); setStars(); audio.ding() })
+    game.onDone(finishRound)
+    game.start(symbols)
+  }
+
+  // ---- 大人面板 ----
+  function openPanel () {
+    destroyGame()
+    renderPanel(panelEl, {
+      profile,
+      profiles: store.loadProfiles(),
+      state,
+      settings,
+      voices: audio.listVoices(),
+      onKnownChange (symbol, checked) {
+        const known = state.known.filter(s => s !== symbol)
+        if (checked) known.push(symbol)
+        state = { ...state, known }
+        store.save(profile.id, state)
+        openPanel()
+      },
+      onSettings (next) {
+        settings = next
+        saveSettings(settings)
+        openPanel()
+      },
+      onStateChange (partial) {
+        state = { ...state, ...partial }
+        store.save(profile.id, state)
+        openPanel()
+      },
+      onExport () {
+        const blob = new Blob([store.exportJson(state)], { type: 'application/json' })
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(blob)
+        a.download = 'zhuyin-rescue-' + profile.name + '.json'
+        a.click()
+      },
+      onImport (text) {
+        try {
+          state = store.importJson(text)
+          store.save(profile.id, state)
+          openPanel()
+        } catch (err) {
+          panelMessage(panelEl, '匯入失敗：' + err.message)
+        }
+      },
+      onResetProgress () {
+        state = resetProgress(state)
+        store.save(profile.id, state)
+        openPanel()
+      },
+      onRemoveProfile (id) {
+        store.removeProfile(id)
+        if (profile && profile.id === id) {
+          profile = null
+          state = null
+        }
+        openPanel()
+      },
+      onClose () { profile ? goHome() : goProfiles() },
+      onSay (symbol) { audio.say(symbol) },
+    })
+    showScreen('panel')
+  }
+
+  // 開機：有記住上次的人就直接進首頁，否則選人
+  const profiles = store.loadProfiles()
+  if (profiles.current && profiles.list.some(p => p.id === profiles.current)) {
+    pickProfile(profiles.current)
+  } else {
+    goProfiles()
+  }
+}
+
+function wait (ms) { return new Promise(r => setTimeout(r, ms)) }
+
+document.addEventListener('DOMContentLoaded', main)
+
+</script>
+</body>
+</html>
