@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { SYMBOLS, GROUPS, REP_CHAR, SIMILAR_SHAPE, SIMILAR_SOUND } from '../src/data.js';
+import { SYMBOLS, GROUPS, REP_CHAR, SIMILAR_SHAPE, SIMILAR_SOUND, SPEAK_ACCEPT } from '../src/data.js';
 
 test('有 37 個不重複的注音符號', () => {
   assert.equal(SYMBOLS.length, 37);
@@ -31,5 +31,12 @@ test('形似、音似對的兩端都在符號表內', () => {
     assert.ok(SYMBOLS.includes(a), `${a} 不在表內`);
     assert.ok(SYMBOLS.includes(b), `${b} 不在表內`);
     assert.notEqual(a, b);
+  }
+});
+
+test('每個符號都有一組「唸對」可接受的同音字', () => {
+  for (const s of SYMBOLS) {
+    assert.equal(typeof SPEAK_ACCEPT[s], 'string', `${s} 沒有同音字表`);
+    assert.ok(SPEAK_ACCEPT[s].length >= 1, `${s} 同音字表是空的`);
   }
 });

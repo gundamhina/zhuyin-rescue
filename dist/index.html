@@ -71,10 +71,12 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .who-avatar .dog { width: 74px; height: 86px; margin-bottom: -6px; }
 .who-avatar .rod { display: none; }
 .who-name { font-size: 34px; font-weight: 900; color: #2B3A4A; }
-.cards { position: absolute; left: 0; right: 0; top: 170px; display: flex; justify-content: center; align-items: flex-end; gap: 54px; }
-.card { position: relative; width: 300px; height: 400px; border-radius: 40px; background: #fff; border: 8px solid #fff; overflow: hidden; box-shadow: 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,0.22); transition: transform .12s, box-shadow .12s; }
+.cards { position: absolute; left: 0; right: 0; top: 190px; display: flex; justify-content: center; align-items: flex-end; gap: 34px; }
+.card { position: relative; width: 250px; height: 334px; border-radius: 34px; background: #fff; border: 8px solid #fff; overflow: hidden; box-shadow: 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,0.22); transition: transform .12s, box-shadow .12s; }
 .card:nth-child(1) { transform: rotate(-3deg); }
-.card:nth-child(3) { transform: rotate(3deg); }
+.card:nth-child(2) { transform: rotate(-1deg); }
+.card:nth-child(3) { transform: rotate(1deg); }
+.card:nth-child(4) { transform: rotate(3deg); }
 .card:active { transform: translateY(10px) scale(0.98); box-shadow: 0 4px 0 #A9BFCF; }
 .card.locked .card-pic { filter: grayscale(0.9) brightness(0.9); opacity: 0.55; }
 .card-pic { width: 100%; height: 100%; border-radius: 30px; overflow: hidden; }
@@ -182,26 +184,6 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .card-pic { position: relative; }
 .home-sky, .result-bg, .play-area { position: absolute; }
 
-/* ---- 餵狗狗 ---- */
-.feed-dog { left: 120px; top: 170px; width: 360px; height: 415px; }
-.feed-dog .dog { width: 360px; height: 415px; }
-.feed-dog .dog-slot .art-slot { width: 360px; height: 415px; }
-.feed-dog.chomp { animation: chomp .6s ease-out; }
-@keyframes chomp { 0% { transform: scale(1); } 30% { transform: scale(1.08) translateY(-16px); } 55% { transform: scale(0.97) translateY(4px); } 100% { transform: scale(1); } }
-.bowl { position: absolute; left: 170px; top: 590px; pointer-events: none; }
-.biscuits { position: absolute; inset: 0; }
-.biscuit { position: absolute; width: 180px; height: 96px; display: flex; align-items: center; justify-content: center; touch-action: none; cursor: grab; filter: drop-shadow(0 8px 0 rgba(60,40,20,0.28)) drop-shadow(0 0 2px rgba(60,40,20,0.5)); animation: bob 2.8s ease-in-out infinite; }
-.biscuit .bone-art { position: absolute; left: 0; top: 0; }
-.biscuit span { position: relative; font-size: 60px; font-weight: 900; color: #2B3A4A; line-height: 1; pointer-events: none; }
-.biscuit.dragging { animation: none; cursor: grabbing; z-index: 6; filter: drop-shadow(0 14px 10px rgba(0,0,0,0.25)); transform: scale(1.08); }
-.biscuit.returning { transition: left .3s ease-out, top .3s ease-out; animation: none; }
-.biscuit.hint-loop .bone-art, .biscuit.hint-once .bone-art { animation: glow 1.2s ease-in-out infinite; }
-.biscuit.hint-once .bone-art { animation-iteration-count: 1; }
-@keyframes glow { 0%,100% { filter: none; } 50% { filter: drop-shadow(0 0 14px #E8C86A) drop-shadow(0 0 4px #E8C86A); } }
-.biscuit.shake { animation: shake .45s ease-in-out; }
-.biscuit.eaten { transition: left .45s ease-in, top .45s ease-in, transform .45s ease-in, opacity .2s .4s; transform: scale(0.3); animation: none; z-index: 6; }
-.biscuit.gone { opacity: 0; }
-
 /* ---- 翻牌 ---- */
 .cards-grid { position: absolute; inset: 0; }
 .mcard { position: absolute; width: 190px; height: 230px; perspective: 900px; cursor: pointer; animation: dealIn .4s ease-out both; }
@@ -214,6 +196,37 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .mcard-front span { font-size: 120px; font-weight: 900; color: #2B3A4A; line-height: 1; }
 .mcard.matched .mcard-front { background: #F6E7C8; box-shadow: 0 0 0 10px rgba(232,200,106,0.7), 0 10px 0 rgba(0,0,0,0.12); }
 .mcard.matched { animation: pop .5s; }
+
+/* ---- 打地鼠 ---- */
+.whack-dog { left: 30px; top: 90px; width: 260px; height: 300px; }
+.holes { position: absolute; inset: 0; }
+.hole { position: absolute; width: 220px; height: 200px; overflow: hidden; clip-path: inset(-60px 0 0 0); }
+.hole-back { position: absolute; left: 20px; top: 110px; width: 180px; height: 70px; border-radius: 50%; background: #3E2A1A; box-shadow: inset 0 10px 14px rgba(0,0,0,0.5); }
+.hole-front { position: absolute; left: 10px; top: 150px; width: 200px; height: 50px; border-radius: 50%; background: #6E9C58; pointer-events: none; }
+.mole { position: absolute; left: 40px; top: 145px; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFFDF7, #F6E7C8 60%, #E2C89A); box-shadow: 0 6px 0 rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; transform: translateY(160px) scale(0.9); transition: transform .28s cubic-bezier(.3,1.4,.5,1); cursor: pointer; }
+.mole.up { transform: translateY(-140px) scale(1); }
+.mole span { font-size: 92px; font-weight: 900; color: #2B3A4A; line-height: 1; pointer-events: none; }
+.mole.hint-loop { animation: wiggle 1.2s ease-in-out infinite; }
+.mole.shake { animation: shake .45s ease-in-out; }
+.mole.hit { background: radial-gradient(circle at 35% 30%, #FFF6C8, #E8C86A 60%, #B99A44); animation: pop .5s; }
+
+/* ---- 唸給狗狗聽 ---- */
+.speak-dog { left: 110px; top: 250px; width: 360px; height: 415px; }
+.speak-dog .dog { width: 360px; height: 415px; }
+.speak-dog .dog-slot .art-slot { width: 360px; height: 415px; }
+.speak-dog.listening { animation: listenBob 1s ease-in-out infinite; }
+@keyframes listenBob { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+.sign { position: absolute; left: 520px; top: 150px; width: 300px; }
+.sign-board { width: 300px; height: 300px; border-radius: 36px; background: #FFFDF7; border: 10px solid #B08A63; box-shadow: 0 12px 0 #8E6D4C, 0 20px 30px rgba(0,0,0,0.18); display: flex; align-items: center; justify-content: center; transition: box-shadow .3s; }
+.sign-board span { font-size: 210px; font-weight: 900; color: #2B3A4A; line-height: 1; }
+.sign-post { width: 28px; height: 160px; margin: -6px auto 0; background: #B08A63; border-radius: 6px; }
+.sign.glow .sign-board { box-shadow: 0 0 0 18px rgba(232,200,106,0.75), 0 12px 0 #8E6D4C; }
+.heard { position: absolute; left: 520px; top: 630px; width: 300px; text-align: center; font-size: 30px; color: #5A6B85; opacity: 0; transition: opacity .3s; }
+.heard.show { opacity: 1; }
+.mic-btn { position: absolute; left: 920px; top: 300px; width: 200px; height: 200px; border-radius: 50%; background: #C8553D; border: 10px solid #F6F3E6; box-shadow: 0 12px 0 #96402D, 0 20px 30px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; transition: transform .1s, box-shadow .1s; }
+.mic-btn:active { transform: translateY(8px); box-shadow: 0 4px 0 #96402D; }
+.mic-btn.listening { animation: micPulse 1s ease-in-out infinite; background: #E0955B; }
+@keyframes micPulse { 0%,100% { box-shadow: 0 12px 0 #B07242, 0 0 0 0 rgba(224,149,91,0.6); } 50% { box-shadow: 0 12px 0 #B07242, 0 0 0 30px rgba(224,149,91,0); } }
 
 </style>
 </head>
@@ -287,6 +300,21 @@ const SIMILAR_SOUND = [
   ['ㄅ', 'ㄆ'], ['ㄉ', 'ㄊ'], ['ㄍ', 'ㄎ'], ['ㄓ', 'ㄔ'], ['ㄗ', 'ㄘ'],
   ['ㄣ', 'ㄥ'], ['ㄛ', 'ㄡ'], ['ㄝ', 'ㄟ'], ['ㄋ', 'ㄌ'], ['ㄕ', 'ㄙ'], ['ㄓ', 'ㄗ'],
 ]
+
+// 「唸給狗狗聽」用：語音辨識回來的字裡，出現這些字任何一個就算唸對（不分聲調）。
+// 聲符照教學唸法：ㄅ 唸「玻」、ㄉ 唸「得」、ㄐ 唸「基」、ㄓㄔㄕㄖㄗㄘㄙ 唸本音。
+const SPEAK_ACCEPT = {
+  ㄅ: '玻波播剝菠伯博撥泊薄', ㄆ: '坡婆破頗潑撲迫魄', ㄇ: '摸磨摩魔莫墨末抹', ㄈ: '佛否弗',
+  ㄉ: '得德的地', ㄊ: '特忑', ㄋ: '訥呢那哪', ㄌ: '勒樂了',
+  ㄍ: '哥歌割戈鴿', ㄎ: '科柯可克課', ㄏ: '喝河荷合何和',
+  ㄐ: '基機雞積幾記', ㄑ: '欺七妻期起氣', ㄒ: '希西吸系細',
+  ㄓ: '知之支只織', ㄔ: '吃遲池尺赤', ㄕ: '詩師十是時失', ㄖ: '日',
+  ㄗ: '資子字自紫', ㄘ: '雌次詞刺此', ㄙ: '思四絲死斯',
+  ㄚ: '阿啊', ㄛ: '喔哦噢', ㄜ: '鵝餓額惡', ㄝ: '耶也誒',
+  ㄞ: '哀愛唉矮', ㄟ: '欸誒', ㄠ: '凹熬奧澳', ㄡ: '歐偶噢嘔',
+  ㄢ: '安按暗案', ㄣ: '恩嗯', ㄤ: '昂', ㄥ: '鞥嗯', ㄦ: '兒二耳而爾',
+  ㄧ: '衣一醫以已', ㄨ: '烏五屋無物', ㄩ: '迂魚雨玉語',
+}
 
 // ===== scheduler.js =====
 // 出題邏輯：熟練度、解鎖、加權出題、混淆對加練、階級升降。
@@ -956,25 +984,37 @@ function cardArt (kind) {
   <text x="200" y="322" text-anchor="middle" font-size="64" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄅ</text>
 </svg>`
   }
-  if (kind === 'feeding') {
-    return `<img class="art-slot" src="img/card-feeding.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+  if (kind === 'whack') {
+    return `<img class="art-slot" src="img/card-whack.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="wsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6F9FD0"/><stop offset="1" stop-color="#DCEBF2"/></linearGradient></defs>
+  <rect width="300" height="400" fill="url(#wsky)"/>
+  ${cloud(80, 70, 0.4)}
+  <rect y="170" width="300" height="230" fill="#8DBB74"/>
+  <path d="M0 170 q75 -30 150 0 t150 0 v20 H0z" fill="#7FAF6E"/>
+  <ellipse cx="80" cy="260" rx="52" ry="22" fill="#5A4030"/>
+  <ellipse cx="150" cy="340" rx="52" ry="22" fill="#5A4030"/>
+  <rect x="180" y="190" width="80" height="80" rx="40" fill="#F6E7C8"/>
+  <text x="220" y="250" text-anchor="middle" font-size="56" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄇ</text>
+  <ellipse cx="220" cy="262" rx="56" ry="14" fill="#3E2A1A"/>
+</svg>`
+  }
+  if (kind === 'speak') {
+    return `<img class="art-slot" src="img/card-speak.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#F3E4C2"/>
   <path d="M0 300 h300 v100 H0z" fill="#8DBB74"/>
-  <ellipse cx="150" cy="330" rx="90" ry="26" fill="#C8553D"/>
-  <ellipse cx="150" cy="322" rx="70" ry="16" fill="#96402D"/>
-  <circle cx="150" cy="180" r="70" fill="#C99A63"/>
-  <ellipse cx="150" cy="212" rx="40" ry="26" fill="#F1DFC0"/>
-  <ellipse cx="86" cy="190" rx="26" ry="48" fill="#6E4522" transform="rotate(14 86 190)"/>
-  <ellipse cx="214" cy="190" rx="26" ry="48" fill="#6E4522" transform="rotate(-14 214 190)"/>
-  <ellipse cx="128" cy="170" rx="10" ry="12" fill="#2B1D12"/><ellipse cx="172" cy="170" rx="10" ry="12" fill="#2B1D12"/>
-  <path d="M150 226 q-20 0 -20 -10 h40 q0 10 -20 10z" fill="#2B1D12"/>
-  <path d="M138 234 q12 22 24 0" fill="#D97F8A"/>
-  <g fill="#F6F3E6">
-    <rect x="110" y="270" width="80" height="24" rx="12"/>
-    <circle cx="110" cy="274" r="12"/><circle cx="110" cy="290" r="12"/><circle cx="190" cy="274" r="12"/><circle cx="190" cy="290" r="12"/>
-  </g>
-  <text x="150" y="290" text-anchor="middle" font-size="24" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄇ</text>
+  <circle cx="110" cy="230" r="60" fill="#C99A63"/>
+  <ellipse cx="110" cy="258" rx="34" ry="22" fill="#F1DFC0"/>
+  <ellipse cx="56" cy="240" rx="22" ry="42" fill="#6E4522" transform="rotate(14 56 240)"/>
+  <ellipse cx="164" cy="240" rx="22" ry="42" fill="#6E4522" transform="rotate(-14 164 240)"/>
+  <ellipse cx="92" cy="222" rx="9" ry="11" fill="#2B1D12"/><ellipse cx="128" cy="222" rx="9" ry="11" fill="#2B1D12"/>
+  <path d="M110 270 q-16 0 -16 -8 h32 q0 8 -16 8z" fill="#2B1D12"/>
+  <path d="M170 90 h100 a16 16 0 0 1 16 16 v70 a16 16 0 0 1 -16 16 h-60 l-30 26 v-26 h-10 a16 16 0 0 1 -16 -16 v-70 a16 16 0 0 1 16 -16z" fill="#FFFDF7"/>
+  <text x="220" y="158" text-anchor="middle" font-size="60" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄚ</text>
+  <rect x="210" y="250" width="40" height="70" rx="20" fill="#4A6FA5"/>
+  <path d="M196 300 a34 34 0 0 0 68 0" stroke="#4A6FA5" stroke-width="10" fill="none"/>
+  <rect x="224" y="330" width="12" height="30" fill="#4A6FA5"/>
 </svg>`
   }
   return `<img class="art-slot" src="img/card-memory.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
@@ -1117,150 +1157,139 @@ function createFishing (root, { color = 0 } = {}) {
   return { start, unlock, lock, hint, shake, flashCorrect, celebrate, sad, onAnswer, destroy }
 }
 
-// ===== feeding.js =====
-// 餵狗狗玩法。骨頭餅乾印著符號，拖到狗狗嘴邊才算答；對錯判斷交給 main.js。
+// ===== whack.js =====
+// 打地鼠玩法。符號一個一個從洞裡冒出來又縮回去，狗狗喊一個音，拍到對的就過關。
+// 不計時、不扣分：沒拍到就等它下次再冒出來，拍錯才算錯（交給 main.js 記錄）。
 // 介面跟釣魚一樣：start、lock/unlock、hint、shake、flashCorrect、celebrate、sad、onAnswer、destroy。
 
 
-// 狗狗嘴巴附近的落點（舞台座標）
-const MOUTH = { x: 300, y: 400, r: 150 }
-// 各選項數的餅乾位置（中心點）
-const BONE_SLOTS = {
-  2: [[700, 640], [980, 640]],
-  3: [[620, 640], [840, 640], [1060, 640]],
-  4: [[620, 560], [860, 560], [740, 700], [980, 700]],
-  5: [[600, 560], [840, 560], [1080, 560], [720, 700], [960, 700]],
-  6: [[600, 560], [840, 560], [1080, 560], [600, 700], [840, 700], [1080, 700]],
+const HOLES = [[330, 430], [600, 430], [870, 430], [460, 620], [730, 620], [1000, 620]]
+const UP_MS = 1700 // 冒出來停多久
+const GAP_MS = 350 // 縮回去到下一個冒出來
+
+function shuffleList (arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
 }
 
-function boneHtml (symbol) {
-  return `
-<svg class="bone-art" viewBox="0 0 180 96" width="180" height="96" xmlns="http://www.w3.org/2000/svg">
-  <rect x="34" y="30" width="112" height="36" rx="18" fill="#F6E7C8"/>
-  <circle cx="36" cy="30" r="22" fill="#F6E7C8"/><circle cx="36" cy="66" r="22" fill="#F6E7C8"/>
-  <circle cx="144" cy="30" r="22" fill="#F6E7C8"/><circle cx="144" cy="66" r="22" fill="#F6E7C8"/>
-  <path d="M34 30 h112 M34 66 h112" stroke="#E2C89A" stroke-width="3" fill="none"/>
-</svg>
-<span>${symbol}</span>`
-}
-
-function createFeeding (root, { color = 0 } = {}) {
+function createWhack (root, { color = 0 } = {}) {
   root.innerHTML = homeBgSvg() +
-    `<svg class="bowl" viewBox="0 0 260 90" width="260" height="90" xmlns="http://www.w3.org/2000/svg">
-       <ellipse cx="130" cy="60" rx="120" ry="28" fill="#C8553D"/>
-       <ellipse cx="130" cy="52" rx="96" ry="18" fill="#96402D"/>
-       <ellipse cx="130" cy="76" rx="120" ry="12" fill="#3E6A34" opacity="0.35"/>
-     </svg>` +
-    '<div class="dog-wrap feed-dog">' + dogSvg(color) + '</div>' +
-    '<div class="biscuits"></div>'
-  // 碗畫在狗狗前面
-  root.appendChild(root.querySelector('.bowl'))
-  const biscuitsEl = root.querySelector('.biscuits')
-  const dogWrap = root.querySelector('.feed-dog')
+    '<div class="dog-wrap whack-dog">' + dogSvg(color) + '</div>' +
+    '<div class="holes">' + HOLES.map(([x, y]) => `
+      <div class="hole" style="left:${x - 110}px;top:${y - 90}px">
+        <div class="hole-back"></div>
+        <div class="mole"><span></span></div>
+        <div class="hole-front"></div>
+      </div>`).join('') + '</div>'
+  const dogWrap = root.querySelector('.whack-dog')
+  const holes = [...root.querySelectorAll('.hole')]
   let handler = null
   let locked = true
   let current = null
-  let drag = null
+  let running = false
+  let timer = null
+  let queue = []
+  let lastHole = -1
+  let glowTarget = false
+  let glowOnce = false
+  let upMole = null // 目前冒出來的那一個
 
-  function stageScale () {
-    const stage = document.getElementById('stage')
-    return stage.getBoundingClientRect().width / 1200
-  }
+  root.addEventListener('pointerdown', e => {
+    const mole = e.target.closest('.mole')
+    if (!mole || locked || !handler || !mole.classList.contains('up')) return
+    handler(mole.dataset.symbol, mole)
+  })
 
-  biscuitsEl.addEventListener('pointerdown', e => {
-    const b = e.target.closest('.biscuit')
-    if (!b || locked) return
-    drag = { b, startX: e.clientX, startY: e.clientY, ox: parseFloat(b.style.left), oy: parseFloat(b.style.top), moved: false }
-    b.classList.add('dragging')
-    try { b.setPointerCapture(e.pointerId) } catch (err) { /* 有些裝置不給鎖指標，靠 biscuits 容器接 move 也能拖 */ }
-  })
-  biscuitsEl.addEventListener('pointermove', e => {
-    if (!drag) return
-    const s = stageScale()
-    const dx = (e.clientX - drag.startX) / s
-    const dy = (e.clientY - drag.startY) / s
-    if (Math.abs(dx) + Math.abs(dy) > 6) drag.moved = true
-    drag.b.style.left = (drag.ox + dx) + 'px'
-    drag.b.style.top = (drag.oy + dy) + 'px'
-  })
-  function endDrag (e) {
-    if (!drag) return
-    const { b, ox, oy } = drag
-    drag = null
-    b.classList.remove('dragging')
-    const cx = parseFloat(b.style.left) + 90
-    const cy = parseFloat(b.style.top) + 48
-    const inMouth = Math.hypot(cx - MOUTH.x, cy - MOUTH.y) < MOUTH.r
-    if (inMouth && handler) {
-      handler(b.dataset.symbol, b)
-      return
+  // 出場順序：干擾項隨機，目標排在第 2 個，之後每 3 個出現一次
+  function refill () {
+    const distractors = shuffleList(current.options.filter(s => s !== current.target))
+    const seq = []
+    let d = 0
+    for (let i = 0; i < 9; i++) {
+      if (i % 3 === 1) seq.push(current.target)
+      else { seq.push(distractors[d % distractors.length]); d++ }
     }
-    // 沒放到嘴邊：滑回原位
-    b.classList.add('returning')
-    b.style.left = ox + 'px'
-    b.style.top = oy + 'px'
-    setTimeout(() => b.classList.remove('returning'), 350)
+    queue.push(...seq)
   }
-  biscuitsEl.addEventListener('pointerup', endDrag)
-  biscuitsEl.addEventListener('pointercancel', endDrag)
+
+  function popNext () {
+    if (!running) return
+    if (!queue.length) refill()
+    const sym = queue.shift()
+    let idx = Math.floor(Math.random() * holes.length)
+    if (idx === lastHole) idx = (idx + 1) % holes.length
+    lastHole = idx
+    const mole = holes[idx].querySelector('.mole')
+    mole.dataset.symbol = sym
+    mole.querySelector('span').textContent = sym
+    mole.classList.remove('shake', 'hit', 'hint-loop')
+    if (sym === current.target && (glowTarget || glowOnce)) {
+      mole.classList.add('hint-loop')
+      glowOnce = false
+    }
+    mole.classList.add('up')
+    upMole = mole
+    timer = setTimeout(() => {
+      mole.classList.remove('up')
+      upMole = null
+      timer = setTimeout(popNext, GAP_MS)
+    }, UP_MS)
+  }
+
+  function stopLoop () {
+    running = false
+    clearTimeout(timer)
+    timer = null
+  }
 
   function start (question) {
     current = question
     locked = true
-    biscuitsEl.innerHTML = ''
-    const slots = BONE_SLOTS[question.options.length] || BONE_SLOTS[6]
-    question.options.forEach((sym, i) => {
-      const [x, y] = slots[i]
-      const b = document.createElement('div')
-      b.className = 'biscuit'
-      b.dataset.symbol = sym
-      b.style.left = (x - 90) + 'px'
-      b.style.top = (y - 48) + 'px'
-      b.style.animationDelay = (i * 0.3) + 's'
-      b.innerHTML = boneHtml(sym)
-      biscuitsEl.appendChild(b)
+    queue = []
+    glowTarget = false
+    glowOnce = false
+    stopLoop()
+    holes.forEach(h => {
+      const m = h.querySelector('.mole')
+      m.classList.remove('up', 'hit', 'shake', 'hint-loop')
     })
+    upMole = null
   }
 
-  function biscuitOf (symbol) {
-    return biscuitsEl.querySelector('.biscuit[data-symbol="' + symbol + '"]')
+  function unlock () {
+    locked = false
+    if (!running) { running = true; timer = setTimeout(popNext, 200) }
   }
-  function unlock () { locked = false }
   function lock () { locked = true }
+
+  // 提示：2 每次冒出來都發光、1 第一次發光、0 不提示
   function hint (level) {
-    const b = biscuitOf(current.target)
-    if (!b) return
-    b.classList.remove('hint-once', 'hint-loop')
-    if (level >= 2) b.classList.add('hint-loop')
-    else if (level === 1) b.classList.add('hint-once')
+    if (level >= 2) glowTarget = true
+    else if (level === 1) glowOnce = true
   }
   function shake (symbol) {
-    const b = biscuitOf(symbol)
-    if (!b) return
-    // 放錯的餅乾先彈回原位再晃
-    const [x, y] = (BONE_SLOTS[current.options.length] || BONE_SLOTS[6])[current.options.indexOf(symbol)]
-    b.classList.add('returning')
-    b.style.left = (x - 90) + 'px'
-    b.style.top = (y - 48) + 'px'
-    setTimeout(() => { b.classList.remove('returning'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake') }, 300)
+    const mole = upMole && upMole.dataset.symbol === symbol ? upMole : null
+    if (!mole) return
+    mole.classList.remove('shake')
+    void mole.offsetWidth
+    mole.classList.add('shake')
   }
-  function flashCorrect () {
-    const b = biscuitOf(current.target)
-    if (b) { b.classList.remove('hint-once'); b.classList.add('hint-loop') }
-  }
-  // 吃掉：餅乾飛到嘴邊縮小消失，狗狗跳一下
+  function flashCorrect () { glowTarget = true }
+
+  // 拍到了：停止冒出，那一個彈一下留在外面
   function celebrate (symbol) {
     return new Promise(resolve => {
-      const b = biscuitOf(symbol)
-      if (!b) return resolve()
-      b.classList.remove('hint-loop', 'hint-once', 'shake')
-      b.classList.add('eaten')
-      b.style.left = (MOUTH.x - 90) + 'px'
-      b.style.top = (MOUTH.y - 48) + 'px'
+      stopLoop()
+      const mole = upMole && upMole.dataset.symbol === symbol ? upMole : null
+      if (mole) { mole.classList.remove('hint-loop'); mole.classList.add('hit') }
       dogWrap.classList.remove('jump')
       void dogWrap.offsetWidth
-      dogWrap.classList.add('chomp')
-      setTimeout(() => { b.classList.add('gone'); dogWrap.classList.remove('chomp'); resolve() }, 600)
+      dogWrap.classList.add('jump')
+      setTimeout(() => { if (mole) mole.classList.remove('up', 'hit'); resolve() }, 650)
     })
   }
   function sad () {
@@ -1269,7 +1298,7 @@ function createFeeding (root, { color = 0 } = {}) {
     dogWrap.classList.add('tilt')
   }
   function onAnswer (fn) { handler = fn }
-  function destroy () { root.innerHTML = ''; handler = null }
+  function destroy () { stopLoop(); root.innerHTML = ''; handler = null }
 
   return { start, unlock, lock, hint, shake, flashCorrect, celebrate, sad, onAnswer, destroy }
 }
@@ -1376,6 +1405,102 @@ function createMemory (root) {
   }
 }
 
+// ===== speak.js =====
+// 唸給狗狗聽。狗狗舉一張牌，她按麥克風唸出來，用瀏覽器的語音辨識判斷。
+// 辨識小孩的單音不會很準，所以 main.js 只在唸對時記錄，沒聽出來不算她錯。
+// 介面：show(symbol)、setListening(bool)、heard(text)、celebrate()、sad()、onMic(fn)、destroy。
+// 另外匯出 speechAvailable()、listen()、matchesSymbol()。
+
+
+const MIC_SVG = `<svg viewBox="0 0 24 24" width="90" height="90" fill="#fff"><path d="M12 15a4 4 0 0 0 4-4V6a4 4 0 1 0-8 0v5a4 4 0 0 0 4 4zm6-4a6 6 0 0 1-12 0H4a8 8 0 0 0 7 7.9V22h2v-3.1A8 8 0 0 0 20 11h-2z"/></svg>`
+
+function speechAvailable () {
+  return !!(window.SpeechRecognition || window.webkitSpeechRecognition)
+}
+
+// 聽一次，回傳可能的字串列表（沒聽到就是空陣列）。最多等 5 秒。
+function listen () {
+  return new Promise(resolve => {
+    const R = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!R) return resolve([])
+    const r = new R()
+    r.lang = 'zh-TW'
+    r.interimResults = false
+    r.maxAlternatives = 5
+    let done = false
+    const finish = (list) => { if (!done) { done = true; try { r.stop() } catch (err) { /* 已停 */ } resolve(list) } }
+    r.onresult = e => {
+      const alts = []
+      for (const res of e.results) for (const alt of res) alts.push(alt.transcript)
+      finish(alts)
+    }
+    r.onerror = () => finish([])
+    r.onend = () => finish([])
+    setTimeout(() => finish([]), 5000)
+    try { r.start() } catch (err) { finish([]) }
+  })
+}
+
+// 辨識結果裡出現符號本身，或它的同音字任何一個，就算唸對
+function matchesSymbol (symbol, transcripts) {
+  const accept = SPEAK_ACCEPT[symbol] || ''
+  return transcripts.some(t => {
+    const clean = String(t).replace(/[\s，。、？！,.?!]/g, '')
+    if (clean.includes(symbol)) return true
+    return [...clean].some(ch => accept.includes(ch))
+  })
+}
+
+function createSpeak (root, { color = 0 } = {}) {
+  root.innerHTML = homeBgSvg() +
+    '<div class="dog-wrap speak-dog">' + dogSvg(color) + '</div>' +
+    '<div class="sign"><div class="sign-board"><span></span></div><div class="sign-post"></div></div>' +
+    '<div class="heard"></div>' +
+    `<button class="mic-btn" aria-label="唸給狗狗聽">${MIC_SVG}</button>`
+  const dogWrap = root.querySelector('.speak-dog')
+  const signEl = root.querySelector('.sign')
+  const signText = root.querySelector('.sign-board span')
+  const heardEl = root.querySelector('.heard')
+  const micBtn = root.querySelector('.mic-btn')
+  let handler = null
+
+  micBtn.addEventListener('pointerdown', () => { if (handler) handler() })
+
+  function show (symbol) {
+    signText.textContent = symbol
+    signEl.classList.remove('glow')
+    heardEl.textContent = ''
+    heardEl.classList.remove('show')
+  }
+  function setListening (on) {
+    micBtn.classList.toggle('listening', on)
+    dogWrap.classList.toggle('listening', on)
+  }
+  // 顯示辨識到的字，給旁邊的大人看，小孩不用看得懂
+  function heard (text) {
+    heardEl.textContent = text ? '「' + text + '」' : '…？'
+    heardEl.classList.add('show')
+  }
+  function celebrate () {
+    return new Promise(resolve => {
+      signEl.classList.add('glow')
+      dogWrap.classList.remove('jump')
+      void dogWrap.offsetWidth
+      dogWrap.classList.add('jump')
+      setTimeout(resolve, 700)
+    })
+  }
+  function sad () {
+    dogWrap.classList.remove('tilt')
+    void dogWrap.offsetWidth
+    dogWrap.classList.add('tilt')
+  }
+  function onMic (fn) { handler = fn }
+  function destroy () { root.innerHTML = ''; handler = null }
+
+  return { show, setListening, heard, celebrate, sad, onMic, destroy }
+}
+
 // ===== ui.js =====
 // 選人、首頁、結算、大人面板、舞台縮放。
 
@@ -1450,7 +1575,7 @@ function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
 }
 
 // 首頁：目前使用者的狗狗、三張玩法卡
-function renderHome (root, { profile }) {
+function renderHome (root, { profile, speech = true }) {
   root.innerHTML = `
     <div class="home-sky">${homeBgSvg()}</div>
     <button class="who" id="btn-who" aria-label="換人">
@@ -1461,11 +1586,14 @@ function renderHome (root, { profile }) {
       <button class="card" data-game="fishing" aria-label="釣魚">
         <div class="card-pic">${cardArt('fishing')}</div>
       </button>
-      <button class="card" data-game="feeding" aria-label="餵狗狗">
-        <div class="card-pic">${cardArt('feeding')}</div>
+      <button class="card" data-game="whack" aria-label="打地鼠">
+        <div class="card-pic">${cardArt('whack')}</div>
       </button>
       <button class="card" data-game="memory" aria-label="翻牌">
         <div class="card-pic">${cardArt('memory')}</div>
+      </button>
+      <button class="card ${speech ? '' : 'hidden'}" data-game="speak" aria-label="唸給狗狗聽">
+        <div class="card-pic">${cardArt('speak')}</div>
       </button>
     </div>
     <button class="gear" id="btn-gear" aria-label="大人面板">${GEAR_SVG}</button>`
@@ -1720,7 +1848,7 @@ function main () {
   // ---- 首頁 ----
   function goHome () {
     destroyGame()
-    renderHome(homeEl, { profile })
+    renderHome(homeEl, { profile, speech: speechAvailable() })
     homeEl.querySelector('#btn-who').addEventListener('pointerdown', goProfiles)
     homeEl.querySelectorAll('[data-game]').forEach(card => {
       card.addEventListener('pointerdown', () => { audio.unlock(); startGame(card.dataset.game) })
@@ -1783,6 +1911,7 @@ function main () {
     earned = []
     showScreen('game')
     if (which === 'memory') return runMemory()
+    if (which === 'speak') return runSpeak()
     runQuestions(which)
   }
 
@@ -1803,7 +1932,7 @@ function main () {
     playResult(resultEl, earned)
   }
 
-  // ---- 釣魚、餵狗狗：聽音選形 ----
+  // ---- 釣魚、打地鼠：聽音選形 ----
   let round = []
   let index = 0
   let firstAttempt = true
@@ -1811,8 +1940,8 @@ function main () {
   let busy = false
 
   function runQuestions (which) {
-    game = which === 'feeding'
-      ? createFeeding(playArea, { color: profile.color })
+    game = which === 'whack'
+      ? createWhack(playArea, { color: profile.color })
       : createFishing(playArea, { color: profile.color })
     replayBtn.classList.remove('hidden')
     round = buildRound(state, Math.random)
@@ -1847,7 +1976,9 @@ function main () {
   }
 
   replayBtn.addEventListener('pointerdown', () => {
-    if (busy || kind === 'memory' || !round[index]) return
+    if (kind === 'memory' || !round[index]) return
+    if (kind === 'speak') { audio.say(round[index].target); return }
+    if (busy) return
     audio.say(round[index].target)
   })
 
@@ -1862,7 +1993,7 @@ function main () {
       earned.push(firstAttempt)
       setStars()
       audio.stop()
-      if (kind === 'feeding') audio.crunch(); else audio.splash()
+      if (kind === 'whack') audio.crunch(); else audio.splash()
       await game.celebrate(symbol)
       if (!game) return // 中途按了回首頁
       audio.ding()
@@ -1882,6 +2013,73 @@ function main () {
     game.shake(symbol)
     game.sad()
     game.flashCorrect()
+  }
+
+  // ---- 唸給狗狗聽：只記唸對，沒聽出來不算錯 ----
+  let speakTries = 0
+  function runSpeak () {
+    game = createSpeak(playArea, { color: profile.color })
+    replayBtn.classList.remove('hidden')
+    round = buildRound(state, Math.random)
+    index = 0
+    starTotal = round.length
+    setStars()
+    game.onMic(onMicPressed)
+    askSpeak()
+  }
+
+  async function askSpeak () {
+    const q = round[index]
+    speakTries = 0
+    firstAttempt = true
+    busy = true
+    game.show(q.target)
+    await wait(400)
+    // 提示等級高的時候狗狗先示範一次，讓她跟著唸
+    if (q.hint >= 2 && game) await audio.say(q.target)
+    busy = false
+  }
+
+  async function onMicPressed () {
+    if (busy || !game) return
+    const q = round[index]
+    const myGame = game
+    busy = true
+    audio.stop()
+    game.setListening(true)
+    const heard = await listen()
+    if (game !== myGame) return
+    game.setListening(false)
+    game.heard(heard[0] || '')
+    if (matchesSymbol(q.target, heard)) {
+      if (firstAttempt) commit({ target: q.target, ok: true, picked: q.target, ms: 0, drill: q.drill })
+      earned.push(firstAttempt)
+      setStars()
+      audio.ding()
+      await game.celebrate()
+      if (game !== myGame) return
+      await wait(300)
+      index++
+      if (index >= round.length) return finishRound()
+      askSpeak()
+      return
+    }
+    // 沒聽出來：狗狗歪頭、示範一次。兩次沒過就跳下一題，不記錯
+    firstAttempt = false
+    speakTries++
+    game.sad()
+    await audio.say(q.target)
+    if (game !== myGame) return
+    if (speakTries >= 2) {
+      earned.push(false)
+      setStars()
+      await wait(400)
+      index++
+      if (index >= round.length) return finishRound()
+      askSpeak()
+      return
+    }
+    busy = false
   }
 
   // ---- 翻牌：配對，不記進度 ----

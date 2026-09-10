@@ -4,8 +4,9 @@ import { buildRound, recordAnswer, resetProgress, pickSymbols } from './schedule
 import { createStore } from './store.js'
 import { createAudio } from './audio.js'
 import { createFishing } from './fishing.js'
-import { createFeeding } from './feeding.js'
+import { createWhack } from './whack.js'
 import { createMemory } from './memory.js'
+import { createSpeak, speechAvailable, listen, matchesSymbol } from './speak.js'
 import { fitStage, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage } from './ui.js'
 
 const SETTINGS_KEY = 'zhuyin-rescue-settings'
@@ -57,7 +58,7 @@ function main () {
   // ---- 首頁 ----
   function goHome () {
     destroyGame()
-    renderHome(homeEl, { profile })
+    renderHome(homeEl, { profile, speech: speechAvailable() })
     homeEl.querySelector('#btn-who').addEventListener('pointerdown', goProfiles)
     homeEl.querySelectorAll('[data-game]').forEach(card => {
       card.addEventListener('pointerdown', () => { audio.unlock(); startGame(card.dataset.game) })
@@ -120,6 +121,7 @@ function main () {
     earned = []
     showScreen('game')
     if (which === 'memory') return runMemory()
+    if (which === 'speak') return runSpeak()
     runQuestions(which)
   }
 
@@ -140,7 +142,7 @@ function main () {
     playResult(resultEl, earned)
   }
 
-  // ---- 釣魚、餵狗狗：聽音選形 ----
+  // ---- 釣魚、打地鼠：聽音選形 ----
   let round = []
   let index = 0
   let firstAttempt = true
@@ -148,8 +150,8 @@ function main () {
   let busy = false
 
   function runQuestions (which) {
-    game = which === 'feeding'
-      ? createFeeding(playArea, { color: profile.color })
+    game = which === 'whack'
+      ? createWhack(playArea, { color: profile.color })
       : createFishing(playArea, { color: profile.color })
     replayBtn.classList.remove('hidden')
     round = buildRound(state, Math.random)
@@ -184,7 +186,9 @@ function main () {
   }
 
   replayBtn.addEventListener('pointerdown', () => {
-    if (busy || kind === 'memory' || !round[index]) return
+    if (kind === 'memory' || !round[index]) return
+    if (kind === 'speak') { audio.say(round[index].target); return }
+    if (busy) return
     audio.say(round[index].target)
   })
 
@@ -199,7 +203,7 @@ function main () {
       earned.push(firstAttempt)
       setStars()
       audio.stop()
-      if (kind === 'feeding') audio.crunch(); else audio.splash()
+      if (kind === 'whack') audio.crunch(); else audio.splash()
       await game.celebrate(symbol)
       if (!game) return // 中途按了回首頁
       audio.ding()
@@ -219,6 +223,73 @@ function main () {
     game.shake(symbol)
     game.sad()
     game.flashCorrect()
+  }
+
+  // ---- 唸給狗狗聽：只記唸對，沒聽出來不算錯 ----
+  let speakTries = 0
+  function runSpeak () {
+    game = createSpeak(playArea, { color: profile.color })
+    replayBtn.classList.remove('hidden')
+    round = buildRound(state, Math.random)
+    index = 0
+    starTotal = round.length
+    setStars()
+    game.onMic(onMicPressed)
+    askSpeak()
+  }
+
+  async function askSpeak () {
+    const q = round[index]
+    speakTries = 0
+    firstAttempt = true
+    busy = true
+    game.show(q.target)
+    await wait(400)
+    // 提示等級高的時候狗狗先示範一次，讓她跟著唸
+    if (q.hint >= 2 && game) await audio.say(q.target)
+    busy = false
+  }
+
+  async function onMicPressed () {
+    if (busy || !game) return
+    const q = round[index]
+    const myGame = game
+    busy = true
+    audio.stop()
+    game.setListening(true)
+    const heard = await listen()
+    if (game !== myGame) return
+    game.setListening(false)
+    game.heard(heard[0] || '')
+    if (matchesSymbol(q.target, heard)) {
+      if (firstAttempt) commit({ target: q.target, ok: true, picked: q.target, ms: 0, drill: q.drill })
+      earned.push(firstAttempt)
+      setStars()
+      audio.ding()
+      await game.celebrate()
+      if (game !== myGame) return
+      await wait(300)
+      index++
+      if (index >= round.length) return finishRound()
+      askSpeak()
+      return
+    }
+    // 沒聽出來：狗狗歪頭、示範一次。兩次沒過就跳下一題，不記錯
+    firstAttempt = false
+    speakTries++
+    game.sad()
+    await audio.say(q.target)
+    if (game !== myGame) return
+    if (speakTries >= 2) {
+      earned.push(false)
+      setStars()
+      await wait(400)
+      index++
+      if (index >= round.length) return finishRound()
+      askSpeak()
+      return
+    }
+    busy = false
   }
 
   // ---- 翻牌：配對，不記進度 ----

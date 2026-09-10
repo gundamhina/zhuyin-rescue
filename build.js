@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = dirname(fileURLToPath(import.meta.url))
-const ORDER = ['data.js', 'scheduler.js', 'store.js', 'audio.js', 'art.js', 'fishing.js', 'feeding.js', 'memory.js', 'ui.js', 'main.js']
+const ORDER = ['data.js', 'scheduler.js', 'store.js', 'audio.js', 'art.js', 'fishing.js', 'whack.js', 'memory.js', 'speak.js', 'ui.js', 'main.js']
 
 function strip (src, name) {
   return `// ===== ${name} =====\n` + src

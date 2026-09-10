@@ -211,25 +211,37 @@ export function cardArt (kind) {
   <text x="200" y="322" text-anchor="middle" font-size="64" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄅ</text>
 </svg>`
   }
-  if (kind === 'feeding') {
-    return `<img class="art-slot" src="img/card-feeding.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+  if (kind === 'whack') {
+    return `<img class="art-slot" src="img/card-whack.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="wsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6F9FD0"/><stop offset="1" stop-color="#DCEBF2"/></linearGradient></defs>
+  <rect width="300" height="400" fill="url(#wsky)"/>
+  ${cloud(80, 70, 0.4)}
+  <rect y="170" width="300" height="230" fill="#8DBB74"/>
+  <path d="M0 170 q75 -30 150 0 t150 0 v20 H0z" fill="#7FAF6E"/>
+  <ellipse cx="80" cy="260" rx="52" ry="22" fill="#5A4030"/>
+  <ellipse cx="150" cy="340" rx="52" ry="22" fill="#5A4030"/>
+  <rect x="180" y="190" width="80" height="80" rx="40" fill="#F6E7C8"/>
+  <text x="220" y="250" text-anchor="middle" font-size="56" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄇ</text>
+  <ellipse cx="220" cy="262" rx="56" ry="14" fill="#3E2A1A"/>
+</svg>`
+  }
+  if (kind === 'speak') {
+    return `<img class="art-slot" src="img/card-speak.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#F3E4C2"/>
   <path d="M0 300 h300 v100 H0z" fill="#8DBB74"/>
-  <ellipse cx="150" cy="330" rx="90" ry="26" fill="#C8553D"/>
-  <ellipse cx="150" cy="322" rx="70" ry="16" fill="#96402D"/>
-  <circle cx="150" cy="180" r="70" fill="#C99A63"/>
-  <ellipse cx="150" cy="212" rx="40" ry="26" fill="#F1DFC0"/>
-  <ellipse cx="86" cy="190" rx="26" ry="48" fill="#6E4522" transform="rotate(14 86 190)"/>
-  <ellipse cx="214" cy="190" rx="26" ry="48" fill="#6E4522" transform="rotate(-14 214 190)"/>
-  <ellipse cx="128" cy="170" rx="10" ry="12" fill="#2B1D12"/><ellipse cx="172" cy="170" rx="10" ry="12" fill="#2B1D12"/>
-  <path d="M150 226 q-20 0 -20 -10 h40 q0 10 -20 10z" fill="#2B1D12"/>
-  <path d="M138 234 q12 22 24 0" fill="#D97F8A"/>
-  <g fill="#F6F3E6">
-    <rect x="110" y="270" width="80" height="24" rx="12"/>
-    <circle cx="110" cy="274" r="12"/><circle cx="110" cy="290" r="12"/><circle cx="190" cy="274" r="12"/><circle cx="190" cy="290" r="12"/>
-  </g>
-  <text x="150" y="290" text-anchor="middle" font-size="24" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄇ</text>
+  <circle cx="110" cy="230" r="60" fill="#C99A63"/>
+  <ellipse cx="110" cy="258" rx="34" ry="22" fill="#F1DFC0"/>
+  <ellipse cx="56" cy="240" rx="22" ry="42" fill="#6E4522" transform="rotate(14 56 240)"/>
+  <ellipse cx="164" cy="240" rx="22" ry="42" fill="#6E4522" transform="rotate(-14 164 240)"/>
+  <ellipse cx="92" cy="222" rx="9" ry="11" fill="#2B1D12"/><ellipse cx="128" cy="222" rx="9" ry="11" fill="#2B1D12"/>
+  <path d="M110 270 q-16 0 -16 -8 h32 q0 8 -16 8z" fill="#2B1D12"/>
+  <path d="M170 90 h100 a16 16 0 0 1 16 16 v70 a16 16 0 0 1 -16 16 h-60 l-30 26 v-26 h-10 a16 16 0 0 1 -16 -16 v-70 a16 16 0 0 1 16 -16z" fill="#FFFDF7"/>
+  <text x="220" y="158" text-anchor="middle" font-size="60" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄚ</text>
+  <rect x="210" y="250" width="40" height="70" rx="20" fill="#4A6FA5"/>
+  <path d="M196 300 a34 34 0 0 0 68 0" stroke="#4A6FA5" stroke-width="10" fill="none"/>
+  <rect x="224" y="330" width="12" height="30" fill="#4A6FA5"/>
 </svg>`
   }
   return `<img class="art-slot" src="img/card-memory.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">

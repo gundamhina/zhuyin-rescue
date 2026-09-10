@@ -74,7 +74,7 @@ export function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
 }
 
 // 首頁：目前使用者的狗狗、三張玩法卡
-export function renderHome (root, { profile }) {
+export function renderHome (root, { profile, speech = true }) {
   root.innerHTML = `
     <div class="home-sky">${homeBgSvg()}</div>
     <button class="who" id="btn-who" aria-label="換人">
@@ -85,11 +85,14 @@ export function renderHome (root, { profile }) {
       <button class="card" data-game="fishing" aria-label="釣魚">
         <div class="card-pic">${cardArt('fishing')}</div>
       </button>
-      <button class="card" data-game="feeding" aria-label="餵狗狗">
-        <div class="card-pic">${cardArt('feeding')}</div>
+      <button class="card" data-game="whack" aria-label="打地鼠">
+        <div class="card-pic">${cardArt('whack')}</div>
       </button>
       <button class="card" data-game="memory" aria-label="翻牌">
         <div class="card-pic">${cardArt('memory')}</div>
+      </button>
+      <button class="card ${speech ? '' : 'hidden'}" data-game="speak" aria-label="唸給狗狗聽">
+        <div class="card-pic">${cardArt('speak')}</div>
       </button>
     </div>
     <button class="gear" id="btn-gear" aria-label="大人面板">${GEAR_SVG}</button>`

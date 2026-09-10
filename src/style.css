@@ -64,10 +64,12 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .who-avatar .dog { width: 74px; height: 86px; margin-bottom: -6px; }
 .who-avatar .rod { display: none; }
 .who-name { font-size: 34px; font-weight: 900; color: #2B3A4A; }
-.cards { position: absolute; left: 0; right: 0; top: 170px; display: flex; justify-content: center; align-items: flex-end; gap: 54px; }
-.card { position: relative; width: 300px; height: 400px; border-radius: 40px; background: #fff; border: 8px solid #fff; overflow: hidden; box-shadow: 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,0.22); transition: transform .12s, box-shadow .12s; }
+.cards { position: absolute; left: 0; right: 0; top: 190px; display: flex; justify-content: center; align-items: flex-end; gap: 34px; }
+.card { position: relative; width: 250px; height: 334px; border-radius: 34px; background: #fff; border: 8px solid #fff; overflow: hidden; box-shadow: 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,0.22); transition: transform .12s, box-shadow .12s; }
 .card:nth-child(1) { transform: rotate(-3deg); }
-.card:nth-child(3) { transform: rotate(3deg); }
+.card:nth-child(2) { transform: rotate(-1deg); }
+.card:nth-child(3) { transform: rotate(1deg); }
+.card:nth-child(4) { transform: rotate(3deg); }
 .card:active { transform: translateY(10px) scale(0.98); box-shadow: 0 4px 0 #A9BFCF; }
 .card.locked .card-pic { filter: grayscale(0.9) brightness(0.9); opacity: 0.55; }
 .card-pic { width: 100%; height: 100%; border-radius: 30px; overflow: hidden; }
@@ -175,26 +177,6 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .card-pic { position: relative; }
 .home-sky, .result-bg, .play-area { position: absolute; }
 
-/* ---- 餵狗狗 ---- */
-.feed-dog { left: 120px; top: 170px; width: 360px; height: 415px; }
-.feed-dog .dog { width: 360px; height: 415px; }
-.feed-dog .dog-slot .art-slot { width: 360px; height: 415px; }
-.feed-dog.chomp { animation: chomp .6s ease-out; }
-@keyframes chomp { 0% { transform: scale(1); } 30% { transform: scale(1.08) translateY(-16px); } 55% { transform: scale(0.97) translateY(4px); } 100% { transform: scale(1); } }
-.bowl { position: absolute; left: 170px; top: 590px; pointer-events: none; }
-.biscuits { position: absolute; inset: 0; }
-.biscuit { position: absolute; width: 180px; height: 96px; display: flex; align-items: center; justify-content: center; touch-action: none; cursor: grab; filter: drop-shadow(0 8px 0 rgba(60,40,20,0.28)) drop-shadow(0 0 2px rgba(60,40,20,0.5)); animation: bob 2.8s ease-in-out infinite; }
-.biscuit .bone-art { position: absolute; left: 0; top: 0; }
-.biscuit span { position: relative; font-size: 60px; font-weight: 900; color: #2B3A4A; line-height: 1; pointer-events: none; }
-.biscuit.dragging { animation: none; cursor: grabbing; z-index: 6; filter: drop-shadow(0 14px 10px rgba(0,0,0,0.25)); transform: scale(1.08); }
-.biscuit.returning { transition: left .3s ease-out, top .3s ease-out; animation: none; }
-.biscuit.hint-loop .bone-art, .biscuit.hint-once .bone-art { animation: glow 1.2s ease-in-out infinite; }
-.biscuit.hint-once .bone-art { animation-iteration-count: 1; }
-@keyframes glow { 0%,100% { filter: none; } 50% { filter: drop-shadow(0 0 14px #E8C86A) drop-shadow(0 0 4px #E8C86A); } }
-.biscuit.shake { animation: shake .45s ease-in-out; }
-.biscuit.eaten { transition: left .45s ease-in, top .45s ease-in, transform .45s ease-in, opacity .2s .4s; transform: scale(0.3); animation: none; z-index: 6; }
-.biscuit.gone { opacity: 0; }
-
 /* ---- 翻牌 ---- */
 .cards-grid { position: absolute; inset: 0; }
 .mcard { position: absolute; width: 190px; height: 230px; perspective: 900px; cursor: pointer; animation: dealIn .4s ease-out both; }
@@ -207,3 +189,34 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .mcard-front span { font-size: 120px; font-weight: 900; color: #2B3A4A; line-height: 1; }
 .mcard.matched .mcard-front { background: #F6E7C8; box-shadow: 0 0 0 10px rgba(232,200,106,0.7), 0 10px 0 rgba(0,0,0,0.12); }
 .mcard.matched { animation: pop .5s; }
+
+/* ---- 打地鼠 ---- */
+.whack-dog { left: 30px; top: 90px; width: 260px; height: 300px; }
+.holes { position: absolute; inset: 0; }
+.hole { position: absolute; width: 220px; height: 200px; overflow: hidden; clip-path: inset(-60px 0 0 0); }
+.hole-back { position: absolute; left: 20px; top: 110px; width: 180px; height: 70px; border-radius: 50%; background: #3E2A1A; box-shadow: inset 0 10px 14px rgba(0,0,0,0.5); }
+.hole-front { position: absolute; left: 10px; top: 150px; width: 200px; height: 50px; border-radius: 50%; background: #6E9C58; pointer-events: none; }
+.mole { position: absolute; left: 40px; top: 145px; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFFDF7, #F6E7C8 60%, #E2C89A); box-shadow: 0 6px 0 rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; transform: translateY(160px) scale(0.9); transition: transform .28s cubic-bezier(.3,1.4,.5,1); cursor: pointer; }
+.mole.up { transform: translateY(-140px) scale(1); }
+.mole span { font-size: 92px; font-weight: 900; color: #2B3A4A; line-height: 1; pointer-events: none; }
+.mole.hint-loop { animation: wiggle 1.2s ease-in-out infinite; }
+.mole.shake { animation: shake .45s ease-in-out; }
+.mole.hit { background: radial-gradient(circle at 35% 30%, #FFF6C8, #E8C86A 60%, #B99A44); animation: pop .5s; }
+
+/* ---- 唸給狗狗聽 ---- */
+.speak-dog { left: 110px; top: 250px; width: 360px; height: 415px; }
+.speak-dog .dog { width: 360px; height: 415px; }
+.speak-dog .dog-slot .art-slot { width: 360px; height: 415px; }
+.speak-dog.listening { animation: listenBob 1s ease-in-out infinite; }
+@keyframes listenBob { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+.sign { position: absolute; left: 520px; top: 150px; width: 300px; }
+.sign-board { width: 300px; height: 300px; border-radius: 36px; background: #FFFDF7; border: 10px solid #B08A63; box-shadow: 0 12px 0 #8E6D4C, 0 20px 30px rgba(0,0,0,0.18); display: flex; align-items: center; justify-content: center; transition: box-shadow .3s; }
+.sign-board span { font-size: 210px; font-weight: 900; color: #2B3A4A; line-height: 1; }
+.sign-post { width: 28px; height: 160px; margin: -6px auto 0; background: #B08A63; border-radius: 6px; }
+.sign.glow .sign-board { box-shadow: 0 0 0 18px rgba(232,200,106,0.75), 0 12px 0 #8E6D4C; }
+.heard { position: absolute; left: 520px; top: 630px; width: 300px; text-align: center; font-size: 30px; color: #5A6B85; opacity: 0; transition: opacity .3s; }
+.heard.show { opacity: 1; }
+.mic-btn { position: absolute; left: 920px; top: 300px; width: 200px; height: 200px; border-radius: 50%; background: #C8553D; border: 10px solid #F6F3E6; box-shadow: 0 12px 0 #96402D, 0 20px 30px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; transition: transform .1s, box-shadow .1s; }
+.mic-btn:active { transform: translateY(8px); box-shadow: 0 4px 0 #96402D; }
+.mic-btn.listening { animation: micPulse 1s ease-in-out infinite; background: #E0955B; }
+@keyframes micPulse { 0%,100% { box-shadow: 0 12px 0 #B07242, 0 0 0 0 rgba(224,149,91,0.6); } 50% { box-shadow: 0 12px 0 #B07242, 0 0 0 30px rgba(224,149,91,0); } }
