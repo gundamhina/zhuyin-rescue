@@ -2,7 +2,7 @@
 // 不計時、不扣分：沒拍到就等它下次再冒出來，拍錯才算錯（交給 main.js 記錄）。
 // 介面跟釣魚一樣：start、lock/unlock、hint、shake、celebrate、sad、onAnswer、destroy。
 
-import { dogSvg, homeBgSvg } from './art.js'
+import { dogSvg, homeBgSvg, symbolMarkup } from './art.js'
 
 const HOLES = [[330, 430], [600, 430], [870, 430], [460, 620], [730, 620], [1000, 620]]
 const UP_MS = 1700 // 冒出來停多久
@@ -65,7 +65,7 @@ export function createWhack (root, { color = 0 } = {}) {
     lastHole = idx
     const mole = holes[idx].querySelector('.mole')
     mole.dataset.symbol = sym
-    mole.querySelector('span').textContent = sym
+    mole.querySelector('span').innerHTML = symbolMarkup(sym)
     mole.classList.remove('shake', 'hit', 'hint-loop')
     if (sym === current.target && glowOnce) {
       mole.classList.add('hint-loop')

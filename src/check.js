@@ -1,7 +1,7 @@
 // 發音檢查台（家長用）：依序播放 37 個符號、逐個標記問題、測語音辨識。
 // 標記存在 settings.audioIssues = { 符號: '備註' }，家長區頂端會列出來。
 
-import { SYMBOLS, REP_CHAR, SPEAK_ACCEPT } from './data.js'
+import { ALL_SYMBOLS as SYMBOLS, REP_CHAR, SPEAK_ACCEPT } from './data.js'
 import { listen, matchesSymbol, speechAvailable } from './speak.js'
 
 export function renderCheck (root, { audio, settings, onSettings, onClose }) {
@@ -13,7 +13,7 @@ export function renderCheck (root, { audio, settings, onSettings, onClose }) {
   root.innerHTML = `
     <div class="panel">
       <div class="panel-head">
-        <h2>發音檢查</h2>
+        <h2>發音檢查 <small>37 個符號＋22 個結合韻</small></h2>
         <button class="panel-close" id="check-close">回家長區</button>
       </div>
       <div class="panel-row">

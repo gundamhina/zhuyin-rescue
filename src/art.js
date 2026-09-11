@@ -1,6 +1,12 @@
 // SVG 圖：場景、狗狗、卡片插圖。全部是字串，塞進 innerHTML。
 // 風格：借宮崎駿動畫的氛圍。水彩天空、厚積雲、層疊山丘、青綠海面、褪色木頭、柔光，不用粗描邊。
 
+// 符號怎麼顯示：單一符號直接放，結合韻兩個直排
+export function symbolMarkup (sym) {
+  if (sym.length < 2) return sym
+  return `<span class="compound">${[...sym].map(ch => `<i>${ch}</i>`).join('')}</span>`
+}
+
 // 六隻救援狗的配色：帽子／背心顏色，深色版做陰影
 export const DOG_COLORS = [
   { main: '#4A6FA5', dark: '#34507A' }, // 藍 警察

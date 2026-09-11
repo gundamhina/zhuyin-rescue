@@ -231,3 +231,8 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .check-issues { gap: 10px 14px; }
 .issue-chip { background: #FFE0E0; color: #B32B37; padding: 4px 12px; border-radius: 10px; font-weight: 700; }
 .check-rec code { background: #E8EEF5; padding: 2px 8px; border-radius: 6px; }
+
+/* ---- 結合韻直排：字縮到 58%，兩個疊起來跟單一符號差不多高 ---- */
+.compound { display: inline-flex; flex-direction: column; align-items: center; line-height: 0.92; }
+.compound i { font-style: normal; font-size: 0.58em; }
+.ptile-sym .compound i { font-size: 0.6em; }

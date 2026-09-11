@@ -1,7 +1,7 @@
 // 釣魚玩法。負責畫泡泡、接點擊、播動畫；對錯的判斷與記錄交給 main.js。
 // 介面（跟打地鼠共用）：start(question)、lock/unlock、hint、shake、celebrate(symbol)→Promise、sad、onAnswer(fn)、destroy。
 
-import { dogSvg, sceneSvg } from './art.js'
+import { dogSvg, sceneSvg, symbolMarkup } from './art.js'
 
 // 各選項數的泡泡位置（1200×800 舞台座標）
 const SLOTS = {
@@ -41,7 +41,7 @@ export function createFishing (root, { color = 0 } = {}) {
       b.style.left = (x - 85) + 'px'
       b.style.top = (y - 85) + 'px'
       b.style.animationDelay = (i * 0.35) + 's'
-      b.innerHTML = '<span>' + sym + '</span>'
+      b.innerHTML = '<span>' + symbolMarkup(sym) + '</span>'
       bubblesEl.appendChild(b)
     })
   }

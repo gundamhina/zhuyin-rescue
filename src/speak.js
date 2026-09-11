@@ -3,7 +3,7 @@
 // 介面：show(symbol)、setListening(bool)、heard(text)、celebrate()、sad()、onMic(fn)、destroy。
 // 另外匯出 speechAvailable()、listen()、matchesSymbol()。
 
-import { dogSvg, homeBgSvg } from './art.js'
+import { dogSvg, homeBgSvg, symbolMarkup } from './art.js'
 import { SPEAK_ACCEPT } from './data.js'
 
 const MIC_SVG = `<svg viewBox="0 0 24 24" width="90" height="90" fill="#fff"><path d="M12 15a4 4 0 0 0 4-4V6a4 4 0 1 0-8 0v5a4 4 0 0 0 4 4zm6-4a6 6 0 0 1-12 0H4a8 8 0 0 0 7 7.9V22h2v-3.1A8 8 0 0 0 20 11h-2z"/></svg>`
@@ -61,7 +61,7 @@ export function createSpeak (root, { color = 0 } = {}) {
   micBtn.addEventListener('pointerdown', () => { if (handler) handler() })
 
   function show (symbol) {
-    signText.textContent = symbol
+    signText.innerHTML = symbolMarkup(symbol)
     signEl.classList.remove('glow')
     heardEl.textContent = ''
     heardEl.classList.remove('show')

@@ -239,6 +239,11 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .issue-chip { background: #FFE0E0; color: #B32B37; padding: 4px 12px; border-radius: 10px; font-weight: 700; }
 .check-rec code { background: #E8EEF5; padding: 2px 8px; border-radius: 6px; }
 
+/* ---- 結合韻直排：字縮到 58%，兩個疊起來跟單一符號差不多高 ---- */
+.compound { display: inline-flex; flex-direction: column; align-items: center; line-height: 0.92; }
+.compound i { font-style: normal; font-size: 0.58em; }
+.ptile-sym .compound i { font-size: 0.6em; }
+
 </style>
 </head>
 <body>
@@ -283,7 +288,15 @@ const GROUPS = [
   ['ㄐ', 'ㄑ', 'ㄒ'],
   ['ㄓ', 'ㄔ', 'ㄕ', 'ㄖ'],
   ['ㄗ', 'ㄘ', 'ㄙ'],
+  // 結合韻，37 個都熟了才接
+  ['ㄧㄚ', 'ㄧㄛ', 'ㄧㄝ', 'ㄧㄞ', 'ㄧㄠ', 'ㄧㄡ', 'ㄧㄢ', 'ㄧㄣ', 'ㄧㄤ', 'ㄧㄥ'],
+  ['ㄨㄚ', 'ㄨㄛ', 'ㄨㄞ', 'ㄨㄟ', 'ㄨㄢ', 'ㄨㄣ', 'ㄨㄤ', 'ㄨㄥ'],
+  ['ㄩㄝ', 'ㄩㄢ', 'ㄩㄣ', 'ㄩㄥ'],
 ]
+
+// 22 個結合韻：介音 ㄧㄨㄩ 加韻符。畫面上直排，跟課本一樣。
+const COMPOUNDS = GROUPS.slice(10).flat()
+const ALL_SYMBOLS = [...SYMBOLS, ...COMPOUNDS]
 
 // 語音合成唸不好單一符號，改唸代表字（注音教學的標準唸法）。
 // ㄝ、ㄥ 沒有常用單字，先放字典用字，試聽頁可改。
@@ -298,6 +311,10 @@ const REP_CHAR = {
   ㄞ: '哀', ㄟ: '欸', ㄠ: '凹', ㄡ: '歐',
   ㄢ: '安', ㄣ: '恩', ㄤ: '昂', ㄥ: '鞥', ㄦ: '兒',
   ㄧ: '衣', ㄨ: '烏', ㄩ: '迂',
+  // 結合韻的代表字都是完整的字，語音合成唸得準
+  ㄧㄚ: '鴨', ㄧㄛ: '唷', ㄧㄝ: '耶', ㄧㄞ: '崖', ㄧㄠ: '腰', ㄧㄡ: '優', ㄧㄢ: '煙', ㄧㄣ: '音', ㄧㄤ: '央', ㄧㄥ: '英',
+  ㄨㄚ: '蛙', ㄨㄛ: '窩', ㄨㄞ: '歪', ㄨㄟ: '威', ㄨㄢ: '彎', ㄨㄣ: '溫', ㄨㄤ: '汪', ㄨㄥ: '翁',
+  ㄩㄝ: '約', ㄩㄢ: '冤', ㄩㄣ: '暈', ㄩㄥ: '雍',
 }
 
 // 長得像的對，用來當刁鑽的干擾項。
@@ -310,6 +327,8 @@ const SIMILAR_SHAPE = [
 const SIMILAR_SOUND = [
   ['ㄅ', 'ㄆ'], ['ㄉ', 'ㄊ'], ['ㄍ', 'ㄎ'], ['ㄓ', 'ㄔ'], ['ㄗ', 'ㄘ'],
   ['ㄣ', 'ㄥ'], ['ㄛ', 'ㄡ'], ['ㄝ', 'ㄟ'], ['ㄋ', 'ㄌ'], ['ㄕ', 'ㄙ'], ['ㄓ', 'ㄗ'],
+  // 結合韻裡最常混的：前後鼻音、ㄢㄤ
+  ['ㄧㄣ', 'ㄧㄥ'], ['ㄨㄣ', 'ㄨㄥ'], ['ㄧㄢ', 'ㄧㄤ'], ['ㄨㄢ', 'ㄨㄤ'], ['ㄩㄢ', 'ㄩㄣ'], ['ㄧㄝ', 'ㄩㄝ'], ['ㄨㄟ', 'ㄨㄞ'],
 ]
 
 // 「唸給狗狗聽」用：語音辨識回來的字裡，出現這些字任何一個就算唸對（不分聲調）。
@@ -325,6 +344,11 @@ const SPEAK_ACCEPT = {
   ㄞ: '哀愛唉矮', ㄟ: '欸誒', ㄠ: '凹熬奧澳', ㄡ: '歐偶噢嘔',
   ㄢ: '安按暗案', ㄣ: '恩嗯', ㄤ: '昂', ㄥ: '鞥嗯', ㄦ: '兒二耳而爾',
   ㄧ: '衣一醫以已', ㄨ: '烏五屋無物', ㄩ: '迂魚雨玉語',
+  ㄧㄚ: '鴨呀壓牙雅亞', ㄧㄛ: '唷喲', ㄧㄝ: '耶爺也夜葉', ㄧㄞ: '崖', ㄧㄠ: '腰要搖藥咬', ㄧㄡ: '優有又油右幽',
+  ㄧㄢ: '煙眼演鹽燄', ㄧㄣ: '音因印銀引', ㄧㄤ: '央羊養樣楊', ㄧㄥ: '英鷹影硬應',
+  ㄨㄚ: '蛙哇挖娃襪', ㄨㄛ: '窩我握臥渦', ㄨㄞ: '歪外', ㄨㄟ: '威為位味圍', ㄨㄢ: '彎玩碗萬完', ㄨㄣ: '溫文問聞穩',
+  ㄨㄤ: '汪王網忘往', ㄨㄥ: '翁甕嗡',
+  ㄩㄝ: '約月越樂', ㄩㄢ: '冤圓遠院元', ㄩㄣ: '暈雲運允', ㄩㄥ: '雍用勇永擁',
 }
 
 // ===== scheduler.js =====
@@ -806,6 +830,12 @@ function createAudio (getSettings) {
 // SVG 圖：場景、狗狗、卡片插圖。全部是字串，塞進 innerHTML。
 // 風格：借宮崎駿動畫的氛圍。水彩天空、厚積雲、層疊山丘、青綠海面、褪色木頭、柔光，不用粗描邊。
 
+// 符號怎麼顯示：單一符號直接放，結合韻兩個直排
+function symbolMarkup (sym) {
+  if (sym.length < 2) return sym
+  return `<span class="compound">${[...sym].map(ch => `<i>${ch}</i>`).join('')}</span>`
+}
+
 // 六隻救援狗的配色：帽子／背心顏色，深色版做陰影
 const DOG_COLORS = [
   { main: '#4A6FA5', dark: '#34507A' }, // 藍 警察
@@ -1122,7 +1152,7 @@ function createFishing (root, { color = 0 } = {}) {
       b.style.left = (x - 85) + 'px'
       b.style.top = (y - 85) + 'px'
       b.style.animationDelay = (i * 0.35) + 's'
-      b.innerHTML = '<span>' + sym + '</span>'
+      b.innerHTML = '<span>' + symbolMarkup(sym) + '</span>'
       bubblesEl.appendChild(b)
     })
   }
@@ -1252,7 +1282,7 @@ function createWhack (root, { color = 0 } = {}) {
     lastHole = idx
     const mole = holes[idx].querySelector('.mole')
     mole.dataset.symbol = sym
-    mole.querySelector('span').textContent = sym
+    mole.querySelector('span').innerHTML = symbolMarkup(sym)
     mole.classList.remove('shake', 'hit', 'hint-loop')
     if (sym === current.target && glowOnce) {
       mole.classList.add('hint-loop')
@@ -1421,7 +1451,7 @@ function createMemory (root) {
       el.style.left = pos[i][0] + 'px'
       el.style.top = pos[i][1] + 'px'
       el.style.animationDelay = (i * 0.06) + 's'
-      el.innerHTML = `<div class="mcard-inner"><div class="mcard-back">${PAW}</div><div class="mcard-front"><span>${sym}</span></div></div>`
+      el.innerHTML = `<div class="mcard-inner"><div class="mcard-back">${PAW}</div><div class="mcard-front"><span>${symbolMarkup(sym)}</span></div></div>`
       grid.appendChild(el)
     })
   }
@@ -1497,7 +1527,7 @@ function createSpeak (root, { color = 0 } = {}) {
   micBtn.addEventListener('pointerdown', () => { if (handler) handler() })
 
   function show (symbol) {
-    signText.textContent = symbol
+    signText.innerHTML = symbolMarkup(symbol)
     signEl.classList.remove('glow')
     heardEl.textContent = ''
     heardEl.classList.remove('show')
@@ -1843,7 +1873,7 @@ function renderCheck (root, { audio, settings, onSettings, onClose }) {
   root.innerHTML = `
     <div class="panel">
       <div class="panel-head">
-        <h2>發音檢查</h2>
+        <h2>發音檢查 <small>37 個符號＋22 個結合韻</small></h2>
         <button class="panel-close" id="check-close">回家長區</button>
       </div>
       <div class="panel-row">

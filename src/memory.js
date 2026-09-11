@@ -1,7 +1,7 @@
 // 翻牌配對。幾對相同的符號蓋著，翻開唸音；找到一樣的兩張就配對成功。
 // 介面：start(symbols)、onFlip(fn)、onPair(fn)、onDone(fn)、destroy。配對邏輯在這裡，main.js 只管聲音和星星。
 
-import { homeBgSvg } from './art.js'
+import { homeBgSvg, symbolMarkup } from './art.js'
 
 // 卡片位置：依張數排格子（中心點）
 function layout (count) {
@@ -86,7 +86,7 @@ export function createMemory (root) {
       el.style.left = pos[i][0] + 'px'
       el.style.top = pos[i][1] + 'px'
       el.style.animationDelay = (i * 0.06) + 's'
-      el.innerHTML = `<div class="mcard-inner"><div class="mcard-back">${PAW}</div><div class="mcard-front"><span>${sym}</span></div></div>`
+      el.innerHTML = `<div class="mcard-inner"><div class="mcard-back">${PAW}</div><div class="mcard-front"><span>${symbolMarkup(sym)}</span></div></div>`
       grid.appendChild(el)
     })
   }
