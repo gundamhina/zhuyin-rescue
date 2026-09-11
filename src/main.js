@@ -110,6 +110,7 @@ function main () {
   }
 
   function destroyGame () {
+    clearIdle()
     if (game) game.destroy()
     game = null
     audio.stop()
@@ -125,7 +126,7 @@ function main () {
     runQuestions(which)
   }
 
-  gameEl.querySelector('#btn-quit').addEventListener('pointerdown', () => { busy = false; goHome() })
+  gameEl.querySelector('#btn-quit').addEventListener('pointerdown', () => { busy = false; clearIdle(); goHome() })
 
   function commit (answer) {
     state = recordAnswer(state, answer)
@@ -148,6 +149,22 @@ function main () {
   let firstAttempt = true
   let askedAt = 0
   let busy = false
+  let idleTimer = null
+
+  function clearIdle () { clearTimeout(idleTimer); idleTimer = null }
+
+  // 發呆太久：重唸一次、正確的晃一下。之後每隔同樣秒數再來一次。
+  function armIdle (q, myIndex, myGame) {
+    clearIdle()
+    if (!q.idleHint) return
+    idleTimer = setTimeout(async () => {
+      if (index !== myIndex || game !== myGame || busy) return
+      await audio.say(q.target)
+      if (index !== myIndex || game !== myGame) return
+      game.hint()
+      armIdle(q, myIndex, myGame)
+    }, q.idleHint * 1000)
+  }
 
   function runQuestions (which) {
     game = which === 'whack'
@@ -162,12 +179,13 @@ function main () {
     askQuestion()
   }
 
-  // 聲音一出來就開放點擊，不等唸完；提示晃動等唸完才開始
+  // 聲音一出來就開放點擊，不等唸完。一開始沒有提示，發呆太久才提示。
   async function askQuestion () {
     const q = round[index]
     const myIndex = index
     const myGame = game
     firstAttempt = true
+    clearIdle()
     busy = true
     game.start(q)
     game.lock()
@@ -182,7 +200,7 @@ function main () {
     }
     await audio.say(q.target, { onStart: open })
     open()
-    if (index === myIndex && game === myGame) game.hint(q.hint)
+    if (index === myIndex && game === myGame) armIdle(q, myIndex, myGame)
   }
 
   replayBtn.addEventListener('pointerdown', () => {
@@ -198,6 +216,7 @@ function main () {
     const ms = Date.now() - askedAt
     if (symbol === q.target) {
       busy = true
+      clearIdle()
       game.lock()
       if (firstAttempt) commit({ target: q.target, ok: true, picked: symbol, ms, drill: q.drill })
       earned.push(firstAttempt)
@@ -214,7 +233,7 @@ function main () {
       askQuestion()
       return
     }
-    // 答錯：第一次才記錄；選項晃、狗狗歪頭、正確的開始閃
+    // 答錯：第一次才記錄；錯的晃、狗狗歪頭、重唸一次。不顯示答案，她自己再選。
     if (firstAttempt) {
       commit({ target: q.target, ok: false, picked: symbol, ms, drill: q.drill })
       firstAttempt = false
@@ -222,7 +241,14 @@ function main () {
     audio.wrong()
     game.shake(symbol)
     game.sad()
-    game.flashCorrect()
+    const myIndex = index
+    const myGame = game
+    setTimeout(async () => {
+      if (index !== myIndex || game !== myGame) return
+      await audio.say(q.target)
+      if (index !== myIndex || game !== myGame) return
+      armIdle(q, myIndex, myGame)
+    }, 500)
   }
 
   // ---- 唸給狗狗聽：只記唸對，沒聽出來不算錯 ----
@@ -246,7 +272,7 @@ function main () {
     game.show(q.target)
     await wait(400)
     // 提示等級高的時候狗狗先示範一次，讓她跟著唸
-    if (q.hint >= 2 && game) await audio.say(q.target)
+    if (q.idleHint > 0 && game) await audio.say(q.target)
     busy = false
   }
 

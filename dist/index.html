@@ -328,13 +328,15 @@ const UNLOCK_STARS = 4
 const DRILL_CLEAR_STREAK = 3
 
 // 一個數字代表整體難度，往上走選項變多、干擾項變刁、提示變少。
+// idleHint：幾秒沒點就重唸並晃一下正確的（0 = 不提示）。只有最低兩階有，其他一律沒有。
+// 一開始永遠沒有提示，答錯也不顯示答案，只重唸一次。
 const TIERS = [
-  { options: 2, distract: 'random', hint: 2 },
-  { options: 3, distract: 'random', hint: 2 },
-  { options: 3, distract: 'shape', hint: 1 },
-  { options: 4, distract: 'shape', hint: 1 },
-  { options: 4, distract: 'sound', hint: 0 },
-  { options: 6, distract: 'sound', hint: 0 },
+  { options: 2, distract: 'random', idleHint: 10 },
+  { options: 3, distract: 'random', idleHint: 10 },
+  { options: 3, distract: 'shape', idleHint: 0 },
+  { options: 4, distract: 'shape', idleHint: 0 },
+  { options: 4, distract: 'sound', idleHint: 0 },
+  { options: 6, distract: 'sound', idleHint: 0 },
 ]
 
 function createState ({ known = [], groups = null } = {}) {
@@ -463,13 +465,13 @@ function buildRound (state, rng, size = ROUND_SIZE) {
       const key = drillKeys[Math.floor(rng() * drillKeys.length)]
       const pair = key.split('|')
       const target = pair[Math.floor(rng() * 2)]
-      round.push({ target, options: shuffle(pair, rng), hint: tier.hint, drill: key })
+      round.push({ target, options: shuffle(pair, rng), idleHint: tier.idleHint, drill: key })
       continue
     }
     const source = forced.has(i) ? weakest : pool
     const target = weightedPick(source, weightOf, rng)
     const distractors = pickDistractors(target, pool, optionCount - 1, tier.distract, rng)
-    round.push({ target, options: shuffle([target, ...distractors], rng), hint: tier.hint, drill: null })
+    round.push({ target, options: shuffle([target, ...distractors], rng), idleHint: tier.idleHint, drill: null })
   }
   return round
 }
@@ -1049,7 +1051,7 @@ function confettiHtml (count = 44) {
 
 // ===== fishing.js =====
 // 釣魚玩法。負責畫泡泡、接點擊、播動畫；對錯的判斷與記錄交給 main.js。
-// 介面（跟餵狗狗共用）：start(question)、lock/unlock、hint、shake、flashCorrect、celebrate(symbol)→Promise、sad、onAnswer(fn)、destroy。
+// 介面（跟打地鼠共用）：start(question)、lock/unlock、hint、shake、celebrate(symbol)→Promise、sad、onAnswer(fn)、destroy。
 
 
 // 各選項數的泡泡位置（1200×800 舞台座標）
@@ -1102,13 +1104,13 @@ function createFishing (root, { color = 0 } = {}) {
   function unlock () { locked = false }
   function lock () { locked = true }
 
-  // 提示：hint 2 一直晃、1 晃一次、0 不晃
-  function hint (level) {
+  // 提示：正確的泡泡晃一下就停
+  function hint () {
     const b = bubbleOf(current.target)
     if (!b) return
-    b.classList.remove('hint-once', 'hint-loop')
-    if (level >= 2) b.classList.add('hint-loop')
-    else if (level === 1) b.classList.add('hint-once')
+    b.classList.remove('hint-once')
+    void b.offsetWidth
+    b.classList.add('hint-once')
   }
 
   function shake (symbol) {
@@ -1119,10 +1121,6 @@ function createFishing (root, { color = 0 } = {}) {
     b.classList.add('shake')
   }
 
-  function flashCorrect () {
-    const b = bubbleOf(current.target)
-    if (b) { b.classList.remove('hint-once'); b.classList.add('hint-loop') }
-  }
 
   // 釣起來：泡泡飛向釣竿尖端，狗狗跳一下
   function celebrate (symbol) {
@@ -1154,13 +1152,13 @@ function createFishing (root, { color = 0 } = {}) {
   function onAnswer (fn) { handler = fn }
   function destroy () { root.innerHTML = ''; handler = null }
 
-  return { start, unlock, lock, hint, shake, flashCorrect, celebrate, sad, onAnswer, destroy }
+  return { start, unlock, lock, hint, shake, celebrate, sad, onAnswer, destroy }
 }
 
 // ===== whack.js =====
 // 打地鼠玩法。符號一個一個從洞裡冒出來又縮回去，狗狗喊一個音，拍到對的就過關。
 // 不計時、不扣分：沒拍到就等它下次再冒出來，拍錯才算錯（交給 main.js 記錄）。
-// 介面跟釣魚一樣：start、lock/unlock、hint、shake、flashCorrect、celebrate、sad、onAnswer、destroy。
+// 介面跟釣魚一樣：start、lock/unlock、hint、shake、celebrate、sad、onAnswer、destroy。
 
 
 const HOLES = [[330, 430], [600, 430], [870, 430], [460, 620], [730, 620], [1000, 620]]
@@ -1194,7 +1192,6 @@ function createWhack (root, { color = 0 } = {}) {
   let timer = null
   let queue = []
   let lastHole = -1
-  let glowTarget = false
   let glowOnce = false
   let upMole = null // 目前冒出來的那一個
 
@@ -1227,7 +1224,7 @@ function createWhack (root, { color = 0 } = {}) {
     mole.dataset.symbol = sym
     mole.querySelector('span').textContent = sym
     mole.classList.remove('shake', 'hit', 'hint-loop')
-    if (sym === current.target && (glowTarget || glowOnce)) {
+    if (sym === current.target && glowOnce) {
       mole.classList.add('hint-loop')
       glowOnce = false
     }
@@ -1250,7 +1247,6 @@ function createWhack (root, { color = 0 } = {}) {
     current = question
     locked = true
     queue = []
-    glowTarget = false
     glowOnce = false
     stopLoop()
     holes.forEach(h => {
@@ -1266,10 +1262,15 @@ function createWhack (root, { color = 0 } = {}) {
   }
   function lock () { locked = true }
 
-  // 提示：2 每次冒出來都發光、1 第一次發光、0 不提示
-  function hint (level) {
-    if (level >= 2) glowTarget = true
-    else if (level === 1) glowOnce = true
+  // 提示：目標下一次冒出來時發一次光；若它正好在外面，現在就發
+  function hint () {
+    if (upMole && upMole.dataset.symbol === current.target) {
+      upMole.classList.remove('hint-loop')
+      void upMole.offsetWidth
+      upMole.classList.add('hint-loop')
+      return
+    }
+    glowOnce = true
   }
   function shake (symbol) {
     const mole = upMole && upMole.dataset.symbol === symbol ? upMole : null
@@ -1278,7 +1279,6 @@ function createWhack (root, { color = 0 } = {}) {
     void mole.offsetWidth
     mole.classList.add('shake')
   }
-  function flashCorrect () { glowTarget = true }
 
   // 拍到了：停止冒出，那一個彈一下留在外面
   function celebrate (symbol) {
@@ -1300,7 +1300,7 @@ function createWhack (root, { color = 0 } = {}) {
   function onAnswer (fn) { handler = fn }
   function destroy () { stopLoop(); root.innerHTML = ''; handler = null }
 
-  return { start, unlock, lock, hint, shake, flashCorrect, celebrate, sad, onAnswer, destroy }
+  return { start, unlock, lock, hint, shake, celebrate, sad, onAnswer, destroy }
 }
 
 // ===== memory.js =====
@@ -1639,9 +1639,11 @@ function escapeHtml (s) {
 }
 
 // 大人面板：目前使用者的熟練度色塊、已經認得、試聽設定、匯出匯入、刪除使用者
-const TIER_LABELS = ['2 選項，隨機干擾，一直提示', '3 選項，隨機干擾，一直提示', '3 選項，形似干擾，提示一次', '4 選項，形似干擾，提示一次', '4 選項，音似干擾，不提示', '6 選項，音似干擾，不提示']
 const DISTRACT_LABEL = { random: '隨機', shape: '形似', sound: '音似' }
-const HINT_LABEL = ['不提示', '提示一次', '一直提示']
+function tierLabel (t) {
+  const idle = t.idleHint ? `發呆 ${t.idleHint} 秒才提示` : '不提示'
+  return `${t.options} 選項、${DISTRACT_LABEL[t.distract]}干擾、${idle}`
+}
 
 // 兩段式確認：第一下按鈕變成確認文字，4 秒內再按一下才執行。不用瀏覽器對話框。
 function armButton (btn, confirmText, onConfirm) {
@@ -1701,7 +1703,7 @@ function renderPanel (root, { profile, profiles, state, settings, voices, onKnow
       </div>
       ${profile ? `
       <div class="panel-row">
-        <div>目前出題階級：<b>${effectiveTier(state) + 1}</b> / 6（${TIER_LABELS[effectiveTier(state)]}）</div>
+        <div>目前出題階級：<b>${effectiveTier(state) + 1}</b> / 6（${tierLabel(TIERS[effectiveTier(state)])}）</div>
         <div>自動判定：第 <b>${state.tier + 1}</b> 階
           <button class="mini" id="tier-down" title="降一階" ${state.tier <= 0 ? 'disabled' : ''}>−</button>
           <button class="mini" id="tier-up" title="跳一階" ${state.tier >= TIERS.length - 1 ? 'disabled' : ''}>＋</button>
@@ -1712,7 +1714,7 @@ function renderPanel (root, { profile, profiles, state, settings, voices, onKnow
         <label>難度
           <select id="sel-tier">
             <option value="" ${state.lockTier == null ? 'selected' : ''}>自動（連對升、連錯降）</option>
-            ${TIERS.map((t, i) => `<option value="${i}" ${state.lockTier === i ? 'selected' : ''}>鎖在第 ${i + 1} 階：${t.options} 選項、${DISTRACT_LABEL[t.distract]}干擾、${HINT_LABEL[t.hint]}</option>`).join('')}
+            ${TIERS.map((t, i) => `<option value="${i}" ${state.lockTier === i ? 'selected' : ''}>鎖在第 ${i + 1} 階：${tierLabel(t)}</option>`).join('')}
           </select>
         </label>
         <div class="range-pick">
@@ -1900,6 +1902,7 @@ function main () {
   }
 
   function destroyGame () {
+    clearIdle()
     if (game) game.destroy()
     game = null
     audio.stop()
@@ -1915,7 +1918,7 @@ function main () {
     runQuestions(which)
   }
 
-  gameEl.querySelector('#btn-quit').addEventListener('pointerdown', () => { busy = false; goHome() })
+  gameEl.querySelector('#btn-quit').addEventListener('pointerdown', () => { busy = false; clearIdle(); goHome() })
 
   function commit (answer) {
     state = recordAnswer(state, answer)
@@ -1938,6 +1941,22 @@ function main () {
   let firstAttempt = true
   let askedAt = 0
   let busy = false
+  let idleTimer = null
+
+  function clearIdle () { clearTimeout(idleTimer); idleTimer = null }
+
+  // 發呆太久：重唸一次、正確的晃一下。之後每隔同樣秒數再來一次。
+  function armIdle (q, myIndex, myGame) {
+    clearIdle()
+    if (!q.idleHint) return
+    idleTimer = setTimeout(async () => {
+      if (index !== myIndex || game !== myGame || busy) return
+      await audio.say(q.target)
+      if (index !== myIndex || game !== myGame) return
+      game.hint()
+      armIdle(q, myIndex, myGame)
+    }, q.idleHint * 1000)
+  }
 
   function runQuestions (which) {
     game = which === 'whack'
@@ -1952,12 +1971,13 @@ function main () {
     askQuestion()
   }
 
-  // 聲音一出來就開放點擊，不等唸完；提示晃動等唸完才開始
+  // 聲音一出來就開放點擊，不等唸完。一開始沒有提示，發呆太久才提示。
   async function askQuestion () {
     const q = round[index]
     const myIndex = index
     const myGame = game
     firstAttempt = true
+    clearIdle()
     busy = true
     game.start(q)
     game.lock()
@@ -1972,7 +1992,7 @@ function main () {
     }
     await audio.say(q.target, { onStart: open })
     open()
-    if (index === myIndex && game === myGame) game.hint(q.hint)
+    if (index === myIndex && game === myGame) armIdle(q, myIndex, myGame)
   }
 
   replayBtn.addEventListener('pointerdown', () => {
@@ -1988,6 +2008,7 @@ function main () {
     const ms = Date.now() - askedAt
     if (symbol === q.target) {
       busy = true
+      clearIdle()
       game.lock()
       if (firstAttempt) commit({ target: q.target, ok: true, picked: symbol, ms, drill: q.drill })
       earned.push(firstAttempt)
@@ -2004,7 +2025,7 @@ function main () {
       askQuestion()
       return
     }
-    // 答錯：第一次才記錄；選項晃、狗狗歪頭、正確的開始閃
+    // 答錯：第一次才記錄；錯的晃、狗狗歪頭、重唸一次。不顯示答案，她自己再選。
     if (firstAttempt) {
       commit({ target: q.target, ok: false, picked: symbol, ms, drill: q.drill })
       firstAttempt = false
@@ -2012,7 +2033,14 @@ function main () {
     audio.wrong()
     game.shake(symbol)
     game.sad()
-    game.flashCorrect()
+    const myIndex = index
+    const myGame = game
+    setTimeout(async () => {
+      if (index !== myIndex || game !== myGame) return
+      await audio.say(q.target)
+      if (index !== myIndex || game !== myGame) return
+      armIdle(q, myIndex, myGame)
+    }, 500)
   }
 
   // ---- 唸給狗狗聽：只記唸對，沒聽出來不算錯 ----
@@ -2036,7 +2064,7 @@ function main () {
     game.show(q.target)
     await wait(400)
     // 提示等級高的時候狗狗先示範一次，讓她跟著唸
-    if (q.hint >= 2 && game) await audio.say(q.target)
+    if (q.idleHint > 0 && game) await audio.say(q.target)
     busy = false
   }
 

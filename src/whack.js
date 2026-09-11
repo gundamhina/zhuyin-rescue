@@ -1,6 +1,6 @@
 // 打地鼠玩法。符號一個一個從洞裡冒出來又縮回去，狗狗喊一個音，拍到對的就過關。
 // 不計時、不扣分：沒拍到就等它下次再冒出來，拍錯才算錯（交給 main.js 記錄）。
-// 介面跟釣魚一樣：start、lock/unlock、hint、shake、flashCorrect、celebrate、sad、onAnswer、destroy。
+// 介面跟釣魚一樣：start、lock/unlock、hint、shake、celebrate、sad、onAnswer、destroy。
 
 import { dogSvg, homeBgSvg } from './art.js'
 
@@ -35,7 +35,6 @@ export function createWhack (root, { color = 0 } = {}) {
   let timer = null
   let queue = []
   let lastHole = -1
-  let glowTarget = false
   let glowOnce = false
   let upMole = null // 目前冒出來的那一個
 
@@ -68,7 +67,7 @@ export function createWhack (root, { color = 0 } = {}) {
     mole.dataset.symbol = sym
     mole.querySelector('span').textContent = sym
     mole.classList.remove('shake', 'hit', 'hint-loop')
-    if (sym === current.target && (glowTarget || glowOnce)) {
+    if (sym === current.target && glowOnce) {
       mole.classList.add('hint-loop')
       glowOnce = false
     }
@@ -91,7 +90,6 @@ export function createWhack (root, { color = 0 } = {}) {
     current = question
     locked = true
     queue = []
-    glowTarget = false
     glowOnce = false
     stopLoop()
     holes.forEach(h => {
@@ -107,10 +105,15 @@ export function createWhack (root, { color = 0 } = {}) {
   }
   function lock () { locked = true }
 
-  // 提示：2 每次冒出來都發光、1 第一次發光、0 不提示
-  function hint (level) {
-    if (level >= 2) glowTarget = true
-    else if (level === 1) glowOnce = true
+  // 提示：目標下一次冒出來時發一次光；若它正好在外面，現在就發
+  function hint () {
+    if (upMole && upMole.dataset.symbol === current.target) {
+      upMole.classList.remove('hint-loop')
+      void upMole.offsetWidth
+      upMole.classList.add('hint-loop')
+      return
+    }
+    glowOnce = true
   }
   function shake (symbol) {
     const mole = upMole && upMole.dataset.symbol === symbol ? upMole : null
@@ -119,7 +122,6 @@ export function createWhack (root, { color = 0 } = {}) {
     void mole.offsetWidth
     mole.classList.add('shake')
   }
-  function flashCorrect () { glowTarget = true }
 
   // 拍到了：停止冒出，那一個彈一下留在外面
   function celebrate (symbol) {
@@ -141,5 +143,5 @@ export function createWhack (root, { color = 0 } = {}) {
   function onAnswer (fn) { handler = fn }
   function destroy () { stopLoop(); root.innerHTML = ''; handler = null }
 
-  return { start, unlock, lock, hint, shake, flashCorrect, celebrate, sad, onAnswer, destroy }
+  return { start, unlock, lock, hint, shake, celebrate, sad, onAnswer, destroy }
 }

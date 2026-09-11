@@ -1,5 +1,5 @@
 // 釣魚玩法。負責畫泡泡、接點擊、播動畫；對錯的判斷與記錄交給 main.js。
-// 介面（跟餵狗狗共用）：start(question)、lock/unlock、hint、shake、flashCorrect、celebrate(symbol)→Promise、sad、onAnswer(fn)、destroy。
+// 介面（跟打地鼠共用）：start(question)、lock/unlock、hint、shake、celebrate(symbol)→Promise、sad、onAnswer(fn)、destroy。
 
 import { dogSvg, sceneSvg } from './art.js'
 
@@ -53,13 +53,13 @@ export function createFishing (root, { color = 0 } = {}) {
   function unlock () { locked = false }
   function lock () { locked = true }
 
-  // 提示：hint 2 一直晃、1 晃一次、0 不晃
-  function hint (level) {
+  // 提示：正確的泡泡晃一下就停
+  function hint () {
     const b = bubbleOf(current.target)
     if (!b) return
-    b.classList.remove('hint-once', 'hint-loop')
-    if (level >= 2) b.classList.add('hint-loop')
-    else if (level === 1) b.classList.add('hint-once')
+    b.classList.remove('hint-once')
+    void b.offsetWidth
+    b.classList.add('hint-once')
   }
 
   function shake (symbol) {
@@ -70,10 +70,6 @@ export function createFishing (root, { color = 0 } = {}) {
     b.classList.add('shake')
   }
 
-  function flashCorrect () {
-    const b = bubbleOf(current.target)
-    if (b) { b.classList.remove('hint-once'); b.classList.add('hint-loop') }
-  }
 
   // 釣起來：泡泡飛向釣竿尖端，狗狗跳一下
   function celebrate (symbol) {
@@ -105,5 +101,5 @@ export function createFishing (root, { color = 0 } = {}) {
   function onAnswer (fn) { handler = fn }
   function destroy () { root.innerHTML = ''; handler = null }
 
-  return { start, unlock, lock, hint, shake, flashCorrect, celebrate, sad, onAnswer, destroy }
+  return { start, unlock, lock, hint, shake, celebrate, sad, onAnswer, destroy }
 }

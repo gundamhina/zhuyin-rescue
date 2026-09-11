@@ -138,9 +138,11 @@ function escapeHtml (s) {
 }
 
 // 大人面板：目前使用者的熟練度色塊、已經認得、試聽設定、匯出匯入、刪除使用者
-const TIER_LABELS = ['2 選項，隨機干擾，一直提示', '3 選項，隨機干擾，一直提示', '3 選項，形似干擾，提示一次', '4 選項，形似干擾，提示一次', '4 選項，音似干擾，不提示', '6 選項，音似干擾，不提示']
 const DISTRACT_LABEL = { random: '隨機', shape: '形似', sound: '音似' }
-const HINT_LABEL = ['不提示', '提示一次', '一直提示']
+function tierLabel (t) {
+  const idle = t.idleHint ? `發呆 ${t.idleHint} 秒才提示` : '不提示'
+  return `${t.options} 選項、${DISTRACT_LABEL[t.distract]}干擾、${idle}`
+}
 
 // 兩段式確認：第一下按鈕變成確認文字，4 秒內再按一下才執行。不用瀏覽器對話框。
 function armButton (btn, confirmText, onConfirm) {
@@ -200,7 +202,7 @@ export function renderPanel (root, { profile, profiles, state, settings, voices,
       </div>
       ${profile ? `
       <div class="panel-row">
-        <div>目前出題階級：<b>${effectiveTier(state) + 1}</b> / 6（${TIER_LABELS[effectiveTier(state)]}）</div>
+        <div>目前出題階級：<b>${effectiveTier(state) + 1}</b> / 6（${tierLabel(TIERS[effectiveTier(state)])}）</div>
         <div>自動判定：第 <b>${state.tier + 1}</b> 階
           <button class="mini" id="tier-down" title="降一階" ${state.tier <= 0 ? 'disabled' : ''}>−</button>
           <button class="mini" id="tier-up" title="跳一階" ${state.tier >= TIERS.length - 1 ? 'disabled' : ''}>＋</button>
@@ -211,7 +213,7 @@ export function renderPanel (root, { profile, profiles, state, settings, voices,
         <label>難度
           <select id="sel-tier">
             <option value="" ${state.lockTier == null ? 'selected' : ''}>自動（連對升、連錯降）</option>
-            ${TIERS.map((t, i) => `<option value="${i}" ${state.lockTier === i ? 'selected' : ''}>鎖在第 ${i + 1} 階：${t.options} 選項、${DISTRACT_LABEL[t.distract]}干擾、${HINT_LABEL[t.hint]}</option>`).join('')}
+            ${TIERS.map((t, i) => `<option value="${i}" ${state.lockTier === i ? 'selected' : ''}>鎖在第 ${i + 1} 階：${tierLabel(t)}</option>`).join('')}
           </select>
         </label>
         <div class="range-pick">

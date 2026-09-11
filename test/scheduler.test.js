@@ -185,7 +185,7 @@ test('鎖定難度階級後，出題用鎖定的階級，自動升降照常記�
   for (const q of buildRound(s, seededRng())) {
     if (q.drill) continue;
     assert.equal(q.options.length, Math.min(TIERS[3].options, GROUPS[0].length));
-    assert.equal(q.hint, TIERS[3].hint);
+    assert.equal(q.idleHint, TIERS[3].idleHint);
   }
   s = answerN(s, 'ㄚ', true, 10);
   assert.equal(s.tier, 1, '背景的自動階級照常升');
@@ -259,4 +259,12 @@ test('翻牌選符號時弱的比強的常被挑到', () => {
     }
   }
   assert.ok(weak > strong * 2, `弱 ${weak} 強 ${strong}`);
+});
+
+test('只有最低兩階有發呆 10 秒提示，其他階級沒有任何提示', () => {
+  for (const t of TIERS) assert.equal(typeof t.idleHint, 'number');
+  assert.equal(TIERS[0].idleHint, 10);
+  assert.equal(TIERS[1].idleHint, 10);
+  for (const t of TIERS.slice(2)) assert.equal(t.idleHint, 0);
+  for (const t of TIERS) assert.equal(t.wrongHint, undefined, '答錯不顯示答案，沒有這個設定');
 });

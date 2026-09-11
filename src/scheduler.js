@@ -10,13 +10,15 @@ export const UNLOCK_STARS = 4
 export const DRILL_CLEAR_STREAK = 3
 
 // 一個數字代表整體難度，往上走選項變多、干擾項變刁、提示變少。
+// idleHint：幾秒沒點就重唸並晃一下正確的（0 = 不提示）。只有最低兩階有，其他一律沒有。
+// 一開始永遠沒有提示，答錯也不顯示答案，只重唸一次。
 export const TIERS = [
-  { options: 2, distract: 'random', hint: 2 },
-  { options: 3, distract: 'random', hint: 2 },
-  { options: 3, distract: 'shape', hint: 1 },
-  { options: 4, distract: 'shape', hint: 1 },
-  { options: 4, distract: 'sound', hint: 0 },
-  { options: 6, distract: 'sound', hint: 0 },
+  { options: 2, distract: 'random', idleHint: 10 },
+  { options: 3, distract: 'random', idleHint: 10 },
+  { options: 3, distract: 'shape', idleHint: 0 },
+  { options: 4, distract: 'shape', idleHint: 0 },
+  { options: 4, distract: 'sound', idleHint: 0 },
+  { options: 6, distract: 'sound', idleHint: 0 },
 ]
 
 export function createState ({ known = [], groups = null } = {}) {
@@ -145,13 +147,13 @@ export function buildRound (state, rng, size = ROUND_SIZE) {
       const key = drillKeys[Math.floor(rng() * drillKeys.length)]
       const pair = key.split('|')
       const target = pair[Math.floor(rng() * 2)]
-      round.push({ target, options: shuffle(pair, rng), hint: tier.hint, drill: key })
+      round.push({ target, options: shuffle(pair, rng), idleHint: tier.idleHint, drill: key })
       continue
     }
     const source = forced.has(i) ? weakest : pool
     const target = weightedPick(source, weightOf, rng)
     const distractors = pickDistractors(target, pool, optionCount - 1, tier.distract, rng)
-    round.push({ target, options: shuffle([target, ...distractors], rng), hint: tier.hint, drill: null })
+    round.push({ target, options: shuffle([target, ...distractors], rng), idleHint: tier.idleHint, drill: null })
   }
   return round
 }
