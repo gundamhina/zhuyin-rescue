@@ -3,8 +3,12 @@
 
 // 符號怎麼顯示：單一符號直接放，結合韻兩個直排
 export function symbolMarkup (sym) {
-  if (sym.length < 2) return sym
-  return `<span class="compound n${sym.length}">${[...sym].map(ch => `<i>${ch}</i>`).join('')}</span>`
+  const tone = (sym.match(/[ˊˇˋ˙]$/) || [''])[0]
+  const core = tone ? sym.slice(0, -1) : sym
+  if (core.length < 2 && !tone) return sym
+  const marks = [...core].map(ch => `<i>${ch}</i>`).join('')
+  const toneHtml = tone ? `<b class="tone">${tone}</b>` : ''
+  return `<span class="compound n${core.length}">${marks}${toneHtml}</span>`
 }
 
 // 六隻救援狗的配色：帽子／背心顏色，深色版做陰影

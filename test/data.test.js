@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { SYMBOLS, COMPOUNDS, SYLLABLES, ALL_SYMBOLS, GROUPS, REP_CHAR, SIMILAR_SHAPE, SIMILAR_SOUND, SPEAK_ACCEPT } from '../src/data.js';
+import { SYMBOLS, COMPOUNDS, SYLLABLES, ALL_SYMBOLS, GROUPS, REP_CHAR, SIMILAR_SHAPE, SIMILAR_SOUND, SPEAK_ACCEPT, coreOf, TONE_MARKS } from '../src/data.js';
 
 test('有 37 個不重複的注音符號', () => {
   assert.equal(SYMBOLS.length, 37);
@@ -23,13 +23,20 @@ test('拼讀字：六組各 8 到 12 個，兩拼或三拼，每個部件都是�
   for (const g of GROUPS.slice(13)) assert.ok(g.length >= 8 && g.length <= 12, `一組 ${g.length} 個`);
   const initials = SYMBOLS.slice(0, 21);
   for (const w of SYLLABLES) {
-    assert.ok(w.length === 2 || w.length === 3, `${w} 長度不對`);
-    assert.ok(initials.includes(w[0]), `${w} 不是聲符開頭`);
-    for (const ch of w) assert.ok(SYMBOLS.includes(ch), `${w} 含非法符號 ${ch}`);
+    const core = coreOf(w);
+    assert.ok(core.length === 2 || core.length === 3, `${w} 長度不對`);
+    assert.ok(initials.includes(core[0]), `${w} 不是聲符開頭`);
+    for (const ch of core) assert.ok(SYMBOLS.includes(ch), `${w} 含非法符號 ${ch}`);
+    const tone = w.slice(core.length);
+    assert.ok(tone === '' || (tone.length === 1 && TONE_MARKS.includes(tone)), `${w} 調號不對`);
   }
   // 前四組兩拼、後兩組三拼
-  for (const w of GROUPS.slice(13, 17).flat()) assert.equal(w.length, 2, `${w} 應為兩拼`);
-  for (const w of GROUPS.slice(17).flat()) assert.equal(w.length, 3, `${w} 應為三拼`);
+  for (const w of GROUPS.slice(13, 17).flat()) assert.equal(coreOf(w).length, 2, `${w} 應為兩拼`);
+  for (const w of GROUPS.slice(17).flat()) assert.equal(coreOf(w).length, 3, `${w} 應為三拼`);
+  // 幾個代表字是二三四聲的要帶調號
+  assert.ok(SYLLABLES.includes('ㄉㄢˋ'), '蛋是四聲');
+  assert.ok(SYLLABLES.includes('ㄒㄧㄠˇ'), '小是三聲');
+  assert.ok(SYLLABLES.includes('ㄇㄠ'), '貓是一聲不標');
 });
 
 test('十九組合起來是 37 符號、22 結合韻、全部拼讀字', () => {

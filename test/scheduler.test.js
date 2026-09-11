@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   createState, stars, activePool, buildRound, recordAnswer, resetProgress, pickSymbols, TIERS,
 } from '../src/scheduler.js';
-import { GROUPS } from '../src/data.js';
+import { GROUPS, coreOf } from '../src/data.js';
 
 // 固定亂數，讓測試可重現
 function seededRng(seed = 1) {
@@ -280,8 +280,9 @@ test('拼讀字的干擾項優先挑只差一個符號的', () => {
       for (const o of q.options) {
         if (o === q.target) continue;
         total++;
-        const shared = [...o].filter((ch, k) => q.target[k] === ch).length;
-        if (o.length === q.target.length && shared === o.length - 1) close++;
+        const oc = coreOf(o), tc = coreOf(q.target);
+        const shared = [...oc].filter((ch, k) => tc[k] === ch).length;
+        if (oc.length === tc.length && shared === oc.length - 1) close++;
       }
     }
   }
