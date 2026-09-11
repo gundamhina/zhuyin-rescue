@@ -13,7 +13,7 @@ export function renderCheck (root, { audio, settings, onSettings, onClose }) {
   root.innerHTML = `
     <div class="panel">
       <div class="panel-head">
-        <h2>發音檢查 <small>37 個符號＋22 個結合韻</small></h2>
+        <h2>發音檢查 <small>37 個符號＋22 個結合韻＋72 個拼讀字</small></h2>
         <button class="panel-close" id="check-close">回家長區</button>
       </div>
       <div class="panel-row">

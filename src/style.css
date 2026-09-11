@@ -236,3 +236,6 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .compound { display: inline-flex; flex-direction: column; align-items: center; line-height: 0.92; }
 .compound i { font-style: normal; font-size: 0.58em; }
 .ptile-sym .compound i { font-size: 0.6em; }
+
+.compound.n3 i { font-size: 0.42em; }
+.ptile-sym .compound.n3 i { font-size: 0.44em; }

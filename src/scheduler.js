@@ -109,11 +109,24 @@ function partnersOf (symbol, pairs) {
   return out
 }
 
+// 兩個字有幾個位置的符號一樣（長度不同算 0）
+function sharedSymbols (a, b) {
+  if (a.length !== b.length) return 0
+  let n = 0
+  for (let i = 0; i < a.length; i++) if (a[i] === b[i]) n++
+  return n
+}
+
 function pickDistractors (target, pool, count, mode, rng) {
   const candidates = pool.filter(s => s !== target)
   const preferred = []
   if (mode === 'sound') preferred.push(...partnersOf(target, SIMILAR_SOUND))
   if (mode === 'sound' || mode === 'shape') preferred.push(...partnersOf(target, SIMILAR_SHAPE))
+  // 拼讀字：形似／音似階級優先挑只差一個符號的，越像越前面
+  if (target.length > 1 && mode !== 'random') {
+    const close = shuffle(candidates.filter(c => sharedSymbols(target, c) >= target.length - 1), rng)
+    preferred.push(...close)
+  }
   const chosen = []
   for (const p of preferred) {
     if (chosen.length >= count) break

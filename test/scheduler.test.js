@@ -268,3 +268,23 @@ test('只有最低兩階有發呆 10 秒提示，其他階級沒有任何提示'
   for (const t of TIERS.slice(2)) assert.equal(t.idleHint, 0);
   for (const t of TIERS) assert.equal(t.wrongHint, undefined, '答錯不顯示答案，沒有這個設定');
 });
+
+test('拼讀字的干擾項優先挑只差一個符號的', () => {
+  // 把範圍鎖在第 14 組（ㄅㄆㄇㄈ 兩拼），鎖形似階（3 選項）
+  const s = { ...createState(), rangeGroups: [13], lockTier: 2 };
+  const rng = seededRng(21);
+  let total = 0, close = 0;
+  for (let i = 0; i < 60; i++) {
+    for (const q of buildRound(s, rng)) {
+      if (q.drill) continue;
+      for (const o of q.options) {
+        if (o === q.target) continue;
+        total++;
+        const shared = [...o].filter((ch, k) => q.target[k] === ch).length;
+        if (o.length === q.target.length && shared === o.length - 1) close++;
+      }
+    }
+  }
+  assert.ok(total > 50, `樣本 ${total}`);
+  assert.ok(close / total > 0.8, `只差一個符號的比例 ${close}/${total}`);
+});

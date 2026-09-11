@@ -4,7 +4,7 @@
 // 符號怎麼顯示：單一符號直接放，結合韻兩個直排
 export function symbolMarkup (sym) {
   if (sym.length < 2) return sym
-  return `<span class="compound">${[...sym].map(ch => `<i>${ch}</i>`).join('')}</span>`
+  return `<span class="compound n${sym.length}">${[...sym].map(ch => `<i>${ch}</i>`).join('')}</span>`
 }
 
 // 六隻救援狗的配色：帽子／背心顏色，深色版做陰影
