@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  createState, stars, activePool, buildRound, recordAnswer, resetProgress, pickSymbols, TIERS,
+  createState, stars, activePool, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, TIERS,
 } from '../src/scheduler.js';
 import { GROUPS, coreOf } from '../src/data.js';
 
@@ -288,4 +288,19 @@ test('拼讀字的干擾項優先挑只差一個符號的', () => {
   }
   assert.ok(total > 50, `樣本 ${total}`);
   assert.ok(close / total > 0.8, `只差一個符號的比例 ${close}/${total}`);
+});
+
+test('寫字用的狀態：只保留單一符號的組別（前十組裡已解鎖或指定範圍的）', () => {
+  let s = createState();
+  s = { ...s, unlockedUpTo: 12 }; // 解鎖到結合韻
+  const w = singleSymbolState(s);
+  const pool = activePool(w);
+  assert.ok(pool.length >= 37, `應包含前十組 ${pool.length}`);
+  for (const sym of pool) assert.equal(sym.length, 1, `${sym} 不是單一符號`);
+  // 家長把範圍指到拼讀組時，退回第一組
+  const r = singleSymbolState({ ...createState(), rangeGroups: [14, 15] });
+  assert.deepEqual(activePool(r), GROUPS[0]);
+  // 範圍含單一符號組就只留那些
+  const m = singleSymbolState({ ...createState(), rangeGroups: [4, 14] });
+  assert.deepEqual(activePool(m), GROUPS[4]);
 });

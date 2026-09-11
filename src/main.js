@@ -1,12 +1,13 @@
 // 把所有模組接起來：使用者、狀態、出題、三種玩法、畫面切換。
 
-import { buildRound, recordAnswer, resetProgress, pickSymbols } from './scheduler.js'
+import { buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, effectiveTier } from './scheduler.js'
 import { createStore } from './store.js'
 import { createAudio } from './audio.js'
 import { createFishing } from './fishing.js'
 import { createWhack } from './whack.js'
 import { createMemory } from './memory.js'
 import { createSpeak, speechAvailable, listen, matchesSymbol } from './speak.js'
+import { createWrite } from './write.js'
 import { fitStage, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage } from './ui.js'
 import { renderCheck } from './check.js'
 
@@ -168,11 +169,12 @@ function main () {
   }
 
   function runQuestions (which) {
-    game = which === 'whack'
-      ? createWhack(playArea, { color: profile.color })
-      : createFishing(playArea, { color: profile.color })
+    if (which === 'whack') game = createWhack(playArea, { color: profile.color })
+    else if (which === 'write') game = createWrite(playArea, { color: profile.color })
+    else game = createFishing(playArea, { color: profile.color })
     replayBtn.classList.remove('hidden')
-    round = buildRound(state, Math.random)
+    // 寫字只出單一符號；低階級描寫、高階級聽寫
+    round = which === 'write' ? buildRound(singleSymbolState(state), Math.random) : buildRound(state, Math.random)
     index = 0
     starTotal = round.length
     setStars()
@@ -188,7 +190,7 @@ function main () {
     firstAttempt = true
     clearIdle()
     busy = true
-    game.start(q)
+    game.start(q, { isTrace: kind === 'write' && effectiveTier(state) <= 1 })
     game.lock()
     await wait(350)
     let opened = false
@@ -215,6 +217,8 @@ function main () {
     if (busy) return
     const q = round[index]
     const ms = Date.now() - askedAt
+    // 描寫沒蓋好：不算錯，晃一下讓她再寫
+    if (symbol === '__miss__') { audio.wrong(); game.shake(); game.sad(); return }
     if (symbol === q.target) {
       busy = true
       clearIdle()
@@ -223,7 +227,7 @@ function main () {
       earned.push(firstAttempt)
       setStars()
       audio.stop()
-      if (kind === 'whack') audio.crunch(); else audio.splash()
+      if (kind === 'whack') audio.crunch(); else if (kind === 'write') audio.ding(); else audio.splash()
       await game.celebrate(symbol)
       if (!game) return // 中途按了回首頁
       audio.ding()

@@ -173,6 +173,20 @@ export function buildRound (state, rng, size = ROUND_SIZE) {
   return round
 }
 
+// 寫字用：只留單一符號的組（前十組）。家長指定的範圍若沒有單一符號組，退回第一組。
+export function singleSymbolState (state) {
+  const groups = state.groups || GROUPS
+  const singles = [...groups.keys()].filter(i => groups[i].every(s => s.length === 1))
+  let chosen
+  if (Array.isArray(state.rangeGroups) && state.rangeGroups.length) {
+    chosen = state.rangeGroups.filter(i => singles.includes(i))
+  } else {
+    chosen = singles.filter(i => i < unlockedCount(state))
+  }
+  if (!chosen.length) chosen = [singles[0]]
+  return { ...state, rangeGroups: chosen }
+}
+
 // 翻牌用：從出題池挑 n 個不重複的符號，弱的優先。池子不夠就全給。
 export function pickSymbols (state, rng, n) {
   let candidates = activePool(state)

@@ -236,6 +236,17 @@ export function cardArt (kind) {
   <ellipse cx="220" cy="262" rx="56" ry="14" fill="#3E2A1A"/>
 </svg>`
   }
+  if (kind === 'write') {
+    return `<img class="art-slot" src="img/card-write.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="400" fill="#EAF1EC"/>
+  <rect x="40" y="60" width="220" height="220" rx="24" fill="#FFFDF7" stroke="#B08A63" stroke-width="8"/>
+  <text x="150" y="215" text-anchor="middle" font-size="150" font-weight="900" fill="#CFD8E3" font-family="Microsoft JhengHei, sans-serif">ㄅ</text>
+  <path d="M120 120 q10 60 -4 120 q40 -6 62 -30" fill="none" stroke="#2B3A4A" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="200" y="290" width="26" height="90" rx="8" fill="#E0955B" transform="rotate(-30 213 335)"/>
+  <polygon points="188,372 200,395 210,380" fill="#2B3A4A" transform="rotate(-30 213 335)"/>
+</svg>`
+  }
   if (kind === 'speak') {
     return `<img class="art-slot" src="img/card-speak.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">

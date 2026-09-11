@@ -64,12 +64,12 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .who-avatar .dog { width: 74px; height: 86px; margin-bottom: -6px; }
 .who-avatar .rod { display: none; }
 .who-name { font-size: 34px; font-weight: 900; color: #2B3A4A; }
-.cards { position: absolute; left: 0; right: 0; top: 190px; display: flex; justify-content: center; align-items: flex-end; gap: 34px; }
-.card { position: relative; width: 250px; height: 334px; border-radius: 34px; background: #fff; border: 8px solid #fff; overflow: hidden; box-shadow: 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,0.22); transition: transform .12s, box-shadow .12s; }
+.cards { position: absolute; left: 0; right: 0; top: 210px; display: flex; justify-content: center; align-items: flex-end; gap: 22px; }
+.card { position: relative; width: 208px; height: 278px; border-radius: 30px; background: #fff; border: 8px solid #fff; overflow: hidden; box-shadow: 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,0.22); transition: transform .12s, box-shadow .12s; }
 .card:nth-child(1) { transform: rotate(-3deg); }
-.card:nth-child(2) { transform: rotate(-1deg); }
-.card:nth-child(3) { transform: rotate(1deg); }
-.card:nth-child(4) { transform: rotate(3deg); }
+.card:nth-child(2) { transform: rotate(-1.5deg); }
+.card:nth-child(4) { transform: rotate(1.5deg); }
+.card:nth-child(5) { transform: rotate(3deg); }
 .card:active { transform: translateY(10px) scale(0.98); box-shadow: 0 4px 0 #A9BFCF; }
 .card.locked .card-pic { filter: grayscale(0.9) brightness(0.9); opacity: 0.55; }
 .card-pic { width: 100%; height: 100%; border-radius: 30px; overflow: hidden; }
@@ -243,3 +243,21 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .compound { position: relative; }
 .compound .tone { position: absolute; right: -0.42em; bottom: 0.05em; font-size: 0.5em; font-weight: 900; line-height: 1; }
 .compound.n2 .tone { bottom: 0.15em; }
+
+/* ---- 寫給狗狗看 ---- */
+.write-dog { left: 40px; top: 300px; width: 300px; height: 346px; }
+.write-dog .dog { width: 300px; height: 346px; }
+.write-dog .dog-slot .art-slot { width: 300px; height: 346px; }
+.pad-wrap { position: absolute; left: 400px; top: 120px; width: 560px; height: 560px; border-radius: 36px; background: #FFFDF7; border: 10px solid #B08A63; box-shadow: 0 12px 0 #8E6D4C, 0 20px 30px rgba(0,0,0,0.18); }
+.pad-wrap.shake { animation: shake .45s ease-in-out; }
+.pad-wrap.glow { box-shadow: 0 0 0 18px rgba(232,200,106,0.75), 0 12px 0 #8E6D4C; }
+.pad { position: absolute; left: 0; top: 0; width: 540px; height: 540px; touch-action: none; cursor: crosshair; border-radius: 26px; }
+.pad-template { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: 0; transition: opacity .3s; }
+.pad-template.show { opacity: 1; }
+.pad-template.flash { animation: tplFlash 1.5s ease-in-out; }
+@keyframes tplFlash { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
+.pad-template span { font-size: 400px; font-weight: 900; color: #D5DEE8; line-height: 1; }
+.pad-ok { position: absolute; right: -70px; bottom: -30px; width: 130px; height: 130px; border-radius: 50%; background: #6B9E6B; border: 8px solid #F6F3E6; box-shadow: 0 10px 0 #4E7A4E, 0 16px 26px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; }
+.pad-ok:active { transform: translateY(6px); box-shadow: 0 4px 0 #4E7A4E; }
+.pad-undo { position: absolute; right: -50px; top: -20px; width: 84px; height: 84px; border-radius: 50%; background: #E0955B; border: 6px solid #F6F3E6; box-shadow: 0 8px 0 #B07242; display: flex; align-items: center; justify-content: center; }
+.pad-undo:active { transform: translateY(5px); box-shadow: 0 3px 0 #B07242; }

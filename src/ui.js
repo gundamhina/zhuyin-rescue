@@ -91,6 +91,9 @@ export function renderHome (root, { profile, speech = true }) {
       <button class="card" data-game="memory" aria-label="翻牌">
         <div class="card-pic">${cardArt('memory')}</div>
       </button>
+      <button class="card" data-game="write" aria-label="寫給狗狗看">
+        <div class="card-pic">${cardArt('write')}</div>
+      </button>
       <button class="card ${speech ? '' : 'hidden'}" data-game="speak" aria-label="唸給狗狗聽">
         <div class="card-pic">${cardArt('speak')}</div>
       </button>

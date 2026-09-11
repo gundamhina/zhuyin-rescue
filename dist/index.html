@@ -71,12 +71,12 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .who-avatar .dog { width: 74px; height: 86px; margin-bottom: -6px; }
 .who-avatar .rod { display: none; }
 .who-name { font-size: 34px; font-weight: 900; color: #2B3A4A; }
-.cards { position: absolute; left: 0; right: 0; top: 190px; display: flex; justify-content: center; align-items: flex-end; gap: 34px; }
-.card { position: relative; width: 250px; height: 334px; border-radius: 34px; background: #fff; border: 8px solid #fff; overflow: hidden; box-shadow: 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,0.22); transition: transform .12s, box-shadow .12s; }
+.cards { position: absolute; left: 0; right: 0; top: 210px; display: flex; justify-content: center; align-items: flex-end; gap: 22px; }
+.card { position: relative; width: 208px; height: 278px; border-radius: 30px; background: #fff; border: 8px solid #fff; overflow: hidden; box-shadow: 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,0.22); transition: transform .12s, box-shadow .12s; }
 .card:nth-child(1) { transform: rotate(-3deg); }
-.card:nth-child(2) { transform: rotate(-1deg); }
-.card:nth-child(3) { transform: rotate(1deg); }
-.card:nth-child(4) { transform: rotate(3deg); }
+.card:nth-child(2) { transform: rotate(-1.5deg); }
+.card:nth-child(4) { transform: rotate(1.5deg); }
+.card:nth-child(5) { transform: rotate(3deg); }
 .card:active { transform: translateY(10px) scale(0.98); box-shadow: 0 4px 0 #A9BFCF; }
 .card.locked .card-pic { filter: grayscale(0.9) brightness(0.9); opacity: 0.55; }
 .card-pic { width: 100%; height: 100%; border-radius: 30px; overflow: hidden; }
@@ -250,6 +250,24 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .compound { position: relative; }
 .compound .tone { position: absolute; right: -0.42em; bottom: 0.05em; font-size: 0.5em; font-weight: 900; line-height: 1; }
 .compound.n2 .tone { bottom: 0.15em; }
+
+/* ---- 寫給狗狗看 ---- */
+.write-dog { left: 40px; top: 300px; width: 300px; height: 346px; }
+.write-dog .dog { width: 300px; height: 346px; }
+.write-dog .dog-slot .art-slot { width: 300px; height: 346px; }
+.pad-wrap { position: absolute; left: 400px; top: 120px; width: 560px; height: 560px; border-radius: 36px; background: #FFFDF7; border: 10px solid #B08A63; box-shadow: 0 12px 0 #8E6D4C, 0 20px 30px rgba(0,0,0,0.18); }
+.pad-wrap.shake { animation: shake .45s ease-in-out; }
+.pad-wrap.glow { box-shadow: 0 0 0 18px rgba(232,200,106,0.75), 0 12px 0 #8E6D4C; }
+.pad { position: absolute; left: 0; top: 0; width: 540px; height: 540px; touch-action: none; cursor: crosshair; border-radius: 26px; }
+.pad-template { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: 0; transition: opacity .3s; }
+.pad-template.show { opacity: 1; }
+.pad-template.flash { animation: tplFlash 1.5s ease-in-out; }
+@keyframes tplFlash { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
+.pad-template span { font-size: 400px; font-weight: 900; color: #D5DEE8; line-height: 1; }
+.pad-ok { position: absolute; right: -70px; bottom: -30px; width: 130px; height: 130px; border-radius: 50%; background: #6B9E6B; border: 8px solid #F6F3E6; box-shadow: 0 10px 0 #4E7A4E, 0 16px 26px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; }
+.pad-ok:active { transform: translateY(6px); box-shadow: 0 4px 0 #4E7A4E; }
+.pad-undo { position: absolute; right: -50px; top: -20px; width: 84px; height: 84px; border-radius: 50%; background: #E0955B; border: 6px solid #F6F3E6; box-shadow: 0 8px 0 #B07242; display: flex; align-items: center; justify-content: center; }
+.pad-undo:active { transform: translateY(5px); box-shadow: 0 3px 0 #B07242; }
 
 </style>
 </head>
@@ -563,6 +581,20 @@ function buildRound (state, rng, size = ROUND_SIZE) {
     round.push({ target, options: shuffle([target, ...distractors], rng), idleHint: tier.idleHint, drill: null })
   }
   return round
+}
+
+// 寫字用：只留單一符號的組（前十組）。家長指定的範圍若沒有單一符號組，退回第一組。
+function singleSymbolState (state) {
+  const groups = state.groups || GROUPS
+  const singles = [...groups.keys()].filter(i => groups[i].every(s => s.length === 1))
+  let chosen
+  if (Array.isArray(state.rangeGroups) && state.rangeGroups.length) {
+    chosen = state.rangeGroups.filter(i => singles.includes(i))
+  } else {
+    chosen = singles.filter(i => i < unlockedCount(state))
+  }
+  if (!chosen.length) chosen = [singles[0]]
+  return { ...state, rangeGroups: chosen }
 }
 
 // 翻牌用：從出題池挑 n 個不重複的符號，弱的優先。池子不夠就全給。
@@ -1119,6 +1151,17 @@ function cardArt (kind) {
   <ellipse cx="220" cy="262" rx="56" ry="14" fill="#3E2A1A"/>
 </svg>`
   }
+  if (kind === 'write') {
+    return `<img class="art-slot" src="img/card-write.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="400" fill="#EAF1EC"/>
+  <rect x="40" y="60" width="220" height="220" rx="24" fill="#FFFDF7" stroke="#B08A63" stroke-width="8"/>
+  <text x="150" y="215" text-anchor="middle" font-size="150" font-weight="900" fill="#CFD8E3" font-family="Microsoft JhengHei, sans-serif">ㄅ</text>
+  <path d="M120 120 q10 60 -4 120 q40 -6 62 -30" fill="none" stroke="#2B3A4A" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="200" y="290" width="26" height="90" rx="8" fill="#E0955B" transform="rotate(-30 213 335)"/>
+  <polygon points="188,372 200,395 210,380" fill="#2B3A4A" transform="rotate(-30 213 335)"/>
+</svg>`
+  }
   if (kind === 'speak') {
     return `<img class="art-slot" src="img/card-speak.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
@@ -1619,6 +1662,288 @@ function createSpeak (root, { color = 0 } = {}) {
   return { show, setListening, heard, celebrate, sad, onMic, destroy }
 }
 
+// ===== ink.js =====
+// 筆跡比對：把筆跡和範本都轉成同尺寸的 0/1 小圖，算兩張圖的距離。
+// 純數學，不碰 DOM，可以在 node 測。用在「寫給狗狗看」的描寫判定與聽寫辨識。
+
+// 把筆跡（多條折線）放大置中到 size×size 的座標系，長寬比不變，四邊留 margin。
+function normalizePoints (strokes, size, margin) {
+  const pts = strokes.flat()
+  if (!pts.length) return []
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+  for (const [x, y] of pts) {
+    if (x < minX) minX = x; if (x > maxX) maxX = x
+    if (y < minY) minY = y; if (y > maxY) maxY = y
+  }
+  const w = Math.max(maxX - minX, 1)
+  const h = Math.max(maxY - minY, 1)
+  const scale = (size - margin * 2) / Math.max(w, h)
+  const ox = (size - w * scale) / 2
+  const oy = (size - h * scale) / 2
+  return strokes.map(stroke => stroke.map(([x, y]) => [(x - minX) * scale + ox, (y - minY) * scale + oy]))
+}
+
+// 把折線畫成 size×size 的 0/1 圖，線寬 width。
+function rasterize (strokes, size, width) {
+  const bm = new Uint8Array(size * size)
+  const r = width / 2
+  const stamp = (x, y) => {
+    const x0 = Math.max(0, Math.floor(x - r)), x1 = Math.min(size - 1, Math.ceil(x + r))
+    const y0 = Math.max(0, Math.floor(y - r)), y1 = Math.min(size - 1, Math.ceil(y + r))
+    for (let py = y0; py <= y1; py++) {
+      for (let px = x0; px <= x1; px++) {
+        if ((px - x) * (px - x) + (py - y) * (py - y) <= r * r) bm[py * size + px] = 1
+      }
+    }
+  }
+  for (const stroke of strokes) {
+    if (stroke.length === 1) { stamp(stroke[0][0], stroke[0][1]); continue }
+    for (let i = 1; i < stroke.length; i++) {
+      const [ax, ay] = stroke[i - 1]
+      const [bx, by] = stroke[i]
+      const len = Math.hypot(bx - ax, by - ay)
+      const steps = Math.max(1, Math.ceil(len / 0.5))
+      for (let k = 0; k <= steps; k++) {
+        const t = k / steps
+        stamp(ax + (bx - ax) * t, ay + (by - ay) * t)
+      }
+    }
+  }
+  return bm
+}
+
+// 每個像素到最近墨點的距離（兩趟掃描的近似距離轉換）
+function distanceField (bm, size) {
+  const INF = size * 2
+  const d = new Float32Array(size * size)
+  for (let i = 0; i < d.length; i++) d[i] = bm[i] ? 0 : INF
+  const at = (x, y) => d[y * size + x]
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      let v = at(x, y)
+      if (x > 0) v = Math.min(v, at(x - 1, y) + 1)
+      if (y > 0) v = Math.min(v, at(x, y - 1) + 1)
+      if (x > 0 && y > 0) v = Math.min(v, at(x - 1, y - 1) + 1.414)
+      if (x < size - 1 && y > 0) v = Math.min(v, at(x + 1, y - 1) + 1.414)
+      d[y * size + x] = v
+    }
+  }
+  for (let y = size - 1; y >= 0; y--) {
+    for (let x = size - 1; x >= 0; x--) {
+      let v = at(x, y)
+      if (x < size - 1) v = Math.min(v, at(x + 1, y) + 1)
+      if (y < size - 1) v = Math.min(v, at(x, y + 1) + 1)
+      if (x < size - 1 && y < size - 1) v = Math.min(v, at(x + 1, y + 1) + 1.414)
+      if (x > 0 && y < size - 1) v = Math.min(v, at(x - 1, y + 1) + 1.414)
+      d[y * size + x] = v
+    }
+  }
+  return d
+}
+
+function meanDistance (from, toField) {
+  let sum = 0, n = 0
+  for (let i = 0; i < from.length; i++) {
+    if (from[i]) { sum += toField[i]; n++ }
+  }
+  return n ? sum / n : Infinity
+}
+
+// 對稱的 chamfer 距離：a 的墨到 b 的平均距離，加 b 的墨到 a 的平均距離。越小越像。
+function chamfer (a, b, size) {
+  const da = distanceField(a, size)
+  const db = distanceField(b, size)
+  return meanDistance(a, db) + meanDistance(b, da)
+}
+
+// 描寫判定：範本被蓋到的比例（筆跡在 tol 像素內就算蓋到），以及筆跡畫到範本外的比例。
+function coverage (template, drawing, size, tol) {
+  const dDraw = distanceField(drawing, size)
+  const dTpl = distanceField(template, size)
+  let tplN = 0, covered = 0, drawN = 0, stray = 0
+  for (let i = 0; i < size * size; i++) {
+    if (template[i]) { tplN++; if (dDraw[i] <= tol) covered++ }
+    if (drawing[i]) { drawN++; if (dTpl[i] > tol * 2) stray++ }
+  }
+  return { covered: tplN ? covered / tplN : 0, stray: drawN ? stray / drawN : 1 }
+}
+
+// 在候選範本裡找最像的，回傳依分數排序的 [{ symbol, score }]
+function bestMatch (drawing, templates, size) {
+  return Object.entries(templates)
+    .map(([symbol, bm]) => ({ symbol, score: chamfer(drawing, bm, size) }))
+    .sort((a, b) => a.score - b.score)
+}
+
+// ===== write.js =====
+// 寫給狗狗看。低階級是描寫（板子上有淡淡的範本），高階級是聽寫（空白板子）。
+// 判定：描寫看蓋到範本多少；聽寫把筆跡跟這題的候選符號比，最像的當她寫的。
+// 介面跟釣魚一樣：start、lock/unlock、hint、shake、celebrate、sad、onAnswer、destroy。
+
+
+const PAD = 560 // 板子邊長（舞台座標）
+const GRID = 64 // 比對用小圖邊長
+const INK_WIDTH = 24
+const CHECK_SVG = `<svg viewBox="0 0 24 24" width="70" height="70" fill="#fff"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>`
+const UNDO_SVG = `<svg viewBox="0 0 24 24" width="44" height="44" fill="#fff"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>`
+
+const glyphCache = {}
+// 用遊戲字型把符號畫出來，轉成比對用的小圖。同一個符號只算一次。
+function glyphBitmap (symbol) {
+  if (glyphCache[symbol]) return glyphCache[symbol]
+  const c = document.createElement('canvas')
+  c.width = 256
+  c.height = 256
+  const ctx = c.getContext('2d')
+  ctx.fillStyle = '#000'
+  ctx.font = '900 190px "Microsoft JhengHei", "Noto Sans TC", sans-serif'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(symbol, 128, 136)
+  const data = ctx.getImageData(0, 0, 256, 256).data
+  const pts = []
+  for (let y = 0; y < 256; y += 2) {
+    for (let x = 0; x < 256; x += 2) {
+      if (data[(y * 256 + x) * 4 + 3] > 128) pts.push([x, y])
+    }
+  }
+  const norm = normalizePoints([pts], GRID, 6)
+  const bm = rasterize(norm[0].map(p => [p]), GRID, 2.2)
+  glyphCache[symbol] = bm
+  return bm
+}
+
+function inkBitmap (strokes) {
+  const norm = normalizePoints(strokes, GRID, 6)
+  return rasterize(norm, GRID, 3)
+}
+
+function createWrite (root, { color = 0 } = {}) {
+  root.innerHTML = homeBgSvg() +
+    '<div class="dog-wrap write-dog">' + dogSvg(color) + '</div>' +
+    `<div class="pad-wrap">
+       <div class="pad-template"><span></span></div>
+       <canvas class="pad" width="${PAD}" height="${PAD}"></canvas>
+       <button class="pad-undo" aria-label="重寫">${UNDO_SVG}</button>
+       <button class="pad-ok" aria-label="好了">${CHECK_SVG}</button>
+     </div>`
+  const dogWrap = root.querySelector('.write-dog')
+  const padWrap = root.querySelector('.pad-wrap')
+  const canvas = root.querySelector('.pad')
+  const ctx = canvas.getContext('2d')
+  const tplEl = root.querySelector('.pad-template')
+  const tplText = tplEl.querySelector('span')
+  let handler = null
+  let locked = true
+  let current = null
+  let trace = false
+  let strokes = []
+  let drawing = null
+
+  ctx.lineCap = 'round'
+  ctx.lineJoin = 'round'
+  ctx.lineWidth = INK_WIDTH
+  ctx.strokeStyle = '#2B3A4A'
+
+  function canvasPoint (e) {
+    const r = canvas.getBoundingClientRect()
+    return [(e.clientX - r.left) / r.width * PAD, (e.clientY - r.top) / r.height * PAD]
+  }
+  canvas.addEventListener('pointerdown', e => {
+    if (locked) return
+    drawing = [canvasPoint(e)]
+    strokes.push(drawing)
+    try { canvas.setPointerCapture(e.pointerId) } catch (err) { /* 不給鎖也能畫 */ }
+  })
+  canvas.addEventListener('pointermove', e => {
+    if (!drawing) return
+    const p = canvasPoint(e)
+    const last = drawing[drawing.length - 1]
+    if (Math.hypot(p[0] - last[0], p[1] - last[1]) < 2) return
+    drawing.push(p)
+    ctx.beginPath()
+    ctx.moveTo(last[0], last[1])
+    ctx.lineTo(p[0], p[1])
+    ctx.stroke()
+  })
+  const endStroke = () => {
+    if (!drawing) return
+    if (drawing.length === 1) { // 點一下也留個點
+      ctx.beginPath(); ctx.arc(drawing[0][0], drawing[0][1], INK_WIDTH / 2, 0, Math.PI * 2); ctx.fillStyle = '#2B3A4A'; ctx.fill()
+    }
+    drawing = null
+  }
+  canvas.addEventListener('pointerup', endStroke)
+  canvas.addEventListener('pointercancel', endStroke)
+
+  function clearInk () {
+    strokes = []
+    drawing = null
+    ctx.clearRect(0, 0, PAD, PAD)
+  }
+  root.querySelector('.pad-undo').addEventListener('pointerdown', () => { if (!locked) clearInk() })
+
+  // 「好了」：把筆跡判成某個符號交給 main.js
+  root.querySelector('.pad-ok').addEventListener('pointerdown', () => {
+    if (locked || !handler) return
+    const inkPts = strokes.flat().length
+    if (inkPts < 6) { shakePad(); return }
+    const ink = inkBitmap(strokes)
+    if (trace) {
+      const { covered, stray } = coverage(glyphBitmap(current.target), ink, GRID, 3)
+      handler(covered >= 0.6 && stray <= 0.4 ? current.target : '__miss__', null)
+      return
+    }
+    const templates = {}
+    for (const s of current.options) templates[s] = glyphBitmap(s)
+    const ranked = bestMatch(ink, templates, GRID)
+    handler(ranked[0].symbol, null)
+  })
+
+  function shakePad () {
+    padWrap.classList.remove('shake')
+    void padWrap.offsetWidth
+    padWrap.classList.add('shake')
+  }
+
+  // isTrace 由 main.js 依階級決定
+  function start (question, { isTrace = false } = {}) {
+    current = question
+    trace = isTrace
+    locked = true
+    clearInk()
+    tplText.textContent = question.target
+    tplEl.classList.toggle('show', trace)
+    padWrap.classList.remove('shake', 'glow')
+  }
+  function unlock () { locked = false }
+  function lock () { locked = true }
+  // 提示：閃一下範本
+  function hint () {
+    tplEl.classList.add('show', 'flash')
+    setTimeout(() => { tplEl.classList.remove('flash'); if (!trace) tplEl.classList.remove('show') }, 1500)
+  }
+  function shake () { shakePad() }
+  function celebrate () {
+    return new Promise(resolve => {
+      padWrap.classList.add('glow')
+      dogWrap.classList.remove('jump')
+      void dogWrap.offsetWidth
+      dogWrap.classList.add('jump')
+      setTimeout(resolve, 700)
+    })
+  }
+  function sad () {
+    dogWrap.classList.remove('tilt')
+    void dogWrap.offsetWidth
+    dogWrap.classList.add('tilt')
+  }
+  function onAnswer (fn) { handler = fn }
+  function destroy () { root.innerHTML = ''; handler = null }
+
+  return { start, unlock, lock, hint, shake, celebrate, sad, onAnswer, destroy }
+}
+
 // ===== ui.js =====
 // 選人、首頁、結算、大人面板、舞台縮放。
 
@@ -1709,6 +2034,9 @@ function renderHome (root, { profile, speech = true }) {
       </button>
       <button class="card" data-game="memory" aria-label="翻牌">
         <div class="card-pic">${cardArt('memory')}</div>
+      </button>
+      <button class="card" data-game="write" aria-label="寫給狗狗看">
+        <div class="card-pic">${cardArt('write')}</div>
       </button>
       <button class="card ${speech ? '' : 'hidden'}" data-game="speak" aria-label="唸給狗狗聽">
         <div class="card-pic">${cardArt('speak')}</div>
@@ -2227,11 +2555,12 @@ function main () {
   }
 
   function runQuestions (which) {
-    game = which === 'whack'
-      ? createWhack(playArea, { color: profile.color })
-      : createFishing(playArea, { color: profile.color })
+    if (which === 'whack') game = createWhack(playArea, { color: profile.color })
+    else if (which === 'write') game = createWrite(playArea, { color: profile.color })
+    else game = createFishing(playArea, { color: profile.color })
     replayBtn.classList.remove('hidden')
-    round = buildRound(state, Math.random)
+    // 寫字只出單一符號；低階級描寫、高階級聽寫
+    round = which === 'write' ? buildRound(singleSymbolState(state), Math.random) : buildRound(state, Math.random)
     index = 0
     starTotal = round.length
     setStars()
@@ -2247,7 +2576,7 @@ function main () {
     firstAttempt = true
     clearIdle()
     busy = true
-    game.start(q)
+    game.start(q, { isTrace: kind === 'write' && effectiveTier(state) <= 1 })
     game.lock()
     await wait(350)
     let opened = false
@@ -2274,6 +2603,8 @@ function main () {
     if (busy) return
     const q = round[index]
     const ms = Date.now() - askedAt
+    // 描寫沒蓋好：不算錯，晃一下讓她再寫
+    if (symbol === '__miss__') { audio.wrong(); game.shake(); game.sad(); return }
     if (symbol === q.target) {
       busy = true
       clearIdle()
@@ -2282,7 +2613,7 @@ function main () {
       earned.push(firstAttempt)
       setStars()
       audio.stop()
-      if (kind === 'whack') audio.crunch(); else audio.splash()
+      if (kind === 'whack') audio.crunch(); else if (kind === 'write') audio.ding(); else audio.splash()
       await game.celebrate(symbol)
       if (!game) return // 中途按了回首頁
       audio.ding()
