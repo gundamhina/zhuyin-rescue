@@ -90,6 +90,25 @@ export function createAudio (getSettings) {
     return false
   }
 
+  // 查這個符號會用哪個音源：'recording' 或 'tts'。只載入不播放，結果一樣記進 recordingExists。
+  function sourceOf (symbol) {
+    const known = recordingExists[symbol]
+    if (known === false) return Promise.resolve('tts')
+    if (typeof known === 'string') return Promise.resolve('recording')
+    return new Promise(resolve => {
+      const tryExt = i => {
+        if (i >= RECORDING_EXTS.length) { recordingExists[symbol] = false; return resolve('tts') }
+        const url = 'audio/' + encodeURIComponent(symbol) + '.' + RECORDING_EXTS[i]
+        const el = new Audio()
+        el.preload = 'metadata'
+        el.onloadedmetadata = () => { recordingExists[symbol] = url; resolve('recording') }
+        el.onerror = () => tryExt(i + 1)
+        el.src = url
+      }
+      tryExt(0)
+    })
+  }
+
   function stop () {
     if (currentEl) { currentEl.pause(); currentEl = null }
     if ('speechSynthesis' in window) window.speechSynthesis.cancel()
@@ -175,5 +194,5 @@ export function createAudio (getSettings) {
     tone(1319, 0.5, 0.6, 'triangle', 0.2)
   }
 
-  return { unlock, say, stop, ding, wrong, splash, crunch, flip, cheer, listVoices: () => { refreshVoices(); return voices } }
+  return { unlock, say, stop, sourceOf, ding, wrong, splash, crunch, flip, cheer, listVoices: () => { refreshVoices(); return voices } }
 }

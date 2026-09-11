@@ -220,3 +220,14 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .mic-btn:active { transform: translateY(8px); box-shadow: 0 4px 0 #96402D; }
 .mic-btn.listening { animation: micPulse 1s ease-in-out infinite; background: #E0955B; }
 @keyframes micPulse { 0%,100% { box-shadow: 0 12px 0 #B07242, 0 0 0 0 rgba(224,149,91,0.6); } 50% { box-shadow: 0 12px 0 #B07242, 0 0 0 30px rgba(224,149,91,0); } }
+
+/* ---- 發音檢查 ---- */
+.check-now { font-size: 22px; }
+.check-now b { font-size: 40px; margin-right: 8px; }
+.check-tiles .ptile { width: 200px; }
+.ctile.playing { outline: 4px solid #E8C86A; }
+.check-note { width: 90px; }
+.check-note:disabled { opacity: 0.4; }
+.check-issues { gap: 10px 14px; }
+.issue-chip { background: #FFE0E0; color: #B32B37; padding: 4px 12px; border-radius: 10px; font-weight: 700; }
+.check-rec code { background: #E8EEF5; padding: 2px 8px; border-radius: 6px; }

@@ -8,6 +8,7 @@ import { createWhack } from './whack.js'
 import { createMemory } from './memory.js'
 import { createSpeak, speechAvailable, listen, matchesSymbol } from './speak.js'
 import { fitStage, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage } from './ui.js'
+import { renderCheck } from './check.js'
 
 const SETTINGS_KEY = 'zhuyin-rescue-settings'
 const MEMORY_PAIRS = 5
@@ -388,6 +389,18 @@ function main () {
       },
       onClose () { profile ? goHome() : goProfiles() },
       onSay (symbol) { audio.say(symbol) },
+      onCheck: openCheck,
+    })
+    showScreen('panel')
+  }
+
+  // 發音檢查台：借用家長區的畫面容器
+  function openCheck () {
+    renderCheck(panelEl, {
+      audio,
+      settings,
+      onSettings (next) { settings = next; saveSettings(settings) },
+      onClose: openPanel,
     })
     showScreen('panel')
   }

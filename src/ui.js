@@ -160,7 +160,7 @@ function armButton (btn, confirmText, onConfirm) {
   }
 }
 
-export function renderPanel (root, { profile, profiles, state, settings, voices, onKnownChange, onSettings, onStateChange, onExport, onImport, onResetProgress, onRemoveProfile, onClose, onSay }) {
+export function renderPanel (root, { profile, profiles, state, settings, voices, onKnownChange, onSettings, onStateChange, onExport, onImport, onResetProgress, onRemoveProfile, onClose, onSay, onCheck }) {
   const usersHtml = profiles.list.length
     ? profiles.list.map(p => `
       <div class="puser">
@@ -233,6 +233,7 @@ export function renderPanel (root, { profile, profiles, state, settings, voices,
           <select id="sel-voice"><option value="">自動</option>${voiceOptions}</select>
         </label>
         <label>語速 <input type="range" id="rng-rate" min="0.5" max="1.2" step="0.05" value="${settings.rate || 0.8}"> <span id="rate-val">${settings.rate || 0.8}</span></label>
+        <button id="btn-check">發音檢查${Object.keys(settings.audioIssues || {}).length ? '（' + Object.keys(settings.audioIssues).length + ' 個有問題）' : ''}</button>
         ${profile ? `
         <button id="btn-export">匯出進度</button>
         <label class="file-btn">匯入進度<input type="file" id="file-import" accept=".json"></label>
@@ -244,6 +245,7 @@ export function renderPanel (root, { profile, profiles, state, settings, voices,
     </div>`
 
   root.querySelector('#panel-close').onclick = onClose
+  root.querySelector('#btn-check').onclick = onCheck
   root.querySelectorAll('[data-say]').forEach(b => { b.onclick = () => onSay(b.dataset.say) })
   root.querySelectorAll('[data-known]').forEach(cb => {
     cb.onchange = () => onKnownChange(cb.dataset.known, cb.checked)
