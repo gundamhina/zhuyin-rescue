@@ -121,8 +121,8 @@ test('每個詞都有一張圖（表情符號），同組的詞圖不重複', ()
     assert.equal(typeof WORD_ICON[w], 'string', `${w}（${REP_CHAR[w]}）沒有圖`);
     assert.ok(WORD_ICON[w].length >= 1);
   }
-  for (const g of GROUPS.filter(g => g[0].includes(' '))) {
-    const icons = g.map(w => WORD_ICON[w]);
-    assert.equal(new Set(icons).size, icons.length, '同組圖重複：' + g.map(w => REP_CHAR[w] + WORD_ICON[w]).join(' '));
-  }
+  // 連連看會把不同組的詞放在同一板，所以全部詞的圖都不能重複
+  const icons = WORDS.map(w => WORD_ICON[w]);
+  const dup = icons.filter((ic, i) => icons.indexOf(ic) !== i);
+  assert.equal(dup.length, 0, '圖重複：' + dup.join(' '));
 });

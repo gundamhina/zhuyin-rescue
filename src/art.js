@@ -1,23 +1,35 @@
 // SVG 圖：場景、狗狗、卡片插圖。全部是字串，塞進 innerHTML。
 // 風格：借宮崎駿動畫的氛圍。水彩天空、厚積雲、層疊山丘、青綠海面、褪色木頭、柔光，不用粗描邊。
 
+import { WORD_TEXT, WORD_ICON } from './data.js'
+
 // 符號怎麼顯示：單一符號直接放，結合韻兩個直排
 export function symbolMarkup (sym) {
-  // 詞：音節左右並列，每個音節各自直排
+  // 詞：音節左右並列，每個音節各自直排；單一符號的音節也包成一欄，字才會一樣大
   if (sym.includes(' ')) {
     const syls = sym.split(' ')
-    return `<span class="word w${syls.length}">${syls.map(symbolMarkup).join('')}</span>`
+    return `<span class="word w${syls.length}">${syls.map(s => syllableMarkup(s, true)).join('')}</span>`
   }
+  return syllableMarkup(sym, false)
+}
+
+function syllableMarkup (sym, inWord) {
   // 輕聲的點在音節上方，寫在字串最前面
   const light = sym.startsWith('˙')
   if (light) sym = sym.slice(1)
   const tone = (sym.match(/[ˊˇˋ]$/) || [''])[0]
   const core = tone ? sym.slice(0, -1) : sym
-  if (core.length < 2 && !tone && !light) return sym
+  if (!inWord && core.length < 2 && !tone && !light) return sym
   const marks = [...core].map(ch => `<i>${ch}</i>`).join('')
   const lightHtml = light ? '<b class="tone light">˙</b>' : ''
   const toneHtml = tone ? `<b class="tone">${tone}</b>` : ''
   return `<span class="compound n${core.length}">${lightHtml}${marks}${toneHtml}</span>`
+}
+
+// 詞的圖：img/words/<國字>.png 有就用，沒有退回表情符號
+export function wordPicMarkup (word) {
+  const text = WORD_TEXT[word] || ''
+  return `<img class="art-slot" src="img/words/${text}.png" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()"><span class="emoji">${WORD_ICON[word] || '❓'}</span>`
 }
 
 // 六隻救援狗的配色：帽子／背心顏色，深色版做陰影

@@ -48,5 +48,13 @@ if (existsSync(imgDir)) {
   mkdirSync(join(root, 'dist', 'img'), { recursive: true })
   const files = readdirSync(imgDir).filter(f => /\.(png|jpg|jpeg|webp)$/i.test(f))
   for (const f of files) copyFileSync(join(imgDir, f), join(root, 'dist', 'img', f))
-  console.log('dist/img/', files.length, 'files')
+  // 詞的圖在 img/words/
+  const wordsDir = join(imgDir, 'words')
+  let wordFiles = []
+  if (existsSync(wordsDir)) {
+    mkdirSync(join(root, 'dist', 'img', 'words'), { recursive: true })
+    wordFiles = readdirSync(wordsDir).filter(f => /\.(png|jpg|jpeg|webp)$/i.test(f))
+    for (const f of wordFiles) copyFileSync(join(wordsDir, f), join(root, 'dist', 'img', 'words', f))
+  }
+  console.log('dist/img/', files.length, 'files,', wordFiles.length, 'word pictures')
 }

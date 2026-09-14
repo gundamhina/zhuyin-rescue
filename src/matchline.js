@@ -1,11 +1,11 @@
 // 連連看。左邊 4 個詞的注音，右邊 4 張圖打亂，從詞拉線到圖。對了線留著，錯了線消失。
-// 介面：start(words)、onPair(fn(word, pickedWord))、markCorrect(word, pickedWord)、markWrong(word, pickedWord)、onDone(fn)、destroy。
+// 介面：start(words)、onPair(fn(word, pickedWord))、onPicTap(fn(word))、markCorrect(word, pickedWord)、markWrong(word, pickedWord)、onDone(fn)、destroy。
+// 沒選詞的時候點圖，會呼叫 onPicTap（主流程拿去唸這個詞）。
 
-import { dogSvg, homeBgSvg, symbolMarkup } from './art.js'
-import { WORD_ICON } from './data.js'
+import { dogSvg, homeBgSvg, symbolMarkup, wordPicMarkup } from './art.js'
 
 const LEFT_X = 330 // 詞卡右緣（線的起點）
-const RIGHT_X = 760 // 圖卡左緣（線的終點）
+const RIGHT_X = 740 // 圖卡左緣（線的終點）
 const ROW_Y = [120, 290, 460, 630]
 
 function shuffleWords (arr) {
@@ -29,6 +29,7 @@ export function createMatchLine (root, { color = 0 } = {}) {
   const live = root.querySelector('.lines .live')
   let pairFn = null
   let doneFn = null
+  let picTapFn = null
   let remaining = 0
   let drag = null // { word, x0, y0 }
   let selected = null // 點一下詞再點一下圖也可以
@@ -84,7 +85,9 @@ export function createMatchLine (root, { color = 0 } = {}) {
   root.addEventListener('pointercancel', endDrag)
   picsEl.addEventListener('pointerdown', e => {
     const pic = e.target.closest('.mpic')
-    if (!pic || pic.classList.contains('matched') || !selected || drag || !pairFn) return
+    if (!pic || drag) return
+    if (!selected) { if (picTapFn) picTapFn(pic.dataset.symbol); return }
+    if (pic.classList.contains('matched') || !pairFn) return
     const word = selected
     selected = null
     wordsEl.querySelectorAll('.mword').forEach(c => c.classList.remove('picked'))
@@ -99,7 +102,7 @@ export function createMatchLine (root, { color = 0 } = {}) {
     wordsEl.innerHTML = words.map((w, i) => `
       <div class="mword" data-symbol="${w}" style="top:${ROW_Y[i] - 80}px"><span>${symbolMarkup(w)}</span></div>`).join('')
     picsEl.innerHTML = shuffleWords(words).map((w, i) => `
-      <div class="mpic" data-symbol="${w}" style="top:${ROW_Y[i] - 65}px"><span>${WORD_ICON[w] || '❓'}</span></div>`).join('')
+      <div class="mpic" data-symbol="${w}" style="top:${ROW_Y[i] - 80}px">${wordPicMarkup(w)}</div>`).join('')
   }
 
   function drawLine (word, pickedWord, cls) {
@@ -137,8 +140,9 @@ export function createMatchLine (root, { color = 0 } = {}) {
     start,
     onPair (fn) { pairFn = fn },
     onDone (fn) { doneFn = fn },
+    onPicTap (fn) { picTapFn = fn },
     markCorrect,
     markWrong,
-    destroy () { root.innerHTML = ''; pairFn = doneFn = null },
+    destroy () { root.innerHTML = ''; pairFn = doneFn = picTapFn = null },
   }
 }

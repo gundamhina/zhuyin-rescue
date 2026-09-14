@@ -58,3 +58,91 @@ card-*.png：
 - 狗狗一定要透明背景 PNG，不然會有一塊方形底色。
 - 生出來的圖如果有文字或水印，裁掉再放。
 - 這些圖只在自己家裡用，不對外發布。
+
+
+## 詞的圖：`img/words/`
+
+連連看和填空用。檔名是詞的國字，例如 `img/words/牙齒.png`，256×256、透明背景。沒放的詞退回表情符號。
+
+風格提示詞（每張都加）：
+
+```
+a single simple object icon for a children's picture book, hand-painted watercolor gouache look like a 1990s Japanese animated film, soft edges, warm light, centered, plain transparent background, no text, no border --ar 1:1
+```
+
+| 檔名 | 畫什麼 |
+|---|---|
+| `爸爸.png` | dad |
+| `媽媽.png` | mom |
+| `哥哥.png` | older brother |
+| `姐姐.png` | older sister |
+| `弟弟.png` | little brother |
+| `妹妹.png` | little sister |
+| `爺爺.png` | grandpa |
+| `奶奶.png` | grandma |
+| `阿姨.png` | auntie |
+| `叔叔.png` | uncle |
+| `小狗.png` | puppy |
+| `小貓.png` | kitten |
+| `小鳥.png` | little bird |
+| `小魚.png` | little fish |
+| `老虎.png` | tiger |
+| `獅子.png` | lion |
+| `大象.png` | elephant |
+| `兔子.png` | rabbit |
+| `猴子.png` | monkey |
+| `熊貓.png` | panda |
+| `青蛙.png` | frog |
+| `蝴蝶.png` | butterfly |
+| `蘋果.png` | apple |
+| `香蕉.png` | banana |
+| `西瓜.png` | watermelon |
+| `麵包.png` | bread loaf |
+| `牛奶.png` | glass of milk |
+| `雞蛋.png` | egg |
+| `餅乾.png` | cookie |
+| `糖果.png` | wrapped candy |
+| `蛋糕.png` | slice of cake |
+| `米飯.png` | bowl of rice |
+| `水果.png` | bowl of mixed fruit |
+| `草莓.png` | strawberry |
+| `眼睛.png` | a pair of eyes |
+| `鼻子.png` | nose |
+| `耳朵.png` | ear |
+| `嘴巴.png` | smiling mouth |
+| `頭髮.png` | hair on a head, back view |
+| `牙齒.png` | tooth |
+| `手指.png` | hand pointing one finger |
+| `腳丫.png` | bare foot |
+| `紅色.png` | red paint blob |
+| `黃色.png` | yellow paint blob |
+| `藍色.png` | blue paint blob |
+| `綠色.png` | green paint blob |
+| `白色.png` | white paint blob on light grey |
+| `黑色.png` | black paint blob |
+| `粉紅.png` | pink paint blob |
+| `紫色.png` | purple paint blob |
+| `吃飯.png` | child eating rice with a spoon |
+| `睡覺.png` | child sleeping in bed |
+| `洗澡.png` | child in a bathtub with bubbles |
+| `刷牙.png` | child brushing teeth |
+| `上學.png` | child with backpack walking to school |
+| `玩具.png` | pile of toys |
+| `書包.png` | school backpack |
+| `學校.png` | school building |
+| `老師.png` | teacher at a blackboard |
+| `朋友.png` | two children holding hands |
+| `太陽.png` | sun |
+| `月亮.png` | crescent moon |
+| `下雨.png` | rain cloud with raindrops |
+| `星星.png` | star |
+| `冰淇淋.png` | ice cream cone |
+| `巧克力.png` | chocolate bar |
+| `幼兒園.png` | kindergarten building with playground |
+| `腳踏車.png` | bicycle |
+| `洗衣機.png` | washing machine |
+| `電視機.png` | television |
+| `小白兔.png` | white rabbit |
+| `大野狼.png` | grey wolf |
+| `小汽車.png` | small car |
+| `溜滑梯.png` | playground slide |

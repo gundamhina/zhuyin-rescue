@@ -293,11 +293,22 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .dbar-date { font-size: 11px; color: #5A6B85; margin-top: 4px; }
 
 /* ---- 詞：音節左右並列 ---- */
-.word { display: inline-flex; align-items: center; gap: 0.14em; }
-.word .compound { font-size: 0.8em; }
-.word.w3 .compound { font-size: 0.62em; }
-.word .compound.n1 i { font-size: 0.58em; }
 .compound .tone.light { position: static; font-size: 0.5em; line-height: 0.5; }
+
+/* ---- 詞的排版：每個音節一欄，欄裡的字一樣大（不管一個還是三個符號），
+   每欄右邊留一小條放調號，輕聲點在欄頂。整個詞的大小由容器的 .word 字級決定 ---- */
+.word { display: inline-flex; align-items: center; gap: 0.1em; }
+.word .compound { font-size: 1em; margin-right: 0.3em; }
+.word .compound i, .word .compound.n3 i { font-size: 0.5em; }
+.word .compound .tone { right: -0.34em; bottom: 0.14em; font-size: 0.4em; }
+.word .compound .tone.light { position: static; font-size: 0.3em; line-height: 0.9; }
+.sign-board .word { font-size: 0.6em; }
+.sign-board .word.w3 { font-size: 0.48em; }
+.mword .word { font-size: 0.9em; }
+.mword .word.w3 { font-size: 0.72em; }
+.fill-word .word { font-size: 1.1em; }
+.fill-word .word.w3 { font-size: 0.88em; }
+.word .blank { font-size: 1em; } /* 別被 .sign-board span 的字級放大 */
 
 /* ---- 連連看 ---- */
 .match-dog { left: 460px; top: 560px; width: 180px; height: 208px; }
@@ -312,14 +323,13 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .match-words, .match-pics { position: absolute; top: 0; }
 .mword { position: absolute; left: 30px; width: 300px; height: 160px; border-radius: 24px; background: #FFFDF7; border: 8px solid #B08A63; box-shadow: 0 8px 0 #8E6D4C; display: flex; align-items: center; justify-content: center; cursor: grab; touch-action: none; }
 .mword span { font-size: 100px; font-weight: 900; color: #2B3A4A; line-height: 1; pointer-events: none; }
-/* 連連看的卡片夠高，音節不必縮進單一符號的高度，讓字大一點 */
-.mword .word.w3 .compound { font-size: 0.8em; }
-.mword .compound.n3 i { font-size: 0.5em; }
-.mword .compound .tone.light { font-size: 0.4em; line-height: 0.6; }
 .mword.picked { box-shadow: 0 0 0 10px rgba(74,111,165,0.5), 0 8px 0 #8E6D4C; }
 .mword.matched { opacity: 0.55; border-color: #6B9E6B; box-shadow: 0 8px 0 #4E7A4E; cursor: default; }
-.mpic { position: absolute; left: 760px; width: 130px; height: 130px; border-radius: 24px; background: #FFFDF7; border: 8px solid #F6F3E6; box-shadow: 0 8px 0 #A9BFCF; display: flex; align-items: center; justify-content: center; }
-.mpic span { font-size: 80px; line-height: 1; pointer-events: none; }
+.mpic { position: absolute; left: 740px; width: 160px; height: 160px; border-radius: 28px; background: linear-gradient(#FFFDF7, #F1ECDC); border: 8px solid #fff; box-shadow: 0 8px 0 #A9BFCF, 0 14px 22px rgba(20,60,110,0.16); display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; }
+.mpic .emoji { font-size: 100px; line-height: 1; pointer-events: none; }
+.mpic .art-slot, .fill-pic .art-slot { object-fit: contain; padding: 8px; box-sizing: border-box; }
+.has-art > .emoji { display: none; }
+.emoji { font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif; }
 .mpic.matched { opacity: 0.55; border-color: #6B9E6B; }
 .mpic.shake { animation: shake .45s ease-in-out; }
 
@@ -327,13 +337,13 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .fill-dog { left: 10px; top: 440px; width: 220px; height: 254px; }
 .fill-dog .dog { width: 220px; height: 254px; }
 .fill-dog .dog-slot .art-slot { width: 220px; height: 254px; }
-.fill-pic { position: absolute; left: 120px; top: 120px; width: 240px; height: 240px; border-radius: 40px; background: #FFFDF7; border: 8px solid #F6F3E6; box-shadow: 0 10px 0 #A9BFCF; display: flex; align-items: center; justify-content: center; }
-.fill-pic span { font-size: 150px; line-height: 1; }
+.fill-pic { position: absolute; left: 120px; top: 120px; width: 240px; height: 240px; border-radius: 40px; background: linear-gradient(#FFFDF7, #F1ECDC); border: 8px solid #fff; box-shadow: 0 10px 0 #A9BFCF, 0 14px 22px rgba(20,60,110,0.16); display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; }
+.fill-pic .emoji { font-size: 150px; line-height: 1; pointer-events: none; }
 .fill-sign { left: 420px; top: 90px; width: 700px; }
 .fill-sign .sign-board { width: 700px; height: 300px; }
 .fill-sign .sign-board span.fill-word { font-size: 150px; }
 .fill-sign .sign-post { height: 40px; }
-.blank { display: inline-block; width: 0.75em; height: 1.05em; border: 6px dashed #E0955B; border-radius: 14px; vertical-align: middle; background: rgba(224,149,91,0.08); }
+.blank { display: inline-block; width: 0.55em; height: 1.4em; margin-right: 0.3em; border: 6px dashed #E0955B; border-radius: 14px; vertical-align: middle; background: rgba(224,149,91,0.08); box-sizing: border-box; }
 .tiles { position: absolute; inset: 0; pointer-events: none; }
 .tile { position: absolute; width: 160px; height: 160px; border-radius: 28px; background: #FFF3B0; border: 8px solid #F6F3E6; box-shadow: 0 10px 0 #D9AA1B; display: flex; align-items: center; justify-content: center; pointer-events: auto; touch-action: none; cursor: grab; }
 .tile span { font-size: 100px; font-weight: 900; color: #2B3A4A; line-height: 1; pointer-events: none; }
@@ -878,7 +888,7 @@ const WORD_ICON = {
   'ㄔ ㄈㄢˋ': '🍽️',
   'ㄕㄨㄟˋ ㄐㄧㄠˋ': '😴',
   'ㄒㄧˇ ㄗㄠˇ': '🛁',
-  'ㄕㄨㄚ ㄧㄚˊ': '🪥',
+  'ㄕㄨㄚ ㄧㄚˊ': '😁',
   'ㄕㄤˋ ㄒㄩㄝˊ': '🚌',
   'ㄨㄢˊ ㄐㄩˋ': '🧸',
   'ㄕㄨ ㄅㄠ': '🎒',
@@ -891,7 +901,7 @@ const WORD_ICON = {
   'ㄒㄧㄥ ˙ㄒㄧㄥ': '⭐',
   'ㄅㄧㄥ ㄑㄧˊ ㄌㄧㄣˊ': '🍦',
   'ㄑㄧㄠˇ ㄎㄜˋ ㄌㄧˋ': '🍫',
-  'ㄧㄡˋ ㄦˊ ㄩㄢˊ': '🏫',
+  'ㄧㄡˋ ㄦˊ ㄩㄢˊ': '🎠',
   'ㄐㄧㄠˇ ㄊㄚˋ ㄔㄜ': '🚲',
   'ㄒㄧˇ ㄧ ㄐㄧ': '🧺',
   'ㄉㄧㄢˋ ㄕˋ ㄐㄧ': '📺',
@@ -1651,23 +1661,34 @@ function createAudio (getSettings) {
 // SVG 圖：場景、狗狗、卡片插圖。全部是字串，塞進 innerHTML。
 // 風格：借宮崎駿動畫的氛圍。水彩天空、厚積雲、層疊山丘、青綠海面、褪色木頭、柔光，不用粗描邊。
 
+
 // 符號怎麼顯示：單一符號直接放，結合韻兩個直排
 function symbolMarkup (sym) {
-  // 詞：音節左右並列，每個音節各自直排
+  // 詞：音節左右並列，每個音節各自直排；單一符號的音節也包成一欄，字才會一樣大
   if (sym.includes(' ')) {
     const syls = sym.split(' ')
-    return `<span class="word w${syls.length}">${syls.map(symbolMarkup).join('')}</span>`
+    return `<span class="word w${syls.length}">${syls.map(s => syllableMarkup(s, true)).join('')}</span>`
   }
+  return syllableMarkup(sym, false)
+}
+
+function syllableMarkup (sym, inWord) {
   // 輕聲的點在音節上方，寫在字串最前面
   const light = sym.startsWith('˙')
   if (light) sym = sym.slice(1)
   const tone = (sym.match(/[ˊˇˋ]$/) || [''])[0]
   const core = tone ? sym.slice(0, -1) : sym
-  if (core.length < 2 && !tone && !light) return sym
+  if (!inWord && core.length < 2 && !tone && !light) return sym
   const marks = [...core].map(ch => `<i>${ch}</i>`).join('')
   const lightHtml = light ? '<b class="tone light">˙</b>' : ''
   const toneHtml = tone ? `<b class="tone">${tone}</b>` : ''
   return `<span class="compound n${core.length}">${lightHtml}${marks}${toneHtml}</span>`
+}
+
+// 詞的圖：img/words/<國字>.png 有就用，沒有退回表情符號
+function wordPicMarkup (word) {
+  const text = WORD_TEXT[word] || ''
+  return `<img class="art-slot" src="img/words/${text}.png" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()"><span class="emoji">${WORD_ICON[word] || '❓'}</span>`
 }
 
 // 六隻救援狗的配色：帽子／背心顏色，深色版做陰影
@@ -2804,11 +2825,12 @@ function createWrite (root, { color = 0 } = {}) {
 
 // ===== matchline.js =====
 // 連連看。左邊 4 個詞的注音，右邊 4 張圖打亂，從詞拉線到圖。對了線留著，錯了線消失。
-// 介面：start(words)、onPair(fn(word, pickedWord))、markCorrect(word, pickedWord)、markWrong(word, pickedWord)、onDone(fn)、destroy。
+// 介面：start(words)、onPair(fn(word, pickedWord))、onPicTap(fn(word))、markCorrect(word, pickedWord)、markWrong(word, pickedWord)、onDone(fn)、destroy。
+// 沒選詞的時候點圖，會呼叫 onPicTap（主流程拿去唸這個詞）。
 
 
 const LEFT_X = 330 // 詞卡右緣（線的起點）
-const RIGHT_X = 760 // 圖卡左緣（線的終點）
+const RIGHT_X = 740 // 圖卡左緣（線的終點）
 const ROW_Y = [120, 290, 460, 630]
 
 function shuffleWords (arr) {
@@ -2832,6 +2854,7 @@ function createMatchLine (root, { color = 0 } = {}) {
   const live = root.querySelector('.lines .live')
   let pairFn = null
   let doneFn = null
+  let picTapFn = null
   let remaining = 0
   let drag = null // { word, x0, y0 }
   let selected = null // 點一下詞再點一下圖也可以
@@ -2887,7 +2910,9 @@ function createMatchLine (root, { color = 0 } = {}) {
   root.addEventListener('pointercancel', endDrag)
   picsEl.addEventListener('pointerdown', e => {
     const pic = e.target.closest('.mpic')
-    if (!pic || pic.classList.contains('matched') || !selected || drag || !pairFn) return
+    if (!pic || drag) return
+    if (!selected) { if (picTapFn) picTapFn(pic.dataset.symbol); return }
+    if (pic.classList.contains('matched') || !pairFn) return
     const word = selected
     selected = null
     wordsEl.querySelectorAll('.mword').forEach(c => c.classList.remove('picked'))
@@ -2902,7 +2927,7 @@ function createMatchLine (root, { color = 0 } = {}) {
     wordsEl.innerHTML = words.map((w, i) => `
       <div class="mword" data-symbol="${w}" style="top:${ROW_Y[i] - 80}px"><span>${symbolMarkup(w)}</span></div>`).join('')
     picsEl.innerHTML = shuffleWords(words).map((w, i) => `
-      <div class="mpic" data-symbol="${w}" style="top:${ROW_Y[i] - 65}px"><span>${WORD_ICON[w] || '❓'}</span></div>`).join('')
+      <div class="mpic" data-symbol="${w}" style="top:${ROW_Y[i] - 80}px">${wordPicMarkup(w)}</div>`).join('')
   }
 
   function drawLine (word, pickedWord, cls) {
@@ -2940,15 +2965,16 @@ function createMatchLine (root, { color = 0 } = {}) {
     start,
     onPair (fn) { pairFn = fn },
     onDone (fn) { doneFn = fn },
+    onPicTap (fn) { picTapFn = fn },
     markCorrect,
     markWrong,
-    destroy () { root.innerHTML = ''; pairFn = doneFn = null },
+    destroy () { root.innerHTML = ''; pairFn = doneFn = picTapFn = null },
   }
 }
 
 // ===== fillblank.js =====
 // 填空。左邊一張圖，牌子上詞的注音少一個音節（空格），下面幾塊音節，拖對的進空格（點一下也行）。
-// 介面：start(q, { blankIndex, tiles })、lock/unlock、onAnswer(fn(syllable))、fill()、bounce(syllable)、celebrate、sad、destroy。
+// 介面：start(q, { blankIndex, tiles })、lock/unlock、onAnswer(fn(syllable))、onPicTap(fn(word))、fill()、bounce(syllable)、celebrate、sad、destroy。
 
 
 const TILE_SLOTS = { 2: [[480, 660], [760, 660]], 3: [[380, 660], [620, 660], [860, 660]], 4: [[300, 660], [500, 660], [700, 660], [900, 660]] }
@@ -2956,15 +2982,16 @@ const TILE_SLOTS = { 2: [[480, 660], [760, 660]], 3: [[380, 660], [620, 660], [8
 function createFillBlank (root, { color = 0 } = {}) {
   root.innerHTML = homeBgSvg() +
     '<div class="dog-wrap fill-dog">' + dogSvg(color) + '</div>' +
-    '<div class="fill-pic"><span></span></div>' +
+    '<div class="fill-pic"></div>' +
     '<div class="sign fill-sign"><div class="sign-board"><span class="fill-word"></span></div><div class="sign-post"></div></div>' +
     '<div class="tiles"></div>'
   const dogWrap = root.querySelector('.fill-dog')
-  const picEl = root.querySelector('.fill-pic span')
+  const picEl = root.querySelector('.fill-pic')
   const signEl = root.querySelector('.fill-sign')
   const wordEl = root.querySelector('.fill-word')
   const tilesEl = root.querySelector('.tiles')
   let handler = null
+  let picTapFn = null
   let locked = true
   let current = null
   let blankIndex = 0
@@ -2978,6 +3005,8 @@ function createFillBlank (root, { color = 0 } = {}) {
       ? (filled ? symbolMarkup(filled) : '<span class="blank"></span>')
       : symbolMarkup(s)).join('')}</span>`
   }
+
+  picEl.addEventListener('pointerdown', () => { if (current && picTapFn) picTapFn(current.target) })
 
   tilesEl.addEventListener('pointerdown', e => {
     const t = e.target.closest('.tile')
@@ -3021,7 +3050,8 @@ function createFillBlank (root, { color = 0 } = {}) {
     current = question
     blankIndex = bi
     locked = true
-    picEl.textContent = WORD_ICON[question.target] || '❓'
+    picEl.className = 'fill-pic'
+    picEl.innerHTML = wordPicMarkup(question.target)
     signEl.classList.remove('glow')
     renderWord()
     const slots = TILE_SLOTS[tiles.length] || TILE_SLOTS[3]
@@ -3072,9 +3102,10 @@ function createFillBlank (root, { color = 0 } = {}) {
     dogWrap.classList.add('tilt')
   }
   function onAnswer (fn) { handler = fn }
-  function destroy () { root.innerHTML = ''; handler = null }
+  function onPicTap (fn) { picTapFn = fn }
+  function destroy () { root.innerHTML = ''; handler = picTapFn = null }
 
-  return { start, unlock, lock, fill, bounce, celebrate, sad, onAnswer, destroy }
+  return { start, unlock, lock, fill, bounce, celebrate, sad, onAnswer, onPicTap, destroy }
 }
 
 // ===== ui.js =====
@@ -3964,6 +3995,7 @@ function main () {
       audio.wrong()
       game.markWrong(word, picked)
     })
+    game.onPicTap(w => { if (!busy) audio.say(w) }) // 點圖聽這個詞怎麼唸
     game.onDone(finishRound)
     game.start(words)
   }
@@ -3994,6 +4026,7 @@ function main () {
       game.start(q, { blankIndex: bi, tiles })
       setTimeout(() => { if (game) { game.unlock(); busy = false } }, 350)
     }
+    game.onPicTap(() => { if (!busy && round[index]) audio.say(round[index].target) })
     game.onAnswer(async syl => {
       if (busy) return
       const q = round[index]

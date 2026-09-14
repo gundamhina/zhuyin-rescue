@@ -1,23 +1,23 @@
 // 填空。左邊一張圖，牌子上詞的注音少一個音節（空格），下面幾塊音節，拖對的進空格（點一下也行）。
-// 介面：start(q, { blankIndex, tiles })、lock/unlock、onAnswer(fn(syllable))、fill()、bounce(syllable)、celebrate、sad、destroy。
+// 介面：start(q, { blankIndex, tiles })、lock/unlock、onAnswer(fn(syllable))、onPicTap(fn(word))、fill()、bounce(syllable)、celebrate、sad、destroy。
 
-import { dogSvg, homeBgSvg, symbolMarkup } from './art.js'
-import { WORD_ICON } from './data.js'
+import { dogSvg, homeBgSvg, symbolMarkup, wordPicMarkup } from './art.js'
 
 const TILE_SLOTS = { 2: [[480, 660], [760, 660]], 3: [[380, 660], [620, 660], [860, 660]], 4: [[300, 660], [500, 660], [700, 660], [900, 660]] }
 
 export function createFillBlank (root, { color = 0 } = {}) {
   root.innerHTML = homeBgSvg() +
     '<div class="dog-wrap fill-dog">' + dogSvg(color) + '</div>' +
-    '<div class="fill-pic"><span></span></div>' +
+    '<div class="fill-pic"></div>' +
     '<div class="sign fill-sign"><div class="sign-board"><span class="fill-word"></span></div><div class="sign-post"></div></div>' +
     '<div class="tiles"></div>'
   const dogWrap = root.querySelector('.fill-dog')
-  const picEl = root.querySelector('.fill-pic span')
+  const picEl = root.querySelector('.fill-pic')
   const signEl = root.querySelector('.fill-sign')
   const wordEl = root.querySelector('.fill-word')
   const tilesEl = root.querySelector('.tiles')
   let handler = null
+  let picTapFn = null
   let locked = true
   let current = null
   let blankIndex = 0
@@ -31,6 +31,8 @@ export function createFillBlank (root, { color = 0 } = {}) {
       ? (filled ? symbolMarkup(filled) : '<span class="blank"></span>')
       : symbolMarkup(s)).join('')}</span>`
   }
+
+  picEl.addEventListener('pointerdown', () => { if (current && picTapFn) picTapFn(current.target) })
 
   tilesEl.addEventListener('pointerdown', e => {
     const t = e.target.closest('.tile')
@@ -74,7 +76,8 @@ export function createFillBlank (root, { color = 0 } = {}) {
     current = question
     blankIndex = bi
     locked = true
-    picEl.textContent = WORD_ICON[question.target] || '❓'
+    picEl.className = 'fill-pic'
+    picEl.innerHTML = wordPicMarkup(question.target)
     signEl.classList.remove('glow')
     renderWord()
     const slots = TILE_SLOTS[tiles.length] || TILE_SLOTS[3]
@@ -125,7 +128,8 @@ export function createFillBlank (root, { color = 0 } = {}) {
     dogWrap.classList.add('tilt')
   }
   function onAnswer (fn) { handler = fn }
-  function destroy () { root.innerHTML = ''; handler = null }
+  function onPicTap (fn) { picTapFn = fn }
+  function destroy () { root.innerHTML = ''; handler = picTapFn = null }
 
-  return { start, unlock, lock, fill, bounce, celebrate, sad, onAnswer, destroy }
+  return { start, unlock, lock, fill, bounce, celebrate, sad, onAnswer, onPicTap, destroy }
 }

@@ -393,6 +393,7 @@ function main () {
       audio.wrong()
       game.markWrong(word, picked)
     })
+    game.onPicTap(w => { if (!busy) audio.say(w) }) // 點圖聽這個詞怎麼唸
     game.onDone(finishRound)
     game.start(words)
   }
@@ -423,6 +424,7 @@ function main () {
       game.start(q, { blankIndex: bi, tiles })
       setTimeout(() => { if (game) { game.unlock(); busy = false } }, 350)
     }
+    game.onPicTap(() => { if (!busy && round[index]) audio.say(round[index].target) })
     game.onAnswer(async syl => {
       if (busy) return
       const q = round[index]
