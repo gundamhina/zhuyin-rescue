@@ -29,3 +29,8 @@ npm run build     # 把 src/ 合成 dist/index.html，並複製 audio/、img/
 Northflank 上建服務：Combined service → Git repo 選 `gundamhina/zhuyin-rescue`、分支 `master` → Build type 選 Dockerfile（路徑 `/Dockerfile`）→ Networking 加一個 port `8080`、HTTP、Public → 最小的 compute plan 就夠。之後每次 push master 會自動重建。
 
 注意：存檔在瀏覽器 localStorage，綁網址。從本機 `dist/index.html` 換到 Northflank 網址時，先在舊的那邊家長區「匯出」，到新網址「匯入」。語音辨識要 HTTPS，Northflank 給的網址本來就是。
+
+
+## 部署到 GitHub Pages（目前用這個）
+
+repo 設成公開後，`.github/workflows/pages.yml` 會在每次 push master 時跑測試、build、部署到 https://gundamhina.github.io/zhuyin-rescue/ 。第一次跑會自動把 Pages 打開；如果沒有，到 repo 的 Settings → Pages，Source 選 GitHub Actions。
