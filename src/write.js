@@ -4,10 +4,14 @@
 
 import { dogSvg, homeBgSvg } from './art.js'
 import { normalizePoints, rasterize, coverage, bestMatch } from './ink.js'
+import { SIMILAR_SHAPE } from './data.js'
 
 const PAD = 560 // 板子邊長（舞台座標）
 const GRID = 64 // 比對用小圖邊長
 const INK_WIDTH = 24
+// 聽寫判定：跟正確答案的距離要小於這個才算對；比對時把形似對也放進候選，亂畫不會剛好對
+const ACCEPT_DISTANCE = 8
+const KNOWN_DISTANCE = 12 // 最像的那個要夠像才算「她寫成別的」，否則算認不出來
 const CHECK_SVG = `<svg viewBox="0 0 24 24" width="70" height="70" fill="#fff"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>`
 const UNDO_SVG = `<svg viewBox="0 0 24 24" width="44" height="44" fill="#fff"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>`
 
@@ -115,14 +119,35 @@ export function createWrite (root, { color = 0 } = {}) {
     const ink = inkBitmap(strokes)
     if (trace) {
       const { covered, stray } = coverage(glyphBitmap(current.target), ink, GRID, 3)
-      handler(covered >= 0.6 && stray <= 0.4 ? current.target : '__miss__', null)
+      const ok = covered >= 0.7 && stray <= 0.3
+      reveal(ok)
+      handler(ok ? current.target : '__miss__', null)
       return
     }
+    // 候選：這題的選項，加上目標的形似對
+    const cands = new Set(current.options)
+    for (const [a, b] of SIMILAR_SHAPE) {
+      if (a === current.target) cands.add(b)
+      if (b === current.target) cands.add(a)
+    }
     const templates = {}
-    for (const s of current.options) templates[s] = glyphBitmap(s)
+    for (const s of cands) templates[s] = glyphBitmap(s)
     const ranked = bestMatch(ink, templates, GRID)
-    handler(ranked[0].symbol, null)
+    const best = ranked[0]
+    const targetScore = ranked.find(r => r.symbol === current.target).score
+    let verdict
+    if (best.symbol === current.target && targetScore < ACCEPT_DISTANCE) verdict = current.target
+    else if (best.symbol !== current.target && best.score < KNOWN_DISTANCE) verdict = best.symbol
+    else verdict = '__unknown__'
+    reveal(verdict === current.target)
+    handler(verdict, null)
   })
+
+  // 對答案：把正確符號疊在她寫的字上，對的綠、錯的橘
+  function reveal (ok) {
+    tplEl.classList.remove('good', 'bad')
+    tplEl.classList.add('show', ok ? 'good' : 'bad')
+  }
 
   function shakePad () {
     padWrap.classList.remove('shake')
@@ -137,6 +162,7 @@ export function createWrite (root, { color = 0 } = {}) {
     locked = true
     clearInk()
     tplText.textContent = question.target
+    tplEl.classList.remove('good', 'bad', 'flash')
     tplEl.classList.toggle('show', trace)
     padWrap.classList.remove('shake', 'glow')
   }

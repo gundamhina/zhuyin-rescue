@@ -2,7 +2,7 @@
 // 標記存在 settings.audioIssues = { 符號: '備註' }，家長區頂端會列出來。
 
 import { ALL_SYMBOLS as SYMBOLS, REP_CHAR, SPEAK_ACCEPT } from './data.js'
-import { listen, matchesSymbol, speechAvailable } from './speak.js'
+import { createListener, matchesSymbol, speechAvailable } from './speak.js'
 
 export function renderCheck (root, { audio, settings, onSettings, onClose }) {
   const issues = settings.audioIssues || {}
@@ -136,7 +136,10 @@ export function renderCheck (root, { audio, settings, onSettings, onClose }) {
       const out = root.querySelector('#rec-result')
       btn.disabled = true
       btn.textContent = '聽著…現在唸'
-      const heard = await listen()
+      const l = createListener()
+      l.start()
+      const heard = await l.next(5000)
+      l.stop()
       btn.disabled = false
       btn.textContent = '按一下開始唸'
       const ok = matchesSymbol(recTarget, heard)

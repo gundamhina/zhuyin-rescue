@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  createState, stars, activePool, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, TIERS,
+  createState, stars, activePool, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, trackView, applyTrack, effectiveTier, TIERS,
 } from '../src/scheduler.js';
 import { GROUPS, coreOf } from '../src/data.js';
 
@@ -14,6 +14,8 @@ function seededRng(seed = 1) {
   };
 }
 
+const view = (opts) => trackView(createState(opts), 'listen');
+
 function answerN(state, symbol, ok, n) {
   for (let i = 0; i < n; i++) {
     state = recordAnswer(state, { target: symbol, ok, picked: ok ? symbol : null, ms: 1000 });
@@ -22,38 +24,38 @@ function answerN(state, symbol, ok, n) {
 }
 
 test('新狀態：沒練過的符號 0 星，第一組解鎖', () => {
-  const s = createState();
+  const s = view();
   assert.equal(stars(s, 'ㄚ'), 0);
   assert.deepEqual(activePool(s), GROUPS[0]);
   assert.equal(s.tier, 0);
 });
 
 test('家長勾「已經認得」的符號從 3 星起跳並進入出題池', () => {
-  const s = createState({ known: ['ㄅ', 'ㄆ'] });
+  const s = view({ known: ['ㄅ', 'ㄆ'] });
   assert.equal(stars(s, 'ㄅ'), 3);
   assert.ok(activePool(s).includes('ㄅ'));
   assert.ok(activePool(s).includes('ㄚ'));
 });
 
 test('答對率換成星星：最近 10 次全對 5 星、一半對 2 或 3 星', () => {
-  let s = createState();
+  let s = view();
   s = answerN(s, 'ㄚ', true, 10);
   assert.equal(stars(s, 'ㄚ'), 5);
-  let t = createState();
+  let t = view();
   t = answerN(t, 'ㄛ', true, 5);
   t = answerN(t, 'ㄛ', false, 5);
   assert.ok(stars(t, 'ㄛ') >= 2 && stars(t, 'ㄛ') <= 3);
 });
 
 test('只看最近 10 次：早期答錯練回來後會被洗掉', () => {
-  let s = createState();
+  let s = view();
   s = answerN(s, 'ㄚ', false, 10);
   s = answerN(s, 'ㄚ', true, 10);
   assert.equal(stars(s, 'ㄚ'), 5);
 });
 
 test('第一組平均 4 星以上就解鎖第二組', () => {
-  let s = createState();
+  let s = view();
   for (const sym of GROUPS[0]) s = answerN(s, sym, true, 10);
   const pool = activePool(s);
   for (const sym of GROUPS[1]) assert.ok(pool.includes(sym), `${sym} 應解鎖`);
@@ -61,7 +63,7 @@ test('第一組平均 4 星以上就解鎖第二組', () => {
 });
 
 test('一局 5 題，每題有目標、選項含目標、選項數符合階級', () => {
-  const s = createState();
+  const s = view();
   const round = buildRound(s, seededRng());
   assert.equal(round.length, 5);
   for (const q of round) {
@@ -72,7 +74,7 @@ test('一局 5 題，每題有目標、選項含目標、選項數符合階級',
 });
 
 test('弱符號出現率高於強符號', () => {
-  let s = createState();
+  let s = view();
   // 第一組四個：ㄚ 練到 5 星，ㄛ 完全沒練
   s = answerN(s, 'ㄚ', true, 10);
   s = answerN(s, 'ㄜ', true, 10);
@@ -89,7 +91,7 @@ test('弱符號出現率高於強符號', () => {
 });
 
 test('每局至少 2 題來自最弱的三個符號', () => {
-  let s = createState();
+  let s = view();
   for (const sym of GROUPS[0]) s = answerN(s, sym, true, 10);
   // 解鎖第二組後，第二組三個是最弱的
   const rng = seededRng(3);
@@ -101,7 +103,7 @@ test('每局至少 2 題來自最弱的三個符號', () => {
 });
 
 test('答錯會記下混淆對，之後出現該對的二選一題', () => {
-  let s = createState();
+  let s = view();
   s = recordAnswer(s, { target: 'ㄚ', ok: false, picked: 'ㄛ', ms: 1500 });
   assert.ok(s.confusions['ㄚ|ㄛ'], '應記錄 ㄚ|ㄛ');
   const rng = seededRng(5);
@@ -116,7 +118,7 @@ test('答錯會記下混淆對，之後出現該對的二選一題', () => {
 });
 
 test('混淆對連對 3 次後移除', () => {
-  let s = createState();
+  let s = view();
   s = recordAnswer(s, { target: 'ㄚ', ok: false, picked: 'ㄛ', ms: 1500 });
   s = recordAnswer(s, { target: 'ㄚ', ok: true, picked: 'ㄚ', ms: 900, drill: 'ㄚ|ㄛ' });
   s = recordAnswer(s, { target: 'ㄛ', ok: true, picked: 'ㄛ', ms: 900, drill: 'ㄚ|ㄛ' });
@@ -126,7 +128,7 @@ test('混淆對連對 3 次後移除', () => {
 });
 
 test('混淆對加練時再答錯，連對次數歸零', () => {
-  let s = createState();
+  let s = view();
   s = recordAnswer(s, { target: 'ㄚ', ok: false, picked: 'ㄛ', ms: 1500 });
   s = recordAnswer(s, { target: 'ㄚ', ok: true, picked: 'ㄚ', ms: 900, drill: 'ㄚ|ㄛ' });
   s = recordAnswer(s, { target: 'ㄚ', ok: true, picked: 'ㄚ', ms: 900, drill: 'ㄚ|ㄛ' });
@@ -135,7 +137,7 @@ test('混淆對加練時再答錯，連對次數歸零', () => {
 });
 
 test('最近 10 題答對 9 題以上升一階，低於 6 題降一階', () => {
-  let s = createState();
+  let s = view();
   s = answerN(s, 'ㄚ', true, 10);
   assert.equal(s.tier, 1);
   // 升階後重新計算，再錯 10 題就降回去
@@ -144,16 +146,16 @@ test('最近 10 題答對 9 題以上升一階，低於 6 題降一階', () => {
 });
 
 test('階級不會低於 0 或高於最高階', () => {
-  let s = createState();
+  let s = view();
   s = answerN(s, 'ㄚ', false, 30);
   assert.equal(s.tier, 0);
-  let t = createState();
+  let t = view();
   t = answerN(t, 'ㄚ', true, 200);
   assert.equal(t.tier, TIERS.length - 1);
 });
 
 test('形似階級的干擾項優先挑長得像的', () => {
-  let s = createState({ known: ['ㄅ', 'ㄆ', 'ㄉ', 'ㄊ'] });
+  let s = view({ known: ['ㄅ', 'ㄆ', 'ㄉ', 'ㄊ'] });
   s = { ...s, tier: 2 }; // 形似階
   const rng = seededRng(9);
   const partner = { ㄅ: 'ㄆ', ㄆ: 'ㄅ', ㄉ: 'ㄊ', ㄊ: 'ㄉ' };
@@ -171,7 +173,7 @@ test('形似階級的干擾項優先挑長得像的', () => {
 });
 
 test('選項數超過池子大小時，選項數縮到池子大小', () => {
-  let s = createState();
+  let s = view();
   s = { ...s, tier: TIERS.length - 1 }; // 6 選項，但第一組只有 4 個
   for (const q of buildRound(s, seededRng())) {
     if (q.drill) continue;
@@ -180,7 +182,7 @@ test('選項數超過池子大小時，選項數縮到池子大小', () => {
 });
 
 test('鎖定難度階級後，出題用鎖定的階級，自動升降照常記錄但不影響出題', () => {
-  let s = createState();
+  let s = view();
   s = { ...s, lockTier: 3 };
   for (const q of buildRound(s, seededRng())) {
     if (q.drill) continue;
@@ -193,7 +195,7 @@ test('鎖定難度階級後，出題用鎖定的階級，自動升降照常記�
 });
 
 test('指定練習範圍後，出題池就是那幾組，不管解鎖與認得', () => {
-  let s = createState({ known: ['ㄅ'] });
+  let s = view({ known: ['ㄅ'] });
   s = { ...s, rangeGroups: [1, 2] };
   const pool = activePool(s);
   assert.deepEqual(new Set(pool), new Set([...GROUPS[1], ...GROUPS[2]]));
@@ -203,12 +205,12 @@ test('指定練習範圍後，出題池就是那幾組，不管解鎖與認得',
 });
 
 test('範圍設為空或 null 時回到自動解鎖', () => {
-  const s = { ...createState(), rangeGroups: [] };
+  const s = { ...view(), rangeGroups: [] };
   assert.deepEqual(activePool(s), GROUPS[0]);
 });
 
 test('清除練習紀錄：星星、混淆對、階級歸零，認得與難度設定保留', () => {
-  let s = createState({ known: ['ㄅ'] });
+  let s = view({ known: ['ㄅ'] });
   s = { ...s, lockTier: 2, rangeGroups: [4] };
   s = answerN(s, 'ㄚ', true, 10);
   s = recordAnswer(s, { target: 'ㄛ', ok: false, picked: 'ㄜ', ms: 900 });
@@ -224,7 +226,7 @@ test('清除練習紀錄：星星、混淆對、階級歸零，認得與難度�
 });
 
 test('手動跳級：指定已解鎖到第 N 組，前 N 組都進出題池，之後自動解鎖照常', () => {
-  let s = { ...createState(), unlockedUpTo: 3 };
+  let s = { ...view(), unlockedUpTo: 3 };
   const pool = activePool(s);
   for (const g of GROUPS.slice(0, 3)) for (const sym of g) assert.ok(pool.includes(sym), `${sym} 應解鎖`);
   assert.ok(!pool.includes(GROUPS[3][0]), '第四組不該解鎖');
@@ -234,14 +236,14 @@ test('手動跳級：指定已解鎖到第 N 組，前 N 組都進出題池，�
 });
 
 test('跳級不會縮小自動解鎖的範圍', () => {
-  let s = createState();
+  let s = view();
   for (const sym of GROUPS[0]) s = answerN(s, sym, true, 10);
   s = { ...s, unlockedUpTo: 1 };
   assert.ok(activePool(s).includes(GROUPS[1][0]), '自動已解鎖的第二組要保留');
 });
 
 test('翻牌用的符號：從出題池挑不重複的 n 個，池子不夠就給全部', () => {
-  const s = createState();
+  const s = view();
   const picked = pickSymbols(s, seededRng(), 5);
   assert.equal(picked.length, 4, '第一組只有 4 個');
   assert.equal(new Set(picked).size, picked.length);
@@ -249,7 +251,7 @@ test('翻牌用的符號：從出題池挑不重複的 n 個，池子不夠就�
 });
 
 test('翻牌選符號時弱的比強的常被挑到', () => {
-  let s = createState({ known: ['ㄅ', 'ㄆ', 'ㄇ', 'ㄈ'] }); // 池子 8 個
+  let s = view({ known: ['ㄅ', 'ㄆ', 'ㄇ', 'ㄈ'] }); // 池子 8 個
   for (const sym of ['ㄅ', 'ㄆ', 'ㄇ', 'ㄈ']) s = answerN(s, sym, true, 10); // 這四個 5 星
   const rng = seededRng(11);
   let weak = 0, strong = 0;
@@ -271,7 +273,7 @@ test('只有最低兩階有發呆 10 秒提示，其他階級沒有任何提示'
 
 test('拼讀字的干擾項優先挑只差一個符號的', () => {
   // 把範圍鎖在第 14 組（ㄅㄆㄇㄈ 兩拼），鎖形似階（3 選項）
-  const s = { ...createState(), rangeGroups: [13], lockTier: 2 };
+  const s = { ...view(), rangeGroups: [13], lockTier: 2 };
   const rng = seededRng(21);
   let total = 0, close = 0;
   for (let i = 0; i < 60; i++) {
@@ -291,16 +293,71 @@ test('拼讀字的干擾項優先挑只差一個符號的', () => {
 });
 
 test('寫字用的狀態：只保留單一符號的組別（前十組裡已解鎖或指定範圍的）', () => {
-  let s = createState();
+  let s = view();
   s = { ...s, unlockedUpTo: 12 }; // 解鎖到結合韻
   const w = singleSymbolState(s);
   const pool = activePool(w);
   assert.ok(pool.length >= 37, `應包含前十組 ${pool.length}`);
   for (const sym of pool) assert.equal(sym.length, 1, `${sym} 不是單一符號`);
   // 家長把範圍指到拼讀組時，退回第一組
-  const r = singleSymbolState({ ...createState(), rangeGroups: [14, 15] });
+  const r = singleSymbolState({ ...view(), rangeGroups: [14, 15] });
   assert.deepEqual(activePool(r), GROUPS[0]);
   // 範圍含單一符號組就只留那些
-  const m = singleSymbolState({ ...createState(), rangeGroups: [4, 14] });
+  const m = singleSymbolState({ ...view(), rangeGroups: [4, 14] });
   assert.deepEqual(activePool(m), GROUPS[4]);
+});
+
+// ---- 聽、讀、寫三軌分開記 ----
+test('新狀態有三軌，各自空的紀錄；共用的家長設定在外層', () => {
+  const s = createState();
+  assert.equal(s.version, 2);
+  assert.deepEqual(Object.keys(s.tracks).sort(), ['listen', 'read', 'write']);
+  for (const t of Object.values(s.tracks)) {
+    assert.deepEqual(t.mastery, {});
+    assert.deepEqual(t.confusions, {});
+    assert.equal(t.tier, 0);
+    assert.deepEqual(t.recent, []);
+  }
+  assert.deepEqual(s.known, []);
+  assert.equal(s.lockTier, null);
+});
+
+test('trackView 取出一軌當舊格式用；applyTrack 寫回去，不動其他軌', () => {
+  let s = createState();
+  let listen = trackView(s, 'listen');
+  listen = recordAnswer(listen, { target: 'ㄚ', ok: true, picked: 'ㄚ', ms: 800 });
+  s = applyTrack(s, 'listen', listen);
+  assert.equal(stars(trackView(s, 'listen'), 'ㄚ'), 1);
+  assert.equal(stars(trackView(s, 'read'), 'ㄚ'), 0, '讀那軌不受影響');
+  assert.equal(stars(trackView(s, 'write'), 'ㄚ'), 0);
+});
+
+test('每軌各自升階、各自解鎖', () => {
+  let s = createState();
+  let w = trackView(s, 'write');
+  for (const sym of GROUPS[0]) w = answerN(w, sym, true, 10);
+  s = applyTrack(s, 'write', w);
+  assert.ok(trackView(s, 'write').tier >= 1);
+  assert.equal(trackView(s, 'listen').tier, 0);
+  assert.ok(activePool(trackView(s, 'write')).includes(GROUPS[1][0]), '寫那軌解鎖第二組');
+  assert.ok(!activePool(trackView(s, 'listen')).includes(GROUPS[1][0]), '聽那軌還沒');
+});
+
+test('家長設定（認得、鎖階、範圍、跳級）三軌共用', () => {
+  const s = { ...createState({ known: ['ㄅ'] }), lockTier: 2, unlockedUpTo: 3 };
+  for (const t of ['listen', 'read', 'write']) {
+    const v = trackView(s, t);
+    assert.equal(stars(v, 'ㄅ'), 3);
+    assert.equal(effectiveTier(v), 2);
+    assert.ok(activePool(v).includes(GROUPS[2][0]));
+  }
+});
+
+test('清除練習紀錄清三軌，保留家長設定', () => {
+  let s = { ...createState({ known: ['ㄅ'] }), lockTier: 1 };
+  s = applyTrack(s, 'read', answerN(trackView(s, 'read'), 'ㄚ', true, 5));
+  const r = resetProgress(s);
+  assert.equal(stars(trackView(r, 'read'), 'ㄚ'), 0);
+  assert.deepEqual(r.known, ['ㄅ']);
+  assert.equal(r.lockTier, 1);
 });

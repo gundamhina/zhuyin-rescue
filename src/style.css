@@ -261,3 +261,11 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .pad-ok:active { transform: translateY(6px); box-shadow: 0 4px 0 #4E7A4E; }
 .pad-undo { position: absolute; right: -50px; top: -20px; width: 84px; height: 84px; border-radius: 50%; background: #E0955B; border: 6px solid #F6F3E6; box-shadow: 0 8px 0 #B07242; display: flex; align-items: center; justify-content: center; }
 .pad-undo:active { transform: translateY(5px); box-shadow: 0 3px 0 #B07242; }
+
+.panel-tracks { gap: 10px 16px; }
+.track-tab { font-size: 22px !important; padding: 8px 26px !important; border-radius: 12px; }
+.track-tab.on { background: #1B2B4B !important; color: #fff; }
+.panel-hint-inline { color: #5A6B85; font-size: 15px; }
+
+.pad-template.good span { color: rgba(107,158,107,0.55); }
+.pad-template.bad span { color: rgba(224,149,91,0.6); }

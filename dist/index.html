@@ -269,6 +269,14 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .pad-undo { position: absolute; right: -50px; top: -20px; width: 84px; height: 84px; border-radius: 50%; background: #E0955B; border: 6px solid #F6F3E6; box-shadow: 0 8px 0 #B07242; display: flex; align-items: center; justify-content: center; }
 .pad-undo:active { transform: translateY(5px); box-shadow: 0 3px 0 #B07242; }
 
+.panel-tracks { gap: 10px 16px; }
+.track-tab { font-size: 22px !important; padding: 8px 26px !important; border-radius: 12px; }
+.track-tab.on { background: #1B2B4B !important; color: #fff; }
+.panel-hint-inline { color: #5A6B85; font-size: 15px; }
+
+.pad-template.good span { color: rgba(107,158,107,0.55); }
+.pad-template.bad span { color: rgba(224,149,91,0.6); }
+
 </style>
 </head>
 <body>
@@ -431,19 +439,40 @@ const TIERS = [
   { options: 6, distract: 'sound', idleHint: 0 },
 ]
 
+// 聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）三軌各自記，練的是不同的東西。
+const TRACKS = ['listen', 'read', 'write']
+const TRACK_NAMES = { listen: '聽', read: '讀', write: '寫' }
+const TRACK_FIELDS = ['mastery', 'confusions', 'tier', 'recent']
+
+function emptyTrack () {
+  return { mastery: {}, confusions: {}, tier: 0, recent: [] }
+}
+
+// version 2：家長設定在外層共用，練習紀錄分三軌。
 function createState ({ known = [], groups = null } = {}) {
   return {
-    version: 1,
-    mastery: {},
+    version: 2,
     known: [...known],
-    confusions: {},
-    tier: 0,
-    recent: [],
     groups,
     lockTier: null, // 家長鎖定的階級；null 表示自動
     rangeGroups: null, // 家長指定的練習組別索引；null 或空表示自動解鎖
     unlockedUpTo: null, // 家長手動跳級：至少解鎖到第幾組（1 起算）；null 表示不干預
+    tracks: { listen: emptyTrack(), read: emptyTrack(), write: emptyTrack() },
   }
+}
+
+// 把一軌攤平成舊格式（外層設定 + 這軌的紀錄），給出題、記錄、面板用。
+function trackView (state, track) {
+  const t = (state.tracks && state.tracks[track]) || emptyTrack()
+  const { tracks, ...shared } = state
+  return { ...shared, ...t, track }
+}
+
+// 把攤平的一軌寫回去，只動這軌的紀錄欄位。
+function applyTrack (state, track, view) {
+  const patch = {}
+  for (const k of TRACK_FIELDS) patch[k] = view[k]
+  return { ...state, tracks: { ...state.tracks, [track]: { ...state.tracks[track], ...patch } } }
 }
 
 // 自動解鎖到第幾組（1 起算）：練熟一組開下一組，再跟家長手動跳級的值取大者
@@ -455,9 +484,13 @@ function unlockedCount (state) {
   return Math.min(groups.length, Math.max(n, manual))
 }
 
-// 清除練習紀錄：星星、混淆對、階級、最近答題全部歸零。名字、認得、難度鎖、範圍都保留。
+// 清除練習紀錄：三軌的星星、混淆對、階級、最近答題全部歸零。名字、認得、難度鎖、範圍都保留。
+// 傳攤平的一軌進來就只清那一軌。
 function resetProgress (state) {
-  return { ...state, mastery: {}, confusions: {}, tier: 0, recent: [] }
+  if (state.tracks) {
+    return { ...state, tracks: { listen: emptyTrack(), read: emptyTrack(), write: emptyTrack() } }
+  }
+  return { ...state, ...emptyTrack() }
 }
 
 // 出題實際用的階級：家長有鎖就用鎖的，否則用自動升降的
@@ -650,7 +683,23 @@ const PREFIX = 'zhuyin-rescue:'
 const PROFILES_KEY = 'zhuyin-rescue-profiles'
 
 function isValidState (s) {
-  return s && typeof s === 'object' && s.version === 1 && s.mastery && s.confusions
+  if (!s || typeof s !== 'object') return false
+  if (s.version === 2) return !!(s.tracks && s.tracks.listen && s.tracks.read && s.tracks.write)
+  return s.version === 1 && !!s.mastery && !!s.confusions
+}
+
+// 舊存檔（version 1）：紀錄在最外層，全部當成「聽」那一軌
+function migrate (s) {
+  if (s.version === 2) return s
+  const { mastery, confusions, tier, recent, ...shared } = s
+  return {
+    ...shared,
+    version: 2,
+    lockTier: shared.lockTier == null ? null : shared.lockTier,
+    rangeGroups: shared.rangeGroups == null ? null : shared.rangeGroups,
+    unlockedUpTo: shared.unlockedUpTo == null ? null : shared.unlockedUpTo,
+    tracks: { listen: { mastery, confusions, tier, recent }, read: emptyTrack(), write: emptyTrack() },
+  }
 }
 
 function readJson (storage, key, fallback) {
@@ -675,7 +724,7 @@ function createStore (storage) {
   return {
     load (profileId) {
       const s = readJson(storage, PREFIX + profileId, null)
-      return isValidState(s) ? s : createState()
+      return isValidState(s) ? migrate(s) : createState()
     },
     save (profileId, state) {
       storage.setItem(PREFIX + profileId, JSON.stringify(state))
@@ -686,7 +735,7 @@ function createStore (storage) {
     importJson (text) {
       const s = JSON.parse(text)
       if (!isValidState(s)) throw new Error('不是注音救援隊的存檔')
-      return s
+      return migrate(s)
     },
 
     loadProfiles,
@@ -1570,7 +1619,7 @@ function createMemory (root) {
 // 唸給狗狗聽。狗狗舉一張牌，她按麥克風唸出來，用瀏覽器的語音辨識判斷。
 // 辨識小孩的單音不會很準，所以 main.js 只在唸對時記錄，沒聽出來不算她錯。
 // 介面：show(symbol)、setListening(bool)、heard(text)、celebrate()、sad()、onMic(fn)、destroy。
-// 另外匯出 speechAvailable()、listen()、matchesSymbol()。
+// 另外匯出 speechAvailable()、createListener()、matchesSymbol()。
 
 
 const MIC_SVG = `<svg viewBox="0 0 24 24" width="90" height="90" fill="#fff"><path d="M12 15a4 4 0 0 0 4-4V6a4 4 0 1 0-8 0v5a4 4 0 0 0 4 4zm6-4a6 6 0 0 1-12 0H4a8 8 0 0 0 7 7.9V22h2v-3.1A8 8 0 0 0 20 11h-2z"/></svg>`
@@ -1579,27 +1628,61 @@ function speechAvailable () {
   return !!(window.SpeechRecognition || window.webkitSpeechRecognition)
 }
 
-// 聽一次，回傳可能的字串列表（沒聽到就是空陣列）。最多等 5 秒。
-function listen () {
-  return new Promise(resolve => {
-    const R = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!R) return resolve([])
-    const r = new R()
+// 一條連續的辨識：整局只開一次，瀏覽器就只問一次麥克風。
+// next(ms) 等下一段辨識結果（可能的字串列表），等不到回空陣列。
+function createListener () {
+  const R = window.SpeechRecognition || window.webkitSpeechRecognition
+  let r = null
+  let active = false
+  let waiter = null // { resolve, timer }
+  let denied = false
+
+  function deliver (list) {
+    if (!waiter) return
+    clearTimeout(waiter.timer)
+    const { resolve } = waiter
+    waiter = null
+    resolve(list)
+  }
+
+  function spawn () {
+    if (!R || !active || denied) return
+    r = new R()
     r.lang = 'zh-TW'
+    r.continuous = true
     r.interimResults = false
     r.maxAlternatives = 5
-    let done = false
-    const finish = (list) => { if (!done) { done = true; try { r.stop() } catch (err) { /* 已停 */ } resolve(list) } }
     r.onresult = e => {
       const alts = []
-      for (const res of e.results) for (const alt of res) alts.push(alt.transcript)
-      finish(alts)
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        for (const alt of e.results[i]) alts.push(alt.transcript)
+      }
+      if (alts.length) deliver(alts)
     }
-    r.onerror = () => finish([])
-    r.onend = () => finish([])
-    setTimeout(() => finish([]), 5000)
-    try { r.start() } catch (err) { finish([]) }
-  })
+    r.onerror = e => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { denied = true; deliver([]) }
+    }
+    // Chrome 一段時間沒聲音會自己結束，活著就重開（不會再問權限）
+    r.onend = () => { r = null; if (active && !denied) setTimeout(spawn, 200) }
+    try { r.start() } catch (err) { r = null }
+  }
+
+  return {
+    start () { if (active) return; active = true; spawn() },
+    stop () {
+      active = false
+      deliver([])
+      if (r) { try { r.onend = null; r.stop() } catch (err) { /* 已停 */ } r = null }
+    },
+    next (ms = 5000) {
+      if (!R || denied) return Promise.resolve([])
+      if (!r && active) spawn()
+      return new Promise(resolve => {
+        if (waiter) deliver([])
+        waiter = { resolve, timer: setTimeout(() => deliver([]), ms) }
+      })
+    },
+  }
 }
 
 // 辨識結果裡出現符號本身，或它的同音字任何一個，就算唸對
@@ -1784,6 +1867,9 @@ function bestMatch (drawing, templates, size) {
 const PAD = 560 // 板子邊長（舞台座標）
 const GRID = 64 // 比對用小圖邊長
 const INK_WIDTH = 24
+// 聽寫判定：跟正確答案的距離要小於這個才算對；比對時把形似對也放進候選，亂畫不會剛好對
+const ACCEPT_DISTANCE = 8
+const KNOWN_DISTANCE = 12 // 最像的那個要夠像才算「她寫成別的」，否則算認不出來
 const CHECK_SVG = `<svg viewBox="0 0 24 24" width="70" height="70" fill="#fff"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>`
 const UNDO_SVG = `<svg viewBox="0 0 24 24" width="44" height="44" fill="#fff"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>`
 
@@ -1891,14 +1977,35 @@ function createWrite (root, { color = 0 } = {}) {
     const ink = inkBitmap(strokes)
     if (trace) {
       const { covered, stray } = coverage(glyphBitmap(current.target), ink, GRID, 3)
-      handler(covered >= 0.6 && stray <= 0.4 ? current.target : '__miss__', null)
+      const ok = covered >= 0.7 && stray <= 0.3
+      reveal(ok)
+      handler(ok ? current.target : '__miss__', null)
       return
     }
+    // 候選：這題的選項，加上目標的形似對
+    const cands = new Set(current.options)
+    for (const [a, b] of SIMILAR_SHAPE) {
+      if (a === current.target) cands.add(b)
+      if (b === current.target) cands.add(a)
+    }
     const templates = {}
-    for (const s of current.options) templates[s] = glyphBitmap(s)
+    for (const s of cands) templates[s] = glyphBitmap(s)
     const ranked = bestMatch(ink, templates, GRID)
-    handler(ranked[0].symbol, null)
+    const best = ranked[0]
+    const targetScore = ranked.find(r => r.symbol === current.target).score
+    let verdict
+    if (best.symbol === current.target && targetScore < ACCEPT_DISTANCE) verdict = current.target
+    else if (best.symbol !== current.target && best.score < KNOWN_DISTANCE) verdict = best.symbol
+    else verdict = '__unknown__'
+    reveal(verdict === current.target)
+    handler(verdict, null)
   })
+
+  // 對答案：把正確符號疊在她寫的字上，對的綠、錯的橘
+  function reveal (ok) {
+    tplEl.classList.remove('good', 'bad')
+    tplEl.classList.add('show', ok ? 'good' : 'bad')
+  }
 
   function shakePad () {
     padWrap.classList.remove('shake')
@@ -1913,6 +2020,7 @@ function createWrite (root, { color = 0 } = {}) {
     locked = true
     clearInk()
     tplText.textContent = question.target
+    tplEl.classList.remove('good', 'bad', 'flash')
     tplEl.classList.toggle('show', trace)
     padWrap.classList.remove('shake', 'glow')
   }
@@ -2107,7 +2215,7 @@ function armButton (btn, confirmText, onConfirm) {
   }
 }
 
-function renderPanel (root, { profile, profiles, state, settings, voices, onKnownChange, onSettings, onStateChange, onExport, onImport, onResetProgress, onRemoveProfile, onClose, onSay, onCheck }) {
+function renderPanel (root, { profile, profiles, state, track = 'listen', onTrack, settings, voices, onKnownChange, onSettings, onStateChange, onExport, onImport, onResetProgress, onRemoveProfile, onClose, onSay, onCheck }) {
   const usersHtml = profiles.list.length
     ? profiles.list.map(p => `
       <div class="puser">
@@ -2148,8 +2256,13 @@ function renderPanel (root, { profile, profiles, state, settings, voices, onKnow
         <b>使用者</b>${usersHtml}
       </div>
       ${profile ? `
+      <div class="panel-row panel-tracks">
+        <b>看哪一軌</b>
+        ${TRACKS.map(t => `<button class="track-tab ${t === track ? 'on' : ''}" data-track="${t}">${TRACK_NAMES[t]}</button>`).join('')}
+        <span class="panel-hint-inline">聽＝釣魚、打地鼠；讀＝唸給狗狗聽；寫＝寫給狗狗看。星星、混淆、階級、解鎖各軌分開算，下面的設定三軌共用。</span>
+      </div>
       <div class="panel-row">
-        <div>目前出題階級：<b>${effectiveTier(state) + 1}</b> / 6（${tierLabel(TIERS[effectiveTier(state)])}）</div>
+        <div>「${TRACK_NAMES[track]}」目前出題階級：<b>${effectiveTier(state) + 1}</b> / 6（${tierLabel(TIERS[effectiveTier(state)])}）</div>
         <div>自動判定：第 <b>${state.tier + 1}</b> 階
           <button class="mini" id="tier-down" title="降一階" ${state.tier <= 0 ? 'disabled' : ''}>−</button>
           <button class="mini" id="tier-up" title="跳一階" ${state.tier >= TIERS.length - 1 ? 'disabled' : ''}>＋</button>
@@ -2184,7 +2297,7 @@ function renderPanel (root, { profile, profiles, state, settings, voices, onKnow
         ${profile ? `
         <button id="btn-export">匯出進度</button>
         <label class="file-btn">匯入進度<input type="file" id="file-import" accept=".json"></label>
-        <button id="btn-reset" class="danger">清除練習紀錄</button>` : ''}
+        <button id="btn-reset" class="danger">清除練習紀錄（三軌）</button>` : ''}
         <span id="panel-msg" class="panel-msg"></span>
       </div>
       <p class="panel-hint">點符號可以試聽。「認得」勾起來的符號從 3 星起算並直接進入出題。每格右下方的字是語音合成實際唸的代表字，唸得怪可以改。</p>
@@ -2193,6 +2306,7 @@ function renderPanel (root, { profile, profiles, state, settings, voices, onKnow
 
   root.querySelector('#panel-close').onclick = onClose
   root.querySelector('#btn-check').onclick = onCheck
+  root.querySelectorAll('[data-track]').forEach(b => { b.onclick = () => onTrack(b.dataset.track) })
   root.querySelectorAll('[data-say]').forEach(b => { b.onclick = () => onSay(b.dataset.say) })
   root.querySelectorAll('[data-known]').forEach(cb => {
     cb.onchange = () => onKnownChange(cb.dataset.known, cb.checked)
@@ -2382,7 +2496,10 @@ function renderCheck (root, { audio, settings, onSettings, onClose }) {
       const out = root.querySelector('#rec-result')
       btn.disabled = true
       btn.textContent = '聽著…現在唸'
-      const heard = await listen()
+      const l = createListener()
+      l.start()
+      const heard = await l.next(5000)
+      l.stop()
       btn.disabled = false
       btn.textContent = '按一下開始唸'
       const ok = matchesSymbol(recTarget, heard)
@@ -2399,6 +2516,8 @@ function renderCheck (root, { audio, settings, onSettings, onClose }) {
 
 const SETTINGS_KEY = 'zhuyin-rescue-settings'
 const MEMORY_PAIRS = 5
+// 每個玩法練哪一軌：聽（釣魚、打地鼠、翻牌）、讀（唸給狗狗聽）、寫（寫給狗狗看）
+const TRACK_OF = { fishing: 'listen', whack: 'listen', memory: 'listen', speak: 'read', write: 'write' }
 
 function loadSettings () {
   try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {} } catch (err) { return {} }
@@ -2501,6 +2620,7 @@ function main () {
     clearIdle()
     if (game) game.destroy()
     game = null
+    if (listener) { listener.stop(); listener = null }
     audio.stop()
   }
 
@@ -2516,10 +2636,13 @@ function main () {
 
   gameEl.querySelector('#btn-quit').addEventListener('pointerdown', () => { busy = false; clearIdle(); goHome() })
 
+  // 記到目前玩法那一軌
   function commit (answer) {
-    state = recordAnswer(state, answer)
+    const track = TRACK_OF[kind]
+    state = applyTrack(state, track, recordAnswer(trackView(state, track), answer))
     store.save(profile.id, state)
   }
+  function currentView () { return trackView(state, TRACK_OF[kind]) }
 
   function finishRound () {
     destroyGame()
@@ -2560,7 +2683,8 @@ function main () {
     else game = createFishing(playArea, { color: profile.color })
     replayBtn.classList.remove('hidden')
     // 寫字只出單一符號；低階級描寫、高階級聽寫
-    round = which === 'write' ? buildRound(singleSymbolState(state), Math.random) : buildRound(state, Math.random)
+    const v = currentView()
+    round = which === 'write' ? buildRound(singleSymbolState(v), Math.random) : buildRound(v, Math.random)
     index = 0
     starTotal = round.length
     setStars()
@@ -2576,7 +2700,7 @@ function main () {
     firstAttempt = true
     clearIdle()
     busy = true
-    game.start(q, { isTrace: kind === 'write' && effectiveTier(state) <= 1 })
+    game.start(q, { isTrace: kind === 'write' && effectiveTier(currentView()) <= 1 })
     game.lock()
     await wait(350)
     let opened = false
@@ -2593,8 +2717,7 @@ function main () {
   }
 
   replayBtn.addEventListener('pointerdown', () => {
-    if (kind === 'memory' || !round[index]) return
-    if (kind === 'speak') { audio.say(round[index].target); return }
+    if (kind === 'memory' || kind === 'speak' || !round[index]) return
     if (busy) return
     audio.say(round[index].target)
   })
@@ -2605,6 +2728,14 @@ function main () {
     const ms = Date.now() - askedAt
     // 描寫沒蓋好：不算錯，晃一下讓她再寫
     if (symbol === '__miss__') { audio.wrong(); game.shake(); game.sad(); return }
+    // 聽寫辨識不出是哪個：算錯但不記混淆對，答案會顯示在板子上讓她照著寫
+    if (symbol === '__unknown__') {
+      if (firstAttempt) { commit({ target: q.target, ok: false, picked: null, ms, drill: q.drill }); firstAttempt = false }
+      audio.wrong(); game.shake(); game.sad()
+      const myIndex = index; const myGame = game
+      setTimeout(async () => { if (index !== myIndex || game !== myGame) return; await audio.say(q.target) }, 500)
+      return
+    }
     if (symbol === q.target) {
       busy = true
       clearIdle()
@@ -2642,12 +2773,17 @@ function main () {
     }, 500)
   }
 
-  // ---- 唸給狗狗聽：只記唸對，沒聽出來不算錯 ----
+  // ---- 唸給狗狗聽（讀）：她看符號自己唸，遊戲不先播音。每題判完狗狗唸一次答案。只記唸對。 ----
   let speakTries = 0
+  let listener = null
   function runSpeak () {
     game = createSpeak(playArea, { color: profile.color })
-    replayBtn.classList.remove('hidden')
-    round = buildRound(state, Math.random)
+    replayBtn.classList.add('hidden') // 讀的練習不給聽
+    // 麥克風只問一次：整局開一條連續辨識，不每題重開
+    if (listener) listener.stop()
+    listener = createListener()
+    listener.start()
+    round = buildRound(currentView(), Math.random)
     index = 0
     starTotal = round.length
     setStars()
@@ -2662,8 +2798,6 @@ function main () {
     busy = true
     game.show(q.target)
     await wait(400)
-    // 提示等級高的時候狗狗先示範一次，讓她跟著唸
-    if (q.idleHint > 0 && game) await audio.say(q.target)
     busy = false
   }
 
@@ -2674,7 +2808,7 @@ function main () {
     busy = true
     audio.stop()
     game.setListening(true)
-    const heard = await listen()
+    const heard = await listener.next(5000)
     if (game !== myGame) return
     game.setListening(false)
     game.heard(heard[0] || '')
@@ -2685,13 +2819,15 @@ function main () {
       audio.ding()
       await game.celebrate()
       if (game !== myGame) return
-      await wait(300)
+      await audio.say(q.target) // 對答案：狗狗唸一次正確的
+      if (game !== myGame) return
+      await wait(200)
       index++
       if (index >= round.length) return finishRound()
       askSpeak()
       return
     }
-    // 沒聽出來：狗狗歪頭、示範一次。兩次沒過就跳下一題，不記錯
+    // 沒聽出來或唸錯：狗狗歪頭、唸一次答案。兩次沒過就跳下一題，不記錯
     firstAttempt = false
     speakTries++
     game.sad()
@@ -2713,7 +2849,7 @@ function main () {
   function runMemory () {
     game = createMemory(playArea)
     replayBtn.classList.add('hidden')
-    const symbols = pickSymbols(state, Math.random, MEMORY_PAIRS)
+    const symbols = pickSymbols(trackView(state, 'listen'), Math.random, MEMORY_PAIRS)
     starTotal = symbols.length
     setStars()
     game.onFlip(sym => { audio.flip(); audio.say(sym) })
@@ -2723,12 +2859,15 @@ function main () {
   }
 
   // ---- 大人面板 ----
+  let panelTrack = 'listen'
   function openPanel () {
     destroyGame()
     renderPanel(panelEl, {
       profile,
       profiles: store.loadProfiles(),
-      state,
+      state: state ? trackView(state, panelTrack) : null,
+      track: panelTrack,
+      onTrack (t) { panelTrack = t; openPanel() },
       settings,
       voices: audio.listVoices(),
       onKnownChange (symbol, checked) {
@@ -2743,8 +2882,14 @@ function main () {
         saveSettings(settings)
         openPanel()
       },
+      // 階級、最近答題是這一軌的；其他（鎖階、範圔、跳級）三軌共用
       onStateChange (partial) {
-        state = { ...state, ...partial }
+        const trackKeys = ['tier', 'recent']
+        if (Object.keys(partial).some(k => trackKeys.includes(k))) {
+          state = applyTrack(state, panelTrack, { ...trackView(state, panelTrack), ...partial })
+        } else {
+          state = { ...state, ...partial }
+        }
         store.save(profile.id, state)
         openPanel()
       },

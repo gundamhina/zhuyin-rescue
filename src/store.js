@@ -1,12 +1,28 @@
 // 進度存取：多位使用者、每人一份進度、匯出匯入。storage 用參數傳進來，測試時換成假的。
 
-import { createState } from './scheduler.js'
+import { createState, emptyTrack } from './scheduler.js'
 
 const PREFIX = 'zhuyin-rescue:'
 const PROFILES_KEY = 'zhuyin-rescue-profiles'
 
 function isValidState (s) {
-  return s && typeof s === 'object' && s.version === 1 && s.mastery && s.confusions
+  if (!s || typeof s !== 'object') return false
+  if (s.version === 2) return !!(s.tracks && s.tracks.listen && s.tracks.read && s.tracks.write)
+  return s.version === 1 && !!s.mastery && !!s.confusions
+}
+
+// 舊存檔（version 1）：紀錄在最外層，全部當成「聽」那一軌
+function migrate (s) {
+  if (s.version === 2) return s
+  const { mastery, confusions, tier, recent, ...shared } = s
+  return {
+    ...shared,
+    version: 2,
+    lockTier: shared.lockTier == null ? null : shared.lockTier,
+    rangeGroups: shared.rangeGroups == null ? null : shared.rangeGroups,
+    unlockedUpTo: shared.unlockedUpTo == null ? null : shared.unlockedUpTo,
+    tracks: { listen: { mastery, confusions, tier, recent }, read: emptyTrack(), write: emptyTrack() },
+  }
 }
 
 function readJson (storage, key, fallback) {
@@ -31,7 +47,7 @@ export function createStore (storage) {
   return {
     load (profileId) {
       const s = readJson(storage, PREFIX + profileId, null)
-      return isValidState(s) ? s : createState()
+      return isValidState(s) ? migrate(s) : createState()
     },
     save (profileId, state) {
       storage.setItem(PREFIX + profileId, JSON.stringify(state))
@@ -42,7 +58,7 @@ export function createStore (storage) {
     importJson (text) {
       const s = JSON.parse(text)
       if (!isValidState(s)) throw new Error('不是注音救援隊的存檔')
-      return s
+      return migrate(s)
     },
 
     loadProfiles,

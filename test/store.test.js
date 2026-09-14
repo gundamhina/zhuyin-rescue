@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createStore } from '../src/store.js';
-import { createState, recordAnswer } from '../src/scheduler.js';
+import { createState, recordAnswer, trackView, applyTrack } from '../src/scheduler.js';
 
 function fakeStorage() {
   const m = new Map();
@@ -15,15 +15,15 @@ function fakeStorage() {
 test('沒有存檔時回傳新狀態', () => {
   const store = createStore(fakeStorage());
   const s = store.load('p1');
-  assert.equal(s.tier, 0);
-  assert.deepEqual(s.confusions, {});
+  assert.equal(s.version, 2);
+  assert.deepEqual(s.tracks.listen.confusions, {});
 });
 
 test('存了再讀回來一樣', () => {
   const storage = fakeStorage();
   const store = createStore(storage);
   let s = createState();
-  s = recordAnswer(s, { target: 'ㄚ', ok: false, picked: 'ㄛ', ms: 1200 });
+  s = applyTrack(s, 'listen', recordAnswer(trackView(s, 'listen'), { target: 'ㄚ', ok: false, picked: 'ㄛ', ms: 1200 }));
   store.save('p1', s);
   assert.deepEqual(createStore(storage).load('p1'), s);
 });
@@ -31,10 +31,10 @@ test('存了再讀回來一樣', () => {
 test('不同使用者的進度分開存', () => {
   const store = createStore(fakeStorage());
   let a = createState();
-  a = recordAnswer(a, { target: 'ㄚ', ok: true, picked: 'ㄚ', ms: 800 });
+  a = applyTrack(a, 'listen', recordAnswer(trackView(a, 'listen'), { target: 'ㄚ', ok: true, picked: 'ㄚ', ms: 800 }));
   store.save('p1', a);
   const b = store.load('p2');
-  assert.deepEqual(b.mastery, {});
+  assert.deepEqual(b.tracks.listen.mastery, {});
   assert.deepEqual(store.load('p1'), a);
 });
 
@@ -42,7 +42,7 @@ test('存檔壞掉時回傳新狀態，不會炸', () => {
   const storage = fakeStorage();
   storage.setItem('zhuyin-rescue:p1', '{not json');
   const s = createStore(storage).load('p1');
-  assert.equal(s.tier, 0);
+  assert.equal(s.version, 2);
 });
 
 test('匯出是 JSON 字串，匯入後狀態一致', () => {
@@ -85,4 +85,19 @@ test('刪除使用者會連進度一起刪', () => {
   assert.equal(store.loadProfiles().list.length, 0);
   assert.equal(store.loadProfiles().current, null);
   assert.equal(storage.getItem('zhuyin-rescue:' + a.id), null);
+});
+
+test('舊版存檔（version 1，紀錄在最外層）載入時搬進「聽」那一軌', () => {
+  const storage = fakeStorage();
+  const old = { version: 1, mastery: { 'ㄚ': { history: [{ ok: true, ms: 900 }] } }, known: ['ㄅ'], confusions: { 'ㄚ|ㄛ': { streak: 1 } }, tier: 2, recent: [true], groups: null, lockTier: 3, rangeGroups: null, unlockedUpTo: 2 };
+  storage.setItem('zhuyin-rescue:p1', JSON.stringify(old));
+  const s = createStore(storage).load('p1');
+  assert.equal(s.version, 2);
+  assert.deepEqual(s.tracks.listen.mastery, old.mastery);
+  assert.deepEqual(s.tracks.listen.confusions, old.confusions);
+  assert.equal(s.tracks.listen.tier, 2);
+  assert.deepEqual(s.tracks.read.mastery, {});
+  assert.deepEqual(s.known, ['ㄅ']);
+  assert.equal(s.lockTier, 3);
+  assert.equal(s.unlockedUpTo, 2);
 });

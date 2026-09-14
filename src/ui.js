@@ -1,7 +1,7 @@
 // 選人、首頁、結算、大人面板、舞台縮放。
 
 import { GROUPS, REP_CHAR } from './data.js'
-import { stars, activePool, effectiveTier, unlockedCount, TIERS } from './scheduler.js'
+import { stars, activePool, effectiveTier, unlockedCount, TIERS, TRACKS, TRACK_NAMES } from './scheduler.js'
 import { dogSvg, confettiHtml, DOG_COLORS, homeBgSvg, cardArt } from './art.js'
 
 
@@ -163,7 +163,7 @@ function armButton (btn, confirmText, onConfirm) {
   }
 }
 
-export function renderPanel (root, { profile, profiles, state, settings, voices, onKnownChange, onSettings, onStateChange, onExport, onImport, onResetProgress, onRemoveProfile, onClose, onSay, onCheck }) {
+export function renderPanel (root, { profile, profiles, state, track = 'listen', onTrack, settings, voices, onKnownChange, onSettings, onStateChange, onExport, onImport, onResetProgress, onRemoveProfile, onClose, onSay, onCheck }) {
   const usersHtml = profiles.list.length
     ? profiles.list.map(p => `
       <div class="puser">
@@ -204,8 +204,13 @@ export function renderPanel (root, { profile, profiles, state, settings, voices,
         <b>使用者</b>${usersHtml}
       </div>
       ${profile ? `
+      <div class="panel-row panel-tracks">
+        <b>看哪一軌</b>
+        ${TRACKS.map(t => `<button class="track-tab ${t === track ? 'on' : ''}" data-track="${t}">${TRACK_NAMES[t]}</button>`).join('')}
+        <span class="panel-hint-inline">聽＝釣魚、打地鼠；讀＝唸給狗狗聽；寫＝寫給狗狗看。星星、混淆、階級、解鎖各軌分開算，下面的設定三軌共用。</span>
+      </div>
       <div class="panel-row">
-        <div>目前出題階級：<b>${effectiveTier(state) + 1}</b> / 6（${tierLabel(TIERS[effectiveTier(state)])}）</div>
+        <div>「${TRACK_NAMES[track]}」目前出題階級：<b>${effectiveTier(state) + 1}</b> / 6（${tierLabel(TIERS[effectiveTier(state)])}）</div>
         <div>自動判定：第 <b>${state.tier + 1}</b> 階
           <button class="mini" id="tier-down" title="降一階" ${state.tier <= 0 ? 'disabled' : ''}>−</button>
           <button class="mini" id="tier-up" title="跳一階" ${state.tier >= TIERS.length - 1 ? 'disabled' : ''}>＋</button>
@@ -240,7 +245,7 @@ export function renderPanel (root, { profile, profiles, state, settings, voices,
         ${profile ? `
         <button id="btn-export">匯出進度</button>
         <label class="file-btn">匯入進度<input type="file" id="file-import" accept=".json"></label>
-        <button id="btn-reset" class="danger">清除練習紀錄</button>` : ''}
+        <button id="btn-reset" class="danger">清除練習紀錄（三軌）</button>` : ''}
         <span id="panel-msg" class="panel-msg"></span>
       </div>
       <p class="panel-hint">點符號可以試聽。「認得」勾起來的符號從 3 星起算並直接進入出題。每格右下方的字是語音合成實際唸的代表字，唸得怪可以改。</p>
@@ -249,6 +254,7 @@ export function renderPanel (root, { profile, profiles, state, settings, voices,
 
   root.querySelector('#panel-close').onclick = onClose
   root.querySelector('#btn-check').onclick = onCheck
+  root.querySelectorAll('[data-track]').forEach(b => { b.onclick = () => onTrack(b.dataset.track) })
   root.querySelectorAll('[data-say]').forEach(b => { b.onclick = () => onSay(b.dataset.say) })
   root.querySelectorAll('[data-known]').forEach(cb => {
     cb.onchange = () => onKnownChange(cb.dataset.known, cb.checked)

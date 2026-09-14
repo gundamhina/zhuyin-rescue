@@ -1,7 +1,7 @@
 // 唸給狗狗聽。狗狗舉一張牌，她按麥克風唸出來，用瀏覽器的語音辨識判斷。
 // 辨識小孩的單音不會很準，所以 main.js 只在唸對時記錄，沒聽出來不算她錯。
 // 介面：show(symbol)、setListening(bool)、heard(text)、celebrate()、sad()、onMic(fn)、destroy。
-// 另外匯出 speechAvailable()、listen()、matchesSymbol()。
+// 另外匯出 speechAvailable()、createListener()、matchesSymbol()。
 
 import { dogSvg, homeBgSvg, symbolMarkup } from './art.js'
 import { SPEAK_ACCEPT } from './data.js'
@@ -12,27 +12,61 @@ export function speechAvailable () {
   return !!(window.SpeechRecognition || window.webkitSpeechRecognition)
 }
 
-// 聽一次，回傳可能的字串列表（沒聽到就是空陣列）。最多等 5 秒。
-export function listen () {
-  return new Promise(resolve => {
-    const R = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!R) return resolve([])
-    const r = new R()
+// 一條連續的辨識：整局只開一次，瀏覽器就只問一次麥克風。
+// next(ms) 等下一段辨識結果（可能的字串列表），等不到回空陣列。
+export function createListener () {
+  const R = window.SpeechRecognition || window.webkitSpeechRecognition
+  let r = null
+  let active = false
+  let waiter = null // { resolve, timer }
+  let denied = false
+
+  function deliver (list) {
+    if (!waiter) return
+    clearTimeout(waiter.timer)
+    const { resolve } = waiter
+    waiter = null
+    resolve(list)
+  }
+
+  function spawn () {
+    if (!R || !active || denied) return
+    r = new R()
     r.lang = 'zh-TW'
+    r.continuous = true
     r.interimResults = false
     r.maxAlternatives = 5
-    let done = false
-    const finish = (list) => { if (!done) { done = true; try { r.stop() } catch (err) { /* 已停 */ } resolve(list) } }
     r.onresult = e => {
       const alts = []
-      for (const res of e.results) for (const alt of res) alts.push(alt.transcript)
-      finish(alts)
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        for (const alt of e.results[i]) alts.push(alt.transcript)
+      }
+      if (alts.length) deliver(alts)
     }
-    r.onerror = () => finish([])
-    r.onend = () => finish([])
-    setTimeout(() => finish([]), 5000)
-    try { r.start() } catch (err) { finish([]) }
-  })
+    r.onerror = e => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { denied = true; deliver([]) }
+    }
+    // Chrome 一段時間沒聲音會自己結束，活著就重開（不會再問權限）
+    r.onend = () => { r = null; if (active && !denied) setTimeout(spawn, 200) }
+    try { r.start() } catch (err) { r = null }
+  }
+
+  return {
+    start () { if (active) return; active = true; spawn() },
+    stop () {
+      active = false
+      deliver([])
+      if (r) { try { r.onend = null; r.stop() } catch (err) { /* 已停 */ } r = null }
+    },
+    next (ms = 5000) {
+      if (!R || denied) return Promise.resolve([])
+      if (!r && active) spawn()
+      return new Promise(resolve => {
+        if (waiter) deliver([])
+        waiter = { resolve, timer: setTimeout(() => deliver([]), ms) }
+      })
+    },
+  }
 }
 
 // 辨識結果裡出現符號本身，或它的同音字任何一個，就算唸對

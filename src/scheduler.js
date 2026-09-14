@@ -21,19 +21,40 @@ export const TIERS = [
   { options: 6, distract: 'sound', idleHint: 0 },
 ]
 
+// 聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）三軌各自記，練的是不同的東西。
+export const TRACKS = ['listen', 'read', 'write']
+export const TRACK_NAMES = { listen: '聽', read: '讀', write: '寫' }
+const TRACK_FIELDS = ['mastery', 'confusions', 'tier', 'recent']
+
+export function emptyTrack () {
+  return { mastery: {}, confusions: {}, tier: 0, recent: [] }
+}
+
+// version 2：家長設定在外層共用，練習紀錄分三軌。
 export function createState ({ known = [], groups = null } = {}) {
   return {
-    version: 1,
-    mastery: {},
+    version: 2,
     known: [...known],
-    confusions: {},
-    tier: 0,
-    recent: [],
     groups,
     lockTier: null, // 家長鎖定的階級；null 表示自動
     rangeGroups: null, // 家長指定的練習組別索引；null 或空表示自動解鎖
     unlockedUpTo: null, // 家長手動跳級：至少解鎖到第幾組（1 起算）；null 表示不干預
+    tracks: { listen: emptyTrack(), read: emptyTrack(), write: emptyTrack() },
   }
+}
+
+// 把一軌攤平成舊格式（外層設定 + 這軌的紀錄），給出題、記錄、面板用。
+export function trackView (state, track) {
+  const t = (state.tracks && state.tracks[track]) || emptyTrack()
+  const { tracks, ...shared } = state
+  return { ...shared, ...t, track }
+}
+
+// 把攤平的一軌寫回去，只動這軌的紀錄欄位。
+export function applyTrack (state, track, view) {
+  const patch = {}
+  for (const k of TRACK_FIELDS) patch[k] = view[k]
+  return { ...state, tracks: { ...state.tracks, [track]: { ...state.tracks[track], ...patch } } }
 }
 
 // 自動解鎖到第幾組（1 起算）：練熟一組開下一組，再跟家長手動跳級的值取大者
@@ -45,9 +66,13 @@ export function unlockedCount (state) {
   return Math.min(groups.length, Math.max(n, manual))
 }
 
-// 清除練習紀錄：星星、混淆對、階級、最近答題全部歸零。名字、認得、難度鎖、範圍都保留。
+// 清除練習紀錄：三軌的星星、混淆對、階級、最近答題全部歸零。名字、認得、難度鎖、範圍都保留。
+// 傳攤平的一軌進來就只清那一軌。
 export function resetProgress (state) {
-  return { ...state, mastery: {}, confusions: {}, tier: 0, recent: [] }
+  if (state.tracks) {
+    return { ...state, tracks: { listen: emptyTrack(), read: emptyTrack(), write: emptyTrack() } }
+  }
+  return { ...state, ...emptyTrack() }
 }
 
 // 出題實際用的階級：家長有鎖就用鎖的，否則用自動升降的
