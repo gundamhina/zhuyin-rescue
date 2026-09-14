@@ -10,7 +10,7 @@ import { createSpeak, speechAvailable, createListener, matchesSymbol, requestMic
 import { createWrite } from './write.js'
 import { createMatchLine } from './matchline.js'
 import { createFillBlank } from './fillblank.js'
-import { fitStage, goFullscreenOnPhone, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage } from './ui.js'
+import { fitStage, layoutBg, goFullscreenOnPhone, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage } from './ui.js'
 import { renderCheck } from './check.js'
 
 const SETTINGS_KEY = 'zhuyin-rescue-settings'
@@ -33,10 +33,17 @@ function saveSettings (s) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)
 
 function main () {
   const stage = document.getElementById('stage')
+  // 螢幕大小或方向變了：舞台變形、背景重鋪、正在玩的遊戲重排
+  function relayout () {
+    const changed = fitStage(stage)
+    if (!changed) return
+    document.querySelectorAll('.bg').forEach(layoutBg)
+    if (game && game.layout) game.layout()
+  }
   fitStage(stage)
-  window.addEventListener('resize', () => fitStage(stage))
-  window.addEventListener('orientationchange', () => setTimeout(() => fitStage(stage), 300))
-  if (window.visualViewport) window.visualViewport.addEventListener('resize', () => fitStage(stage))
+  window.addEventListener('resize', relayout)
+  window.addEventListener('orientationchange', () => setTimeout(relayout, 300))
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', relayout)
   // 手機上碰畫面就進全螢幕並鎖橫向（只在真的點下去時有效；退出全螢幕後再點會再進）
   document.addEventListener('pointerdown', goFullscreenOnPhone)
   showInstallHint()

@@ -2,29 +2,67 @@
 
 import { GROUPS, REP_CHAR, GROUP_NAMES } from './data.js'
 import { stars, activePool, effectiveTier, unlockedCount, lifetimeStats, dailyStats, TIERS, TRACKS, TRACK_NAMES } from './scheduler.js'
-import { dogSvg, confettiHtml, DOG_COLORS, homeBgSvg, cardArt } from './art.js'
+import { dogSvg, confettiHtml, DOG_COLORS, bgHtml, cardArt } from './art.js'
 
 
-// 舞台固定 1200×800，依視窗等比縮放置中
-// 舞台固定 1200×800，等比縮到看得見的範圍裡置中。手機用 visualViewport，網址列縮放時才會跟著對。
-// 手機直的拿：整個舞台轉 90 度變橫的，不用等她轉手機（iPhone 不能鎖方向，只能這樣）。
+// 舞台會跟著螢幕比例變形，所以不留邊：
+//   橫的：高固定 800，寬照螢幕比例 1200～1800。畫面元素排在正中央 1200×800 的 .frame 裡，背景鋪滿整個舞台。
+//   直的：寬固定 800，高照螢幕比例 1100～1800。.frame 就是整個舞台，各畫面另有直版排法（#stage.portrait）。
+// 舞台大小放在 STAGE，也寫成 CSS 變數 --W、--H 給樣式用。
+export const STAGE = { w: 1200, h: 800, portrait: false }
+
 export function fitStage (stage) {
   const vv = window.visualViewport
-  const w = vv ? vv.width : window.innerWidth
-  const h = vv ? vv.height : window.innerHeight
-  const portraitPhone = h > w && w < 900
-  if (portraitPhone) {
-    const scale = Math.min(h / 1200, w / 800)
-    // rotate(90deg) 把舞台的 (x, y) 轉到螢幕的 (-y, x)，所以往右推一個舞台高度才會在畫面裡
-    const x = (w + 800 * scale) / 2
-    const y = (h - 1200 * scale) / 2
-    stage.style.transform = `translate(${x}px, ${y}px) rotate(90deg) scale(${scale})`
-    return
-  }
-  const scale = Math.min(w / 1200, h / 800)
-  const x = (w - 1200 * scale) / 2
-  const y = (h - 800 * scale) / 2
+  const vw = vv ? vv.width : window.innerWidth
+  const vh = vv ? vv.height : window.innerHeight
+  const portrait = vh > vw
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
+  const W = portrait ? 800 : Math.round(clamp(800 * vw / vh, 1200, 1800))
+  const H = portrait ? Math.round(clamp(800 * vh / vw, 1100, 1800)) : 800
+  const changed = W !== STAGE.w || H !== STAGE.h || portrait !== STAGE.portrait
+  STAGE.w = W
+  STAGE.h = H
+  STAGE.portrait = portrait
+  stage.style.width = W + 'px'
+  stage.style.height = H + 'px'
+  stage.style.setProperty('--W', W + 'px')
+  stage.style.setProperty('--H', H + 'px')
+  stage.classList.toggle('portrait', portrait)
+  const scale = Math.min(vw / W, vh / H)
+  const x = (vw - W * scale) / 2
+  const y = (vh - H * scale) / 2
   stage.style.transform = `translate(${x}px, ${y}px) scale(${scale})`
+  return changed
+}
+
+// 背景層定位。橫的：放大到填滿舞台、貼底（碼頭那張靠左，其他置中）。
+// 直的：草原一樣蓋滿（放大到填滿高度，左右裁掉）；碼頭那張要留住碼頭和狗狗的比例，
+// 所以只放大到占畫面下半（至少填滿寬），貼左下，上面由 .bg-fill 的天空色補。縮放結果記在 dataset 給釣魚算竿尖用。
+export function layoutBg (el) {
+  const art = el.querySelector('.bg-art')
+  if (!art) return
+  const { w: W, h: H, portrait } = STAGE
+  let s, x, y
+  if (portrait && el.dataset.fit === 'left') {
+    s = Math.max(W / 1200, 0.45 * H / 800)
+    x = 0
+    y = H - 800 * s
+  } else if (portrait) {
+    s = H / 800
+    x = (W - 1200 * s) / 2
+    y = 0
+  } else {
+    s = Math.max(W / 1200, H / 800)
+    y = H - 800 * s
+    x = el.dataset.fit === 'left' ? 0 : (W - 1200 * s) / 2
+  }
+  art.style.transform = `translate(${x}px, ${y}px) scale(${s})`
+  art.dataset.s = s
+  art.dataset.x = x
+  art.dataset.y = y
+}
+export function mountBgs (root) {
+  root.querySelectorAll('.bg').forEach(layoutBg)
 }
 
 // 螢幕座標換成舞台座標（1200×800 那套），縮放、旋轉都算進去。拖曳、畫字都用這個。
@@ -33,6 +71,12 @@ export function stagePoint (e) {
   const m = new DOMMatrix(getComputedStyle(stage).transform)
   const p = m.inverse().transformPoint(new DOMPoint(e.clientX, e.clientY))
   return [p.x, p.y]
+}
+
+// 螢幕座標換成某個 .frame 裡的座標（橫的時候 frame 不在舞台左上角）
+export function framePoint (e, frame) {
+  const [x, y] = stagePoint(e)
+  return [x - frame.offsetLeft, y - frame.offsetTop]
 }
 
 // 元素在舞台裡的位置（不含 transform），一路加 offsetLeft/offsetTop 到舞台
@@ -66,7 +110,7 @@ const GEAR_SVG = `<svg viewBox="0 0 24 24" width="40" height="40" fill="#fff"><p
 // 選人畫面：每人一張卡（狗狗頭像＋名字），最後一張是「＋」
 export function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
   root.innerHTML = `
-    <div class="home-sky">${homeBgSvg()}</div>
+    ${bgHtml('home')}
     <div class="profiles">
       ${profiles.list.map(p => `
         <button class="profile-card" data-id="${p.id}" aria-label="${p.name}">
@@ -90,6 +134,7 @@ export function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
       </div>
     </div>
     <button class="gear" id="btn-gear" aria-label="大人面板">${GEAR_SVG}</button>`
+  mountBgs(root)
 
   root.querySelectorAll('.profile-card[data-id]').forEach(b => {
     b.addEventListener('pointerdown', () => onPick(b.dataset.id))
@@ -118,7 +163,7 @@ export function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
 // 首頁：目前使用者的狗狗、三張玩法卡
 export function renderHome (root, { profile, speech = true }) {
   root.innerHTML = `
-    <div class="home-sky">${homeBgSvg()}</div>
+    ${bgHtml('home')}
     <button class="who" id="btn-who" aria-label="換人">
       <div class="who-avatar">${dogSvg(profile.color)}</div>
       <div class="who-name">${escapeHtml(profile.name)}</div>
@@ -147,11 +192,12 @@ export function renderHome (root, { profile, speech = true }) {
       </button>
     </div>
     <button class="gear" id="btn-gear" aria-label="大人面板">${GEAR_SVG}</button>`
+  mountBgs(root)
 }
 
 export function renderResult (root, color = 0) {
   root.innerHTML = `
-    <div class="result-bg">${homeBgSvg()}</div>
+    ${bgHtml('home')}
     <div class="result-burst"></div>
     <div class="confetti-wrap">${confettiHtml()}</div>
     <div class="result-dogs">${dogSvg(color)}${dogSvg((color + 1) % 6)}${dogSvg((color + 2) % 6)}</div>
@@ -164,6 +210,7 @@ export function renderResult (root, color = 0) {
         <svg viewBox="0 0 24 24" width="64" height="64" fill="#fff"><path d="M12 3 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
       </button>
     </div>`
+  mountBgs(root)
 }
 
 // 結算動畫：星星一顆顆亮，3 秒後出按鈕

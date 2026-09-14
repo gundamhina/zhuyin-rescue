@@ -1,13 +1,18 @@
 // 連連看。左邊 4 個詞的注音，右邊 4 張圖打亂，從詞拉線到圖。對了線留著，錯了線消失。
-// 介面：start(words)、onPair(fn(word, pickedWord))、onPicTap(fn(word))、markCorrect(word, pickedWord)、markWrong(word, pickedWord)、onDone(fn)、destroy。
+// 介面：start(words)、onPair(fn(word, pickedWord))、onPicTap(fn(word))、markCorrect(word, pickedWord)、markWrong(word, pickedWord)、onDone(fn)、layout、destroy。
 // 沒選詞的時候點圖，會呼叫 onPicTap（主流程拿去唸這個詞）。
 
-import { dogSvg, homeBgSvg, symbolMarkup, wordPicMarkup } from './art.js'
-import { stagePoint } from './ui.js'
+import { dogSvg, bgHtml, symbolMarkup, wordPicMarkup } from './art.js'
+import { STAGE, mountBgs, framePoint } from './ui.js'
 
-const LEFT_X = 330 // 詞卡右緣（線的起點）
-const RIGHT_X = 740 // 圖卡左緣（線的終點）
-const ROW_Y = [120, 290, 460, 630]
+// 版面：詞卡右緣（線的起點）、圖卡左緣（線的終點）、四列的中心 y
+function geom () {
+  if (!STAGE.portrait) return { left: 330, right: 740, rows: [120, 290, 460, 630], w: 1200, h: 800 }
+  const H = STAGE.h
+  const step = Math.min(300, (H - 430) / 3) // 列距最多 300，太高的螢幕就把四列擠在中間
+  const mid = (260 + H - 170) / 2
+  return { left: 330, right: 600, rows: [0, 1, 2, 3].map(i => Math.round(mid + (i - 1.5) * step)), w: 800, h: H }
+}
 
 function shuffleWords (arr) {
   const a = [...arr]
@@ -19,13 +24,16 @@ function shuffleWords (arr) {
 }
 
 export function createMatchLine (root, { color = 0 } = {}) {
-  root.innerHTML = homeBgSvg() +
+  root.innerHTML = bgHtml('home') + '<div class="frame">' +
     '<div class="dog-wrap match-dog">' + dogSvg(color) + '</div>' +
-    '<svg class="lines" viewBox="0 0 1200 800" width="1200" height="800" xmlns="http://www.w3.org/2000/svg"><g class="done"></g><line class="live" x1="0" y1="0" x2="0" y2="0"/></svg>' +
-    '<div class="match-words"></div><div class="match-pics"></div>'
+    '<svg class="lines" xmlns="http://www.w3.org/2000/svg"><g class="done"></g><line class="live" x1="0" y1="0" x2="0" y2="0"/></svg>' +
+    '<div class="match-words"></div><div class="match-pics"></div></div>'
+  mountBgs(root)
+  const frame = root.querySelector('.frame')
   const dogWrap = root.querySelector('.match-dog')
   const wordsEl = root.querySelector('.match-words')
   const picsEl = root.querySelector('.match-pics')
+  const linesSvg = root.querySelector('.lines')
   const doneG = root.querySelector('.lines .done')
   const live = root.querySelector('.lines .live')
   let pairFn = null
@@ -34,14 +42,17 @@ export function createMatchLine (root, { color = 0 } = {}) {
   let remaining = 0
   let drag = null // { word, x0, y0 }
   let selected = null // 點一下詞再點一下圖也可以
+  let drawn = [] // 已畫好的線 { word, picked, cls }，換版面時重畫
 
   function anchorOfWord (word) {
+    const g = geom()
     const i = [...wordsEl.children].findIndex(c => c.dataset.symbol === word)
-    return [LEFT_X, ROW_Y[i]]
+    return [g.left, g.rows[i]]
   }
   function anchorOfPic (word) {
+    const g = geom()
     const i = [...picsEl.children].findIndex(c => c.dataset.symbol === word)
-    return [RIGHT_X, ROW_Y[i]]
+    return [g.right, g.rows[i]]
   }
 
   wordsEl.addEventListener('pointerdown', e => {
@@ -59,7 +70,7 @@ export function createMatchLine (root, { color = 0 } = {}) {
   })
   root.addEventListener('pointermove', e => {
     if (!drag) return
-    const [x, y] = stagePoint(e)
+    const [x, y] = framePoint(e, frame)
     live.setAttribute('x2', x); live.setAttribute('y2', y)
   })
   function endDrag (e) {
@@ -93,11 +104,25 @@ export function createMatchLine (root, { color = 0 } = {}) {
     remaining = words.length
     selected = null
     drag = null
+    drawn = []
     doneG.innerHTML = ''
-    wordsEl.innerHTML = words.map((w, i) => `
-      <div class="mword" data-symbol="${w}" style="top:${ROW_Y[i] - 80}px"><span>${symbolMarkup(w)}</span></div>`).join('')
-    picsEl.innerHTML = shuffleWords(words).map((w, i) => `
-      <div class="mpic" data-symbol="${w}" style="top:${ROW_Y[i] - 80}px">${wordPicMarkup(w)}</div>`).join('')
+    wordsEl.innerHTML = words.map(w => `
+      <div class="mword" data-symbol="${w}"><span>${symbolMarkup(w)}</span></div>`).join('')
+    picsEl.innerHTML = shuffleWords(words).map(w => `
+      <div class="mpic" data-symbol="${w}">${wordPicMarkup(w)}</div>`).join('')
+    layout()
+  }
+
+  // 依目前版面放卡片、設線的畫布大小，並把畫過的線重畫
+  function layout () {
+    const g = geom()
+    linesSvg.setAttribute('viewBox', `0 0 ${g.w} ${g.h}`)
+    linesSvg.setAttribute('width', g.w)
+    linesSvg.setAttribute('height', g.h)
+    ;[...wordsEl.children].forEach((c, i) => { c.style.top = (g.rows[i] - 80) + 'px' })
+    ;[...picsEl.children].forEach((c, i) => { c.style.top = (g.rows[i] - 80) + 'px' })
+    doneG.innerHTML = ''
+    for (const d of drawn) drawLine(d.word, d.picked, d.cls)
   }
 
   function drawLine (word, pickedWord, cls) {
@@ -110,6 +135,7 @@ export function createMatchLine (root, { color = 0 } = {}) {
     return l
   }
   function markCorrect (word, pickedWord) {
+    drawn.push({ word, picked: pickedWord, cls: 'ok' })
     drawLine(word, pickedWord, 'ok')
     const w = wordsEl.querySelector(`.mword[data-symbol="${word}"]`)
     const p = picsEl.querySelector(`.mpic[data-symbol="${pickedWord}"]`)
@@ -138,6 +164,7 @@ export function createMatchLine (root, { color = 0 } = {}) {
     onPicTap (fn) { picTapFn = fn },
     markCorrect,
     markWrong,
+    layout,
     destroy () { root.innerHTML = ''; pairFn = doneFn = picTapFn = null },
   }
 }

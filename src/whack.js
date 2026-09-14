@@ -1,12 +1,23 @@
 // 打地鼠玩法。符號一個一個從洞裡冒出來又縮回去，狗狗喊一個音，拍到對的就過關。
 // 不計時、不扣分：沒拍到就等它下次再冒出來，拍錯才算錯（交給 main.js 記錄）。
-// 介面跟釣魚一樣：start、lock/unlock、hint、shake、celebrate、sad、onAnswer、destroy。
+// 介面跟釣魚一樣：start、lock/unlock、hint、shake、celebrate、sad、onAnswer、layout、destroy。
 
-import { dogSvg, homeBgSvg, symbolMarkup } from './art.js'
+import { dogSvg, bgHtml, symbolMarkup } from './art.js'
+import { STAGE, mountBgs } from './ui.js'
 
 const HOLES = [[330, 430], [600, 430], [870, 430], [460, 620], [730, 620], [1000, 620]]
 const UP_MS = 1700 // 冒出來停多久
 const GAP_MS = 350 // 縮回去到下一個冒出來
+
+// 直的：兩欄三排，在狗狗下面、星星上面那段置中，排距 190～300
+function holesFor () {
+  if (!STAGE.portrait) return HOLES
+  const top = 400
+  const bottom = STAGE.h - 120
+  const step = Math.max(190, Math.min(300, (bottom - top - 200) / 2))
+  const y0 = (top + bottom) / 2 - step + 10
+  return [0, 1, 2].flatMap(r => [[230, y0 + r * step], [570, y0 + r * step]])
+}
 
 function shuffleList (arr) {
   const a = [...arr]
@@ -18,14 +29,15 @@ function shuffleList (arr) {
 }
 
 export function createWhack (root, { color = 0 } = {}) {
-  root.innerHTML = homeBgSvg() +
+  root.innerHTML = bgHtml('home') + '<div class="frame">' +
     '<div class="dog-wrap whack-dog">' + dogSvg(color) + '</div>' +
-    '<div class="holes">' + HOLES.map(([x, y]) => `
-      <div class="hole" style="left:${x - 110}px;top:${y - 90}px">
+    '<div class="holes">' + HOLES.map(() => `
+      <div class="hole">
         <div class="hole-back"></div>
         <div class="mole"><span></span></div>
         <div class="hole-front"></div>
-      </div>`).join('') + '</div>'
+      </div>`).join('') + '</div></div>'
+  mountBgs(root)
   const dogWrap = root.querySelector('.whack-dog')
   const holes = [...root.querySelectorAll('.hole')]
   let handler = null
@@ -37,6 +49,14 @@ export function createWhack (root, { color = 0 } = {}) {
   let lastHole = -1
   let glowOnce = false
   let upMole = null // 目前冒出來的那一個
+
+  function layout () {
+    holesFor().forEach(([x, y], i) => {
+      holes[i].style.left = (x - 110) + 'px'
+      holes[i].style.top = (y - 90) + 'px'
+    })
+  }
+  layout()
 
   root.addEventListener('pointerdown', e => {
     const mole = e.target.closest('.mole')
@@ -143,5 +163,5 @@ export function createWhack (root, { color = 0 } = {}) {
   function onAnswer (fn) { handler = fn }
   function destroy () { stopLoop(); root.innerHTML = ''; handler = null }
 
-  return { start, unlock, lock, hint, shake, celebrate, sad, onAnswer, destroy }
+  return { start, unlock, lock, hint, shake, celebrate, sad, onAnswer, layout, destroy }
 }

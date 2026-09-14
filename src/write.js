@@ -2,8 +2,8 @@
 // 判定：描寫看蓋到範本多少；聽寫把筆跡跟這題的候選符號比，最像的當她寫的。
 // 介面跟釣魚一樣：start、lock/unlock、hint、shake、celebrate、sad、onAnswer、destroy。
 
-import { dogSvg, homeBgSvg } from './art.js'
-import { stagePoint, stageOffset } from './ui.js'
+import { dogSvg, bgHtml } from './art.js'
+import { stagePoint, stageOffset, mountBgs } from './ui.js'
 import { normalizePoints, rasterize, coverage, bestMatch } from './ink.js'
 import { SIMILAR_SHAPE } from './data.js'
 
@@ -48,14 +48,15 @@ function inkBitmap (strokes) {
 }
 
 export function createWrite (root, { color = 0 } = {}) {
-  root.innerHTML = homeBgSvg() +
+  root.innerHTML = bgHtml('home') + '<div class="frame">' +
     '<div class="dog-wrap write-dog">' + dogSvg(color) + '</div>' +
     `<div class="pad-wrap">
        <div class="pad-template"><span></span></div>
        <canvas class="pad" width="${PAD}" height="${PAD}"></canvas>
        <button class="pad-undo" aria-label="重寫">${UNDO_SVG}</button>
        <button class="pad-ok" aria-label="好了">${CHECK_SVG}</button>
-     </div>`
+     </div></div>`
+  mountBgs(root)
   const dogWrap = root.querySelector('.write-dog')
   const padWrap = root.querySelector('.pad-wrap')
   const canvas = root.querySelector('.pad')

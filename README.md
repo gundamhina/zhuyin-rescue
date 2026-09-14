@@ -33,7 +33,7 @@ Northflank 上建服務：Combined service → Git repo 選 `gundamhina/zhuyin-r
 
 ## 手機
 
-舞台固定 1200×800 等比縮放。直的拿手機時整個舞台轉 90 度變橫的，不用轉手機也能玩；拖曳和畫字都經過 `stagePoint()` 換算，旋轉後座標一樣對。碰畫面會進全螢幕並鎖橫向（Android Chrome；iPhone 的 Safari 不給網頁全螢幕，就維持轉 90 度的畫面）。要更像 app 就用瀏覽器選單「加到主畫面」，`src/manifest.webmanifest` 設了全螢幕與橫向，圖示由 `tools/make_icons.py` 從 dog-0 做出來。
+舞台會跟著螢幕比例變形，不留邊：橫的高固定 800、寬 1200～1800，畫面元素排在正中央 1200×800 的 `.frame` 裡，背景鋪滿整個舞台；直的寬固定 800、高 1100～1800，每個畫面另有直版排法（CSS 的 `#stage.portrait` 加上各遊戲的 `layout()`）。舞台大小在 `STAGE`（ui.js），也寫成 CSS 變數 `--W`、`--H`。座標換算一律用 `stagePoint()`／`framePoint()`。背景用 `bgHtml()` 產生、`layoutBg()` 定位：草原蓋滿舞台，碼頭那張橫的靠左蓋滿、直的放大到占畫面下半貼左下、上面補天空色（釣魚的狗狗跟碼頭放在同一層，一起縮放）。手機碰畫面會進全螢幕（Android Chrome）。要更像 app 就用瀏覽器選單「加到主畫面」，`src/manifest.webmanifest` 設了全螢幕與橫向，圖示由 `tools/make_icons.py` 從 dog-0 做出來。
 
 ## 部署到 GitHub Pages（目前用這個）
 

@@ -17,6 +17,15 @@ function strip (src, name) {
 }
 
 const js = ORDER.map(f => strip(readFileSync(join(root, 'src', f), 'utf8'), f)).join('\n')
+// 各模組最外層的名稱不能撞：合成同一個範圍後，同名的 function 會靜靜地互相蓋掉，new Function 抓不到
+const seen = {}
+for (const f of ORDER) {
+  const src = readFileSync(join(root, 'src', f), 'utf8')
+  for (const m of src.matchAll(/^(?:export\s+)?(?:async\s+)?(?:function|const|let|class)\s+([A-Za-z_$][\w$]*)/gm)) {
+    if (seen[m[1]]) { console.error(`最外層名稱撞到：${m[1]} 同時在 ${seen[m[1]]} 和 ${f}`); process.exit(1) }
+    seen[m[1]] = f
+  }
+}
 // 合成後全部在同一個範圍，模組之間頂層名稱撞到會直接是語法錯誤，先在這裡抓出來
 try {
   new Function(js) // eslint-disable-line no-new-func

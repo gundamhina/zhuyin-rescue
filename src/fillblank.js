@@ -1,17 +1,28 @@
 // 填空。左邊一張圖，牌子上詞的注音少一個音節（空格），下面幾塊音節，拖對的進空格（點一下也行）。
-// 介面：start(q, { blankIndex, tiles })、lock/unlock、onAnswer(fn(syllable))、onPicTap(fn(word))、fill()、bounce(syllable)、celebrate、sad、destroy。
+// 介面：start(q, { blankIndex, tiles })、lock/unlock、onAnswer(fn(syllable))、onPicTap(fn(word))、fill()、bounce(syllable)、celebrate、sad、layout、destroy。
 
-import { dogSvg, homeBgSvg, symbolMarkup, wordPicMarkup } from './art.js'
-import { stagePoint } from './ui.js'
+import { dogSvg, bgHtml, symbolMarkup, wordPicMarkup } from './art.js'
+import { STAGE, mountBgs, stagePoint, framePoint } from './ui.js'
 
+// 橫的：磁磚中心點（1200×800 frame 座標）
 const TILE_SLOTS = { 2: [[480, 620], [760, 620]], 3: [[380, 620], [620, 620], [860, 620]], 4: [[300, 620], [500, 620], [700, 620], [900, 620]] }
 
+// 直的：一排貼著下面，平均分
+function tileSlots (n) {
+  if (!STAGE.portrait) return TILE_SLOTS[n] || TILE_SLOTS[3]
+  const step = n >= 4 ? 200 : 240
+  const y = 110 + Math.max(0, (STAGE.h - 200 - 880) / 2) + 800
+  return Array.from({ length: n }, (_, i) => [Math.round(400 + (i - (n - 1) / 2) * step), y])
+}
+
 export function createFillBlank (root, { color = 0 } = {}) {
-  root.innerHTML = homeBgSvg() +
+  root.innerHTML = bgHtml('home') + '<div class="frame">' +
     '<div class="dog-wrap fill-dog">' + dogSvg(color) + '</div>' +
     '<div class="fill-pic"></div>' +
     '<div class="sign fill-sign"><div class="sign-board"><span class="fill-word"></span></div><div class="sign-post"></div></div>' +
-    '<div class="tiles"></div>'
+    '<div class="tiles"></div></div>'
+  mountBgs(root)
+  const frame = root.querySelector('.frame')
   const dogWrap = root.querySelector('.fill-dog')
   const picEl = root.querySelector('.fill-pic')
   const signEl = root.querySelector('.fill-sign')
@@ -36,14 +47,14 @@ export function createFillBlank (root, { color = 0 } = {}) {
   tilesEl.addEventListener('pointerdown', e => {
     const t = e.target.closest('.tile')
     if (!t || locked) return
-    const [sx, sy] = stagePoint(e)
+    const [sx, sy] = framePoint(e, frame)
     drag = { t, startX: sx, startY: sy, ox: parseFloat(t.style.left), oy: parseFloat(t.style.top), moved: false }
     t.classList.add('dragging')
     try { t.setPointerCapture(e.pointerId) } catch (err) { /* 不給鎖也能拖 */ }
   })
   tilesEl.addEventListener('pointermove', e => {
     if (!drag) return
-    const [sx, sy] = stagePoint(e)
+    const [sx, sy] = framePoint(e, frame)
     const dx = sx - drag.startX
     const dy = sy - drag.startY
     if (Math.abs(dx) + Math.abs(dy) > 6) drag.moved = true
@@ -59,7 +70,7 @@ export function createFillBlank (root, { color = 0 } = {}) {
     const blank = wordEl.querySelector('.blank')
     let hit = !moved
     if (moved && blank) {
-      // 空格中心換成舞台座標，放手的點離它 130 以內就算放進去
+      // 空格中心換成舞台座標，放手的點離它夠近就算放進去
       const b = blank.getBoundingClientRect()
       const [bx, by] = stagePoint({ clientX: (b.left + b.right) / 2, clientY: (b.top + b.bottom) / 2 })
       const [px, py] = stagePoint(e)
@@ -74,6 +85,25 @@ export function createFillBlank (root, { color = 0 } = {}) {
   tilesEl.addEventListener('pointerup', endDrag)
   tilesEl.addEventListener('pointercancel', endDrag)
 
+  // 直的：圖、牌子、磁磚整組在畫面裡置中；橫的位置交給 CSS
+  function placeTiles () {
+    if (STAGE.portrait) {
+      const groupTop = 110 + Math.max(0, (STAGE.h - 200 - 880) / 2)
+      picEl.style.top = groupTop + 'px'
+      signEl.style.top = (groupTop + 280) + 'px'
+    } else {
+      picEl.style.top = ''
+      signEl.style.top = ''
+    }
+    const tiles = [...tilesEl.children]
+    const slots = tileSlots(tiles.length)
+    tiles.forEach((t, i) => {
+      if (t.classList.contains('dragging') || t.classList.contains('gone')) return
+      t.style.left = (slots[i][0] - 80) + 'px'
+      t.style.top = (slots[i][1] - 80) + 'px'
+    })
+  }
+
   function start (question, { blankIndex: bi, tiles }) {
     current = question
     blankIndex = bi
@@ -82,18 +112,15 @@ export function createFillBlank (root, { color = 0 } = {}) {
     picEl.innerHTML = wordPicMarkup(question.target)
     signEl.classList.remove('glow')
     renderWord()
-    const slots = TILE_SLOTS[tiles.length] || TILE_SLOTS[3]
     tilesEl.innerHTML = ''
-    tiles.forEach((syl, i) => {
-      const [x, y] = slots[i]
+    tiles.forEach(syl => {
       const t = document.createElement('div')
       t.className = 'tile'
       t.dataset.syllable = syl
-      t.style.left = (x - 80) + 'px'
-      t.style.top = (y - 80) + 'px'
       t.innerHTML = `<span>${symbolMarkup(syl)}</span>`
       tilesEl.appendChild(t)
     })
+    placeTiles()
   }
   function tileOf (syl) { return tilesEl.querySelector(`.tile[data-syllable="${syl}"]`) }
   function unlock () { locked = false }
@@ -109,7 +136,7 @@ export function createFillBlank (root, { color = 0 } = {}) {
     const t = tileOf(syl)
     if (!t) return
     const i = [...tilesEl.children].indexOf(t)
-    const slots = TILE_SLOTS[tilesEl.children.length] || TILE_SLOTS[3]
+    const slots = tileSlots(tilesEl.children.length)
     t.classList.add('returning')
     t.style.left = (slots[i][0] - 80) + 'px'
     t.style.top = (slots[i][1] - 80) + 'px'
@@ -131,7 +158,8 @@ export function createFillBlank (root, { color = 0 } = {}) {
   }
   function onAnswer (fn) { handler = fn }
   function onPicTap (fn) { picTapFn = fn }
+  function layout () { placeTiles() }
   function destroy () { root.innerHTML = ''; handler = picTapFn = null }
 
-  return { start, unlock, lock, fill, bounce, celebrate, sad, onAnswer, onPicTap, destroy }
+  return { start, unlock, lock, fill, bounce, celebrate, sad, onAnswer, onPicTap, layout, destroy }
 }

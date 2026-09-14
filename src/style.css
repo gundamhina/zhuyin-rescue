@@ -4,12 +4,20 @@ body { font-family: "Microsoft JhengHei", "Noto Sans TC", "PingFang TC", sans-se
 button { font-family: inherit; border: 0; background: none; cursor: pointer; touch-action: manipulation; }
 .hidden { display: none !important; }
 
-/* 舞台 1200×800，等比縮放置中 */
-#stage { position: absolute; left: 0; top: 0; width: 1200px; height: 800px; transform-origin: 0 0; overflow: hidden; }
+/* 舞台：大小由 fitStage 依螢幕比例決定（橫 1200～1800×800、直 800×1100～1800），等比縮放置中 */
+#stage { position: absolute; left: 0; top: 0; width: 1200px; height: 800px; --W: 1200px; --H: 800px; transform-origin: 0 0; overflow: hidden; }
+/* 背景層鋪滿舞台：上面天空填色，1200×800 的場景圖由 layoutBg 縮放貼底 */
+.bg { position: absolute; inset: 0; overflow: hidden; }
+.bg-fill { position: absolute; inset: 0; }
+.bg-fill.home { background: linear-gradient(#8DBCCB, #9EC9D2 60%, #A6CAD0); }
+.bg-fill.scene { background: linear-gradient(#2E74C0, #3784CB 50%, #5E9ACD); }
+.bg-art { position: absolute; left: 0; top: 0; width: 1200px; height: 800px; transform-origin: 0 0; }
+/* 畫面元素放在 frame 裡：橫的置中 1200×800，直的就是整個舞台 */
+.frame { position: absolute; left: calc((var(--W) - 1200px) / 2); top: 0; width: 1200px; height: 800px; }
+#stage.portrait .frame { left: 0; width: 800px; height: var(--H); }
 .screen { position: absolute; inset: 0; display: none; }
 .screen.active { display: block; }
 .scene { position: absolute; left: 0; top: 0; }
-.home-sky, .result-bg { position: absolute; inset: 0; }
 
 /* 雲慢慢飄、太陽光慢慢轉 */
 .cloud-wrap.c1 { animation: drift 38s linear infinite; }
@@ -17,7 +25,8 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .cloud-wrap.c3 { animation: drift 45s linear infinite; }
 @keyframes drift { 0% { transform: translateX(-80px); } 100% { transform: translateX(80px); } }
 .sun-rays { transform-origin: 1020px 130px; animation: spin 90s linear infinite; }
-.home-sky .sun-rays, .result-bg .sun-rays { transform-origin: 1060px 90px; }
+.bg-art .sun-rays { transform-origin: 1060px 90px; }
+.bg-art .scene .sun-rays { transform-origin: 1020px 130px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .waves .w1 { animation: wave 6s ease-in-out infinite; }
 .waves .w2 { animation: wave 7.5s ease-in-out infinite reverse; }
@@ -77,12 +86,13 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 
 /* ---- 遊戲 ---- */
 .play-area { position: absolute; inset: 0; }
-.dog-wrap { position: absolute; left: 170px; top: 226px; width: 260px; height: 300px; transform-origin: 50% 100%; filter: drop-shadow(0 8px 0 rgba(0,0,0,0.12)); }
+.dog-wrap { position: absolute; width: 260px; height: 300px; transform-origin: 50% 100%; filter: drop-shadow(0 8px 0 rgba(0,0,0,0.12)); }
 .dog-wrap.jump { animation: jump .7s ease-out; }
 .dog-wrap.tilt { animation: tilt .6s ease-in-out; }
 @keyframes jump { 0% { transform: translateY(0); } 35% { transform: translateY(-70px) rotate(-6deg); } 70% { transform: translateY(0); } 85% { transform: translateY(-16px); } 100% { transform: translateY(0); } }
 @keyframes tilt { 0%,100% { transform: rotate(0); } 40% { transform: rotate(14deg); } }
 
+.fish-dog { left: 170px; top: 226px; }
 .bubbles { position: absolute; inset: 0; }
 .bubble { position: absolute; width: 176px; height: 176px; border-radius: 50%;
   background: radial-gradient(circle at 34% 30%, #FFFDF7 0 12%, rgba(246,243,230,0.85) 40%, rgba(207,234,240,0.85) 72%, rgba(143,199,210,0.95));
@@ -173,10 +183,12 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .dog-slot { position: relative; display: inline-block; width: 100%; height: 100%; }
 .dog-slot .art-slot { object-fit: contain; }
 .card-pic { position: relative; }
-.home-sky, .result-bg, .play-area { position: absolute; }
+.play-area { position: absolute; }
 
 /* ---- 翻牌 ---- */
 .cards-grid { position: absolute; inset: 0; }
+.cards-grid.small .mcard { width: 160px; height: 195px; }
+.cards-grid.small .mcard-front span { font-size: 100px; }
 .mcard { position: absolute; width: 190px; height: 230px; perspective: 900px; cursor: pointer; animation: dealIn .4s ease-out both; }
 @keyframes dealIn { from { opacity: 0; transform: translateY(40px) scale(0.8); } to { opacity: 1; transform: none; } }
 .mcard-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .45s cubic-bezier(.4,.2,.2,1); }
@@ -348,3 +360,36 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 /* ---- 手機在不能全螢幕的瀏覽器（LINE 內建那種）裡開：提示改用 Chrome 加到主畫面 ---- */
 #install-hint { position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 60; max-width: 92vw; padding: 10px 18px; border-radius: 14px; background: rgba(43,58,74,0.92); color: #fff; font-size: 15px; line-height: 1.4; box-shadow: 0 6px 16px rgba(0,0,0,0.3); }
 #install-hint[hidden] { display: none; }
+
+/* ================= 直版（手機直拿）：#stage.portrait，寬 800、高 --H ================= */
+#stage.portrait .profiles { padding: 100px 40px 120px; }
+#stage.portrait .cards { top: 130px; bottom: 60px; align-content: center; padding: 0 40px; }
+/* 結算 */
+#stage.portrait .result-stars { top: 150px; }
+#stage.portrait .result-burst { top: calc(var(--H) * 0.5); }
+#stage.portrait .result-dogs { top: calc(var(--H) * 0.5 - 120px); gap: 16px; }
+#stage.portrait .result-dogs .dog-slot { width: 200px; height: 231px; }
+#stage.portrait .result-dogs .dog { width: 200px; height: 231px; }
+/* 打地鼠：狗狗小小的在上面正中間，洞兩欄三排（位置由 JS 排） */
+#stage.portrait .whack-dog { left: 300px; top: 70px; width: 200px; height: 231px; }
+#stage.portrait .whack-dog .dog, #stage.portrait .whack-dog .dog-slot .art-slot { width: 200px; height: 231px; }
+/* 唸給狗狗聽：牌子在上面正中，麥克風右下，狗狗左下 */
+#stage.portrait { --py: calc((var(--H) - 1060px) / 2); } /* 唸給狗狗聽整組垂直置中的偏移 */
+#stage.portrait .sign { left: 250px; top: calc(130px + var(--py)); }
+#stage.portrait .heard { left: 0; width: 800px; top: calc(700px + var(--py)); }
+#stage.portrait .mic-btn { left: 560px; top: calc(760px + var(--py)); }
+#stage.portrait .speak-dog { left: 0; top: calc(720px + var(--py)); width: 260px; height: 300px; }
+#stage.portrait .speak-dog .dog, #stage.portrait .speak-dog .dog-slot .art-slot { width: 260px; height: 300px; }
+/* 寫給狗狗看：板子置中偏上，狗狗左下小小的 */
+#stage.portrait .pad-wrap { left: 120px; top: calc((var(--H) - 900px) / 2 + 100px); }
+#stage.portrait .write-dog { left: 0; top: calc(var(--H) - 320px); width: 200px; height: 231px; }
+#stage.portrait .write-dog .dog, #stage.portrait .write-dog .dog-slot .art-slot { width: 200px; height: 231px; }
+/* 連連看：詞在左、圖在右、狗狗小小的在上面中間（列的位置由 JS 排） */
+#stage.portrait .mpic { left: 600px; }
+#stage.portrait .match-dog { left: 325px; top: 30px; width: 150px; height: 173px; }
+#stage.portrait .match-dog .dog, #stage.portrait .match-dog .dog-slot .art-slot { width: 150px; height: 173px; }
+/* 填空：圖在上面正中、牌子在下面、磁磚一排貼底（磁磚位置由 JS 排），狗狗左上 */
+#stage.portrait .fill-pic { left: 280px; }
+#stage.portrait .fill-sign { left: 50px; }
+#stage.portrait .fill-dog { left: 20px; top: 110px; width: 180px; height: 208px; }
+#stage.portrait .fill-dog .dog, #stage.portrait .fill-dog .dog-slot .art-slot { width: 180px; height: 208px; }

@@ -1,27 +1,33 @@
 // 翻牌配對。幾對相同的符號蓋著，翻開唸音；找到一樣的兩張就配對成功。
-// 介面：start(symbols)、onFlip(fn)、onPair(fn)、onDone(fn)、destroy。配對邏輯在這裡，main.js 只管聲音和星星。
+// 介面：start(symbols)、onFlip(fn)、onPair(fn)、onDone(fn)、layout、destroy。配對邏輯在這裡，main.js 只管聲音和星星。
 
-import { homeBgSvg, symbolMarkup } from './art.js'
+import { bgHtml, symbolMarkup } from './art.js'
+import { STAGE, mountBgs } from './ui.js'
 
-// 卡片位置：依張數排格子（中心點）
-function layout (count) {
-  const cols = count <= 6 ? 3 : count <= 8 ? 4 : 5
+// 卡片位置：依張數排格子（左上角）。回 { pos, small }，small 表示要用小卡才排得進去
+function gridLayout (count) {
+  const portrait = STAGE.portrait
+  const W = portrait ? 800 : 1200
+  const top = 120
+  const regionH = (portrait ? STAGE.h : 800) - top - 100
+  const cols = portrait ? (count <= 6 ? 2 : 3) : (count <= 6 ? 3 : count <= 8 ? 4 : 5)
   const rows = Math.ceil(count / cols)
-  const cw = 190
-  const ch = 230
-  const gapX = 30
-  const gapY = 30
-  const totalW = cols * cw + (cols - 1) * gapX
-  const totalH = rows * ch + (rows - 1) * gapY
-  const x0 = (1200 - totalW) / 2
-  const y0 = 120 + (560 - totalH) / 2
-  const out = []
+  const gap = 30
+  let cw = 190
+  let ch = 230
+  let small = false
+  if (rows * ch + (rows - 1) * gap > regionH) { cw = 160; ch = 195; small = true }
+  const totalW = cols * cw + (cols - 1) * gap
+  const totalH = rows * ch + (rows - 1) * gap
+  const x0 = (W - totalW) / 2
+  const y0 = top + Math.max(0, (regionH - totalH) / 2)
+  const pos = []
   for (let i = 0; i < count; i++) {
     const c = i % cols
     const r = Math.floor(i / cols)
-    out.push([x0 + c * (cw + gapX), y0 + r * (ch + gapY)])
+    pos.push([x0 + c * (cw + gap), y0 + r * (ch + gap)])
   }
-  return out
+  return { pos, small }
 }
 
 function shuffleCards (arr) {
@@ -37,7 +43,8 @@ const PAW = `<svg viewBox="0 0 100 100" width="90" height="90" xmlns="http://www
   <ellipse cx="50" cy="66" rx="24" ry="20"/><circle cx="24" cy="44" r="10"/><circle cx="42" cy="30" r="10"/><circle cx="60" cy="30" r="10"/><circle cx="77" cy="44" r="10"/></svg>`
 
 export function createMemory (root) {
-  root.innerHTML = homeBgSvg() + '<div class="cards-grid"></div>'
+  root.innerHTML = bgHtml('home') + '<div class="frame"><div class="cards-grid"></div></div>'
+  mountBgs(root)
   const grid = root.querySelector('.cards-grid')
   let onFlipFn = null
   let onPairFn = null
@@ -72,23 +79,31 @@ export function createMemory (root) {
     }
   })
 
+  function place () {
+    const cards = [...grid.children]
+    const { pos, small } = gridLayout(cards.length)
+    grid.classList.toggle('small', small)
+    cards.forEach((el, i) => {
+      el.style.left = pos[i][0] + 'px'
+      el.style.top = pos[i][1] + 'px'
+    })
+  }
+
   function start (symbols) {
     grid.innerHTML = ''
     open = []
     locked = false
     remaining = symbols.length
     const cards = shuffleCards(symbols.flatMap(s => [s, s]))
-    const pos = layout(cards.length)
     cards.forEach((sym, i) => {
       const el = document.createElement('div')
       el.className = 'mcard'
       el.dataset.symbol = sym
-      el.style.left = pos[i][0] + 'px'
-      el.style.top = pos[i][1] + 'px'
       el.style.animationDelay = (i * 0.06) + 's'
       el.innerHTML = `<div class="mcard-inner"><div class="mcard-back">${PAW}</div><div class="mcard-front"><span>${symbolMarkup(sym)}</span></div></div>`
       grid.appendChild(el)
     })
+    place()
   }
 
   return {
@@ -96,6 +111,7 @@ export function createMemory (root) {
     onFlip (fn) { onFlipFn = fn },
     onPair (fn) { onPairFn = fn },
     onDone (fn) { onDoneFn = fn },
+    layout () { place() },
     destroy () { root.innerHTML = ''; onFlipFn = onPairFn = onDoneFn = null },
   }
 }

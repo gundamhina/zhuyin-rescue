@@ -32,6 +32,13 @@ export function wordPicMarkup (word) {
   return `<img class="art-slot" src="img/words/${text}.png" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()"><span class="emoji">${WORD_ICON[word] || '❓'}</span>`
 }
 
+// 背景層：整個舞台大小，裡面一層天空填色、一層 1200×800 的場景圖（ui.js 的 layoutBg 會依舞台大小縮放定位）。
+// kind：'home' 草原、'scene' 碼頭（碼頭在左下角，橫的時候靠左對齊）。inner 放要跟場景一起縮放的東西（釣魚的狗狗）。
+export function bgHtml (kind, inner = '') {
+  const art = kind === 'scene' ? sceneSvg() : homeBgSvg()
+  return `<div class="bg" data-fit="${kind === 'scene' ? 'left' : 'center'}"><div class="bg-fill ${kind}"></div><div class="bg-art">${art}${inner}</div></div>`
+}
+
 // 六隻救援狗的配色：帽子／背心顏色，深色版做陰影
 export const DOG_COLORS = [
   { main: '#4A6FA5', dark: '#34507A' }, // 藍 警察

@@ -18,12 +18,20 @@ body { font-family: "Microsoft JhengHei", "Noto Sans TC", "PingFang TC", sans-se
 button { font-family: inherit; border: 0; background: none; cursor: pointer; touch-action: manipulation; }
 .hidden { display: none !important; }
 
-/* 舞台 1200×800，等比縮放置中 */
-#stage { position: absolute; left: 0; top: 0; width: 1200px; height: 800px; transform-origin: 0 0; overflow: hidden; }
+/* 舞台：大小由 fitStage 依螢幕比例決定（橫 1200～1800×800、直 800×1100～1800），等比縮放置中 */
+#stage { position: absolute; left: 0; top: 0; width: 1200px; height: 800px; --W: 1200px; --H: 800px; transform-origin: 0 0; overflow: hidden; }
+/* 背景層鋪滿舞台：上面天空填色，1200×800 的場景圖由 layoutBg 縮放貼底 */
+.bg { position: absolute; inset: 0; overflow: hidden; }
+.bg-fill { position: absolute; inset: 0; }
+.bg-fill.home { background: linear-gradient(#8DBCCB, #9EC9D2 60%, #A6CAD0); }
+.bg-fill.scene { background: linear-gradient(#2E74C0, #3784CB 50%, #5E9ACD); }
+.bg-art { position: absolute; left: 0; top: 0; width: 1200px; height: 800px; transform-origin: 0 0; }
+/* 畫面元素放在 frame 裡：橫的置中 1200×800，直的就是整個舞台 */
+.frame { position: absolute; left: calc((var(--W) - 1200px) / 2); top: 0; width: 1200px; height: 800px; }
+#stage.portrait .frame { left: 0; width: 800px; height: var(--H); }
 .screen { position: absolute; inset: 0; display: none; }
 .screen.active { display: block; }
 .scene { position: absolute; left: 0; top: 0; }
-.home-sky, .result-bg { position: absolute; inset: 0; }
 
 /* 雲慢慢飄、太陽光慢慢轉 */
 .cloud-wrap.c1 { animation: drift 38s linear infinite; }
@@ -31,7 +39,8 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .cloud-wrap.c3 { animation: drift 45s linear infinite; }
 @keyframes drift { 0% { transform: translateX(-80px); } 100% { transform: translateX(80px); } }
 .sun-rays { transform-origin: 1020px 130px; animation: spin 90s linear infinite; }
-.home-sky .sun-rays, .result-bg .sun-rays { transform-origin: 1060px 90px; }
+.bg-art .sun-rays { transform-origin: 1060px 90px; }
+.bg-art .scene .sun-rays { transform-origin: 1020px 130px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .waves .w1 { animation: wave 6s ease-in-out infinite; }
 .waves .w2 { animation: wave 7.5s ease-in-out infinite reverse; }
@@ -91,12 +100,13 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 
 /* ---- 遊戲 ---- */
 .play-area { position: absolute; inset: 0; }
-.dog-wrap { position: absolute; left: 170px; top: 226px; width: 260px; height: 300px; transform-origin: 50% 100%; filter: drop-shadow(0 8px 0 rgba(0,0,0,0.12)); }
+.dog-wrap { position: absolute; width: 260px; height: 300px; transform-origin: 50% 100%; filter: drop-shadow(0 8px 0 rgba(0,0,0,0.12)); }
 .dog-wrap.jump { animation: jump .7s ease-out; }
 .dog-wrap.tilt { animation: tilt .6s ease-in-out; }
 @keyframes jump { 0% { transform: translateY(0); } 35% { transform: translateY(-70px) rotate(-6deg); } 70% { transform: translateY(0); } 85% { transform: translateY(-16px); } 100% { transform: translateY(0); } }
 @keyframes tilt { 0%,100% { transform: rotate(0); } 40% { transform: rotate(14deg); } }
 
+.fish-dog { left: 170px; top: 226px; }
 .bubbles { position: absolute; inset: 0; }
 .bubble { position: absolute; width: 176px; height: 176px; border-radius: 50%;
   background: radial-gradient(circle at 34% 30%, #FFFDF7 0 12%, rgba(246,243,230,0.85) 40%, rgba(207,234,240,0.85) 72%, rgba(143,199,210,0.95));
@@ -187,10 +197,12 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .dog-slot { position: relative; display: inline-block; width: 100%; height: 100%; }
 .dog-slot .art-slot { object-fit: contain; }
 .card-pic { position: relative; }
-.home-sky, .result-bg, .play-area { position: absolute; }
+.play-area { position: absolute; }
 
 /* ---- 翻牌 ---- */
 .cards-grid { position: absolute; inset: 0; }
+.cards-grid.small .mcard { width: 160px; height: 195px; }
+.cards-grid.small .mcard-front span { font-size: 100px; }
 .mcard { position: absolute; width: 190px; height: 230px; perspective: 900px; cursor: pointer; animation: dealIn .4s ease-out both; }
 @keyframes dealIn { from { opacity: 0; transform: translateY(40px) scale(0.8); } to { opacity: 1; transform: none; } }
 .mcard-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .45s cubic-bezier(.4,.2,.2,1); }
@@ -362,6 +374,39 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 /* ---- 手機在不能全螢幕的瀏覽器（LINE 內建那種）裡開：提示改用 Chrome 加到主畫面 ---- */
 #install-hint { position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 60; max-width: 92vw; padding: 10px 18px; border-radius: 14px; background: rgba(43,58,74,0.92); color: #fff; font-size: 15px; line-height: 1.4; box-shadow: 0 6px 16px rgba(0,0,0,0.3); }
 #install-hint[hidden] { display: none; }
+
+/* ================= 直版（手機直拿）：#stage.portrait，寬 800、高 --H ================= */
+#stage.portrait .profiles { padding: 100px 40px 120px; }
+#stage.portrait .cards { top: 130px; bottom: 60px; align-content: center; padding: 0 40px; }
+/* 結算 */
+#stage.portrait .result-stars { top: 150px; }
+#stage.portrait .result-burst { top: calc(var(--H) * 0.5); }
+#stage.portrait .result-dogs { top: calc(var(--H) * 0.5 - 120px); gap: 16px; }
+#stage.portrait .result-dogs .dog-slot { width: 200px; height: 231px; }
+#stage.portrait .result-dogs .dog { width: 200px; height: 231px; }
+/* 打地鼠：狗狗小小的在上面正中間，洞兩欄三排（位置由 JS 排） */
+#stage.portrait .whack-dog { left: 300px; top: 70px; width: 200px; height: 231px; }
+#stage.portrait .whack-dog .dog, #stage.portrait .whack-dog .dog-slot .art-slot { width: 200px; height: 231px; }
+/* 唸給狗狗聽：牌子在上面正中，麥克風右下，狗狗左下 */
+#stage.portrait { --py: calc((var(--H) - 1060px) / 2); } /* 唸給狗狗聽整組垂直置中的偏移 */
+#stage.portrait .sign { left: 250px; top: calc(130px + var(--py)); }
+#stage.portrait .heard { left: 0; width: 800px; top: calc(700px + var(--py)); }
+#stage.portrait .mic-btn { left: 560px; top: calc(760px + var(--py)); }
+#stage.portrait .speak-dog { left: 0; top: calc(720px + var(--py)); width: 260px; height: 300px; }
+#stage.portrait .speak-dog .dog, #stage.portrait .speak-dog .dog-slot .art-slot { width: 260px; height: 300px; }
+/* 寫給狗狗看：板子置中偏上，狗狗左下小小的 */
+#stage.portrait .pad-wrap { left: 120px; top: calc((var(--H) - 900px) / 2 + 100px); }
+#stage.portrait .write-dog { left: 0; top: calc(var(--H) - 320px); width: 200px; height: 231px; }
+#stage.portrait .write-dog .dog, #stage.portrait .write-dog .dog-slot .art-slot { width: 200px; height: 231px; }
+/* 連連看：詞在左、圖在右、狗狗小小的在上面中間（列的位置由 JS 排） */
+#stage.portrait .mpic { left: 600px; }
+#stage.portrait .match-dog { left: 325px; top: 30px; width: 150px; height: 173px; }
+#stage.portrait .match-dog .dog, #stage.portrait .match-dog .dog-slot .art-slot { width: 150px; height: 173px; }
+/* 填空：圖在上面正中、牌子在下面、磁磚一排貼底（磁磚位置由 JS 排），狗狗左上 */
+#stage.portrait .fill-pic { left: 280px; }
+#stage.portrait .fill-sign { left: 50px; }
+#stage.portrait .fill-dog { left: 20px; top: 110px; width: 180px; height: 208px; }
+#stage.portrait .fill-dog .dog, #stage.portrait .fill-dog .dog-slot .art-slot { width: 180px; height: 208px; }
 
 </style>
 </head>
@@ -1703,6 +1748,13 @@ function wordPicMarkup (word) {
   return `<img class="art-slot" src="img/words/${text}.png" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()"><span class="emoji">${WORD_ICON[word] || '❓'}</span>`
 }
 
+// 背景層：整個舞台大小，裡面一層天空填色、一層 1200×800 的場景圖（ui.js 的 layoutBg 會依舞台大小縮放定位）。
+// kind：'home' 草原、'scene' 碼頭（碼頭在左下角，橫的時候靠左對齊）。inner 放要跟場景一起縮放的東西（釣魚的狗狗）。
+function bgHtml (kind, inner = '') {
+  const art = kind === 'scene' ? sceneSvg() : homeBgSvg()
+  return `<div class="bg" data-fit="${kind === 'scene' ? 'left' : 'center'}"><div class="bg-fill ${kind}"></div><div class="bg-art">${art}${inner}</div></div>`
+}
+
 // 六隻救援狗的配色：帽子／背心顏色，深色版做陰影
 const DOG_COLORS = [
   { main: '#4A6FA5', dark: '#34507A' }, // 藍 警察
@@ -2018,10 +2070,11 @@ function confettiHtml (count = 44) {
 
 // ===== fishing.js =====
 // 釣魚玩法。負責畫泡泡、接點擊、播動畫；對錯的判斷與記錄交給 main.js。
-// 介面（跟打地鼠共用）：start(question)、lock/unlock、hint、shake、celebrate(symbol)→Promise、sad、onAnswer(fn)、destroy。
+// 介面（跟打地鼠共用）：start(question)、lock/unlock、hint、shake、celebrate(symbol)→Promise、sad、onAnswer(fn)、layout、destroy。
+// 狗狗跟碼頭一起放在背景層裡（會跟著背景縮放），泡泡放在 frame 裡。
 
 
-// 各選項數的泡泡位置（1200×800 舞台座標）
+// 橫的：各選項數的泡泡位置（1200×800 frame 座標）
 const SLOTS = {
   2: [[620, 600], [960, 600]],
   3: [[560, 620], [800, 560], [1040, 640]],
@@ -2030,12 +2083,30 @@ const SLOTS = {
   6: [[500, 560], [680, 650], [860, 540], [1040, 650], [640, 480], [960, 470]],
 }
 
+// 直的：泡泡排成格子，貼在海面和狗狗上方，每列置中
+function bubbleSlots (n) {
+  if (!STAGE.portrait) return SLOTS[n] || SLOTS[6]
+  const cols = n <= 4 ? 2 : 3
+  const rows = Math.ceil(n / cols)
+  const cell = 215
+  const y0 = STAGE.h - 650 - (rows - 1) * cell
+  const out = []
+  for (let r = 0; r < rows; r++) {
+    const inRow = Math.min(cols, n - r * cols)
+    const x0 = STAGE.w / 2 - (inRow - 1) * cell / 2
+    for (let c = 0; c < inRow; c++) out.push([x0 + c * cell, y0 + r * cell])
+  }
+  return out
+}
+
 function createFishing (root, { color = 0 } = {}) {
-  root.innerHTML = sceneSvg() +
-    '<div class="dog-wrap">' + dogSvg(color) + '</div>' +
-    '<div class="bubbles"></div>'
+  root.innerHTML = bgHtml('scene', '<div class="dog-wrap fish-dog">' + dogSvg(color) + '</div>') +
+    '<div class="frame"><div class="bubbles"></div></div>'
+  mountBgs(root)
   const bubblesEl = root.querySelector('.bubbles')
-  const dogWrap = root.querySelector('.dog-wrap')
+  const dogWrap = root.querySelector('.fish-dog')
+  const art = root.querySelector('.bg-art')
+  const frame = root.querySelector('.frame')
   let handler = null
   let locked = true
   let current = null
@@ -2046,22 +2117,29 @@ function createFishing (root, { color = 0 } = {}) {
     handler(b.dataset.symbol, b)
   })
 
+  function place () {
+    const bubbles = [...bubblesEl.children]
+    const slots = bubbleSlots(bubbles.length)
+    bubbles.forEach((b, i) => {
+      if (b.classList.contains('caught')) return
+      b.style.left = (slots[i][0] - 85) + 'px'
+      b.style.top = (slots[i][1] - 85) + 'px'
+    })
+  }
+
   function start (question) {
     current = question
     locked = true
     bubblesEl.innerHTML = ''
-    const slots = SLOTS[question.options.length] || SLOTS[6]
     question.options.forEach((sym, i) => {
-      const [x, y] = slots[i]
       const b = document.createElement('div')
       b.className = 'bubble'
       b.dataset.symbol = sym
-      b.style.left = (x - 85) + 'px'
-      b.style.top = (y - 85) + 'px'
       b.style.animationDelay = (i * 0.35) + 's'
       b.innerHTML = '<span>' + symbolMarkup(sym) + '</span>'
       bubblesEl.appendChild(b)
     })
+    place()
   }
 
   function bubbleOf (symbol) {
@@ -2088,7 +2166,6 @@ function createFishing (root, { color = 0 } = {}) {
     b.classList.add('shake')
   }
 
-
   // 釣起來：泡泡飛向釣竿尖端，狗狗跳一下
   function celebrate (symbol) {
     return new Promise(resolve => {
@@ -2098,8 +2175,11 @@ function createFishing (root, { color = 0 } = {}) {
       b.classList.add('caught')
       const x = parseFloat(b.style.left)
       const y = parseFloat(b.style.top)
-      // 釣竿尖端大約在舞台 (426, 278)：dog-wrap 左上 (170, 226) 加上竿尖 (256, 52)
-      b.style.transform = `translate(${426 - 88 - x}px, ${278 - 88 - y}px) scale(0.5)`
+      // 釣竿尖端在場景座標 (426, 278)：dog-wrap 左上 (170, 226) 加上竿尖 (256, 52)。場景層有縮放位移，換成 frame 座標
+      const s = parseFloat(art.dataset.s || 1)
+      const tipX = parseFloat(art.dataset.x || 0) + 426 * s - frame.offsetLeft
+      const tipY = parseFloat(art.dataset.y || 0) + 278 * s - frame.offsetTop
+      b.style.transform = `translate(${tipX - 88 - x}px, ${tipY - 88 - y}px) scale(0.5)`
       dogWrap.classList.remove('jump')
       void dogWrap.offsetWidth
       dogWrap.classList.add('jump')
@@ -2117,20 +2197,31 @@ function createFishing (root, { color = 0 } = {}) {
   }
 
   function onAnswer (fn) { handler = fn }
+  function layout () { place() }
   function destroy () { root.innerHTML = ''; handler = null }
 
-  return { start, unlock, lock, hint, shake, celebrate, sad, onAnswer, destroy }
+  return { start, unlock, lock, hint, shake, celebrate, sad, onAnswer, layout, destroy }
 }
 
 // ===== whack.js =====
 // 打地鼠玩法。符號一個一個從洞裡冒出來又縮回去，狗狗喊一個音，拍到對的就過關。
 // 不計時、不扣分：沒拍到就等它下次再冒出來，拍錯才算錯（交給 main.js 記錄）。
-// 介面跟釣魚一樣：start、lock/unlock、hint、shake、celebrate、sad、onAnswer、destroy。
+// 介面跟釣魚一樣：start、lock/unlock、hint、shake、celebrate、sad、onAnswer、layout、destroy。
 
 
 const HOLES = [[330, 430], [600, 430], [870, 430], [460, 620], [730, 620], [1000, 620]]
 const UP_MS = 1700 // 冒出來停多久
 const GAP_MS = 350 // 縮回去到下一個冒出來
+
+// 直的：兩欄三排，在狗狗下面、星星上面那段置中，排距 190～300
+function holesFor () {
+  if (!STAGE.portrait) return HOLES
+  const top = 400
+  const bottom = STAGE.h - 120
+  const step = Math.max(190, Math.min(300, (bottom - top - 200) / 2))
+  const y0 = (top + bottom) / 2 - step + 10
+  return [0, 1, 2].flatMap(r => [[230, y0 + r * step], [570, y0 + r * step]])
+}
 
 function shuffleList (arr) {
   const a = [...arr]
@@ -2142,14 +2233,15 @@ function shuffleList (arr) {
 }
 
 function createWhack (root, { color = 0 } = {}) {
-  root.innerHTML = homeBgSvg() +
+  root.innerHTML = bgHtml('home') + '<div class="frame">' +
     '<div class="dog-wrap whack-dog">' + dogSvg(color) + '</div>' +
-    '<div class="holes">' + HOLES.map(([x, y]) => `
-      <div class="hole" style="left:${x - 110}px;top:${y - 90}px">
+    '<div class="holes">' + HOLES.map(() => `
+      <div class="hole">
         <div class="hole-back"></div>
         <div class="mole"><span></span></div>
         <div class="hole-front"></div>
-      </div>`).join('') + '</div>'
+      </div>`).join('') + '</div></div>'
+  mountBgs(root)
   const dogWrap = root.querySelector('.whack-dog')
   const holes = [...root.querySelectorAll('.hole')]
   let handler = null
@@ -2161,6 +2253,14 @@ function createWhack (root, { color = 0 } = {}) {
   let lastHole = -1
   let glowOnce = false
   let upMole = null // 目前冒出來的那一個
+
+  function layout () {
+    holesFor().forEach(([x, y], i) => {
+      holes[i].style.left = (x - 110) + 'px'
+      holes[i].style.top = (y - 90) + 'px'
+    })
+  }
+  layout()
 
   root.addEventListener('pointerdown', e => {
     const mole = e.target.closest('.mole')
@@ -2267,33 +2367,38 @@ function createWhack (root, { color = 0 } = {}) {
   function onAnswer (fn) { handler = fn }
   function destroy () { stopLoop(); root.innerHTML = ''; handler = null }
 
-  return { start, unlock, lock, hint, shake, celebrate, sad, onAnswer, destroy }
+  return { start, unlock, lock, hint, shake, celebrate, sad, onAnswer, layout, destroy }
 }
 
 // ===== memory.js =====
 // 翻牌配對。幾對相同的符號蓋著，翻開唸音；找到一樣的兩張就配對成功。
-// 介面：start(symbols)、onFlip(fn)、onPair(fn)、onDone(fn)、destroy。配對邏輯在這裡，main.js 只管聲音和星星。
+// 介面：start(symbols)、onFlip(fn)、onPair(fn)、onDone(fn)、layout、destroy。配對邏輯在這裡，main.js 只管聲音和星星。
 
 
-// 卡片位置：依張數排格子（中心點）
-function layout (count) {
-  const cols = count <= 6 ? 3 : count <= 8 ? 4 : 5
+// 卡片位置：依張數排格子（左上角）。回 { pos, small }，small 表示要用小卡才排得進去
+function gridLayout (count) {
+  const portrait = STAGE.portrait
+  const W = portrait ? 800 : 1200
+  const top = 120
+  const regionH = (portrait ? STAGE.h : 800) - top - 100
+  const cols = portrait ? (count <= 6 ? 2 : 3) : (count <= 6 ? 3 : count <= 8 ? 4 : 5)
   const rows = Math.ceil(count / cols)
-  const cw = 190
-  const ch = 230
-  const gapX = 30
-  const gapY = 30
-  const totalW = cols * cw + (cols - 1) * gapX
-  const totalH = rows * ch + (rows - 1) * gapY
-  const x0 = (1200 - totalW) / 2
-  const y0 = 120 + (560 - totalH) / 2
-  const out = []
+  const gap = 30
+  let cw = 190
+  let ch = 230
+  let small = false
+  if (rows * ch + (rows - 1) * gap > regionH) { cw = 160; ch = 195; small = true }
+  const totalW = cols * cw + (cols - 1) * gap
+  const totalH = rows * ch + (rows - 1) * gap
+  const x0 = (W - totalW) / 2
+  const y0 = top + Math.max(0, (regionH - totalH) / 2)
+  const pos = []
   for (let i = 0; i < count; i++) {
     const c = i % cols
     const r = Math.floor(i / cols)
-    out.push([x0 + c * (cw + gapX), y0 + r * (ch + gapY)])
+    pos.push([x0 + c * (cw + gap), y0 + r * (ch + gap)])
   }
-  return out
+  return { pos, small }
 }
 
 function shuffleCards (arr) {
@@ -2309,7 +2414,8 @@ const PAW = `<svg viewBox="0 0 100 100" width="90" height="90" xmlns="http://www
   <ellipse cx="50" cy="66" rx="24" ry="20"/><circle cx="24" cy="44" r="10"/><circle cx="42" cy="30" r="10"/><circle cx="60" cy="30" r="10"/><circle cx="77" cy="44" r="10"/></svg>`
 
 function createMemory (root) {
-  root.innerHTML = homeBgSvg() + '<div class="cards-grid"></div>'
+  root.innerHTML = bgHtml('home') + '<div class="frame"><div class="cards-grid"></div></div>'
+  mountBgs(root)
   const grid = root.querySelector('.cards-grid')
   let onFlipFn = null
   let onPairFn = null
@@ -2344,23 +2450,31 @@ function createMemory (root) {
     }
   })
 
+  function place () {
+    const cards = [...grid.children]
+    const { pos, small } = gridLayout(cards.length)
+    grid.classList.toggle('small', small)
+    cards.forEach((el, i) => {
+      el.style.left = pos[i][0] + 'px'
+      el.style.top = pos[i][1] + 'px'
+    })
+  }
+
   function start (symbols) {
     grid.innerHTML = ''
     open = []
     locked = false
     remaining = symbols.length
     const cards = shuffleCards(symbols.flatMap(s => [s, s]))
-    const pos = layout(cards.length)
     cards.forEach((sym, i) => {
       const el = document.createElement('div')
       el.className = 'mcard'
       el.dataset.symbol = sym
-      el.style.left = pos[i][0] + 'px'
-      el.style.top = pos[i][1] + 'px'
       el.style.animationDelay = (i * 0.06) + 's'
       el.innerHTML = `<div class="mcard-inner"><div class="mcard-back">${PAW}</div><div class="mcard-front"><span>${symbolMarkup(sym)}</span></div></div>`
       grid.appendChild(el)
     })
+    place()
   }
 
   return {
@@ -2368,6 +2482,7 @@ function createMemory (root) {
     onFlip (fn) { onFlipFn = fn },
     onPair (fn) { onPairFn = fn },
     onDone (fn) { onDoneFn = fn },
+    layout () { place() },
     destroy () { root.innerHTML = ''; onFlipFn = onPairFn = onDoneFn = null },
   }
 }
@@ -2470,11 +2585,12 @@ function matchesSymbol (symbol, transcripts) {
 }
 
 function createSpeak (root, { color = 0 } = {}) {
-  root.innerHTML = homeBgSvg() +
+  root.innerHTML = bgHtml('home') + '<div class="frame">' +
     '<div class="dog-wrap speak-dog">' + dogSvg(color) + '</div>' +
     '<div class="sign"><div class="sign-board"><span></span></div><div class="sign-post"></div></div>' +
     '<div class="heard"></div>' +
-    `<button class="mic-btn" aria-label="唸給狗狗聽">${MIC_SVG}</button>`
+    `<button class="mic-btn" aria-label="唸給狗狗聽">${MIC_SVG}</button></div>`
+  mountBgs(root)
   const dogWrap = root.querySelector('.speak-dog')
   const signEl = root.querySelector('.sign')
   const signText = root.querySelector('.sign-board span')
@@ -2688,14 +2804,15 @@ function inkBitmap (strokes) {
 }
 
 function createWrite (root, { color = 0 } = {}) {
-  root.innerHTML = homeBgSvg() +
+  root.innerHTML = bgHtml('home') + '<div class="frame">' +
     '<div class="dog-wrap write-dog">' + dogSvg(color) + '</div>' +
     `<div class="pad-wrap">
        <div class="pad-template"><span></span></div>
        <canvas class="pad" width="${PAD}" height="${PAD}"></canvas>
        <button class="pad-undo" aria-label="重寫">${UNDO_SVG}</button>
        <button class="pad-ok" aria-label="好了">${CHECK_SVG}</button>
-     </div>`
+     </div></div>`
+  mountBgs(root)
   const dogWrap = root.querySelector('.write-dog')
   const padWrap = root.querySelector('.pad-wrap')
   const canvas = root.querySelector('.pad')
@@ -2839,13 +2956,18 @@ function createWrite (root, { color = 0 } = {}) {
 
 // ===== matchline.js =====
 // 連連看。左邊 4 個詞的注音，右邊 4 張圖打亂，從詞拉線到圖。對了線留著，錯了線消失。
-// 介面：start(words)、onPair(fn(word, pickedWord))、onPicTap(fn(word))、markCorrect(word, pickedWord)、markWrong(word, pickedWord)、onDone(fn)、destroy。
+// 介面：start(words)、onPair(fn(word, pickedWord))、onPicTap(fn(word))、markCorrect(word, pickedWord)、markWrong(word, pickedWord)、onDone(fn)、layout、destroy。
 // 沒選詞的時候點圖，會呼叫 onPicTap（主流程拿去唸這個詞）。
 
 
-const LEFT_X = 330 // 詞卡右緣（線的起點）
-const RIGHT_X = 740 // 圖卡左緣（線的終點）
-const ROW_Y = [120, 290, 460, 630]
+// 版面：詞卡右緣（線的起點）、圖卡左緣（線的終點）、四列的中心 y
+function geom () {
+  if (!STAGE.portrait) return { left: 330, right: 740, rows: [120, 290, 460, 630], w: 1200, h: 800 }
+  const H = STAGE.h
+  const step = Math.min(300, (H - 430) / 3) // 列距最多 300，太高的螢幕就把四列擠在中間
+  const mid = (260 + H - 170) / 2
+  return { left: 330, right: 600, rows: [0, 1, 2, 3].map(i => Math.round(mid + (i - 1.5) * step)), w: 800, h: H }
+}
 
 function shuffleWords (arr) {
   const a = [...arr]
@@ -2857,13 +2979,16 @@ function shuffleWords (arr) {
 }
 
 function createMatchLine (root, { color = 0 } = {}) {
-  root.innerHTML = homeBgSvg() +
+  root.innerHTML = bgHtml('home') + '<div class="frame">' +
     '<div class="dog-wrap match-dog">' + dogSvg(color) + '</div>' +
-    '<svg class="lines" viewBox="0 0 1200 800" width="1200" height="800" xmlns="http://www.w3.org/2000/svg"><g class="done"></g><line class="live" x1="0" y1="0" x2="0" y2="0"/></svg>' +
-    '<div class="match-words"></div><div class="match-pics"></div>'
+    '<svg class="lines" xmlns="http://www.w3.org/2000/svg"><g class="done"></g><line class="live" x1="0" y1="0" x2="0" y2="0"/></svg>' +
+    '<div class="match-words"></div><div class="match-pics"></div></div>'
+  mountBgs(root)
+  const frame = root.querySelector('.frame')
   const dogWrap = root.querySelector('.match-dog')
   const wordsEl = root.querySelector('.match-words')
   const picsEl = root.querySelector('.match-pics')
+  const linesSvg = root.querySelector('.lines')
   const doneG = root.querySelector('.lines .done')
   const live = root.querySelector('.lines .live')
   let pairFn = null
@@ -2872,14 +2997,17 @@ function createMatchLine (root, { color = 0 } = {}) {
   let remaining = 0
   let drag = null // { word, x0, y0 }
   let selected = null // 點一下詞再點一下圖也可以
+  let drawn = [] // 已畫好的線 { word, picked, cls }，換版面時重畫
 
   function anchorOfWord (word) {
+    const g = geom()
     const i = [...wordsEl.children].findIndex(c => c.dataset.symbol === word)
-    return [LEFT_X, ROW_Y[i]]
+    return [g.left, g.rows[i]]
   }
   function anchorOfPic (word) {
+    const g = geom()
     const i = [...picsEl.children].findIndex(c => c.dataset.symbol === word)
-    return [RIGHT_X, ROW_Y[i]]
+    return [g.right, g.rows[i]]
   }
 
   wordsEl.addEventListener('pointerdown', e => {
@@ -2897,7 +3025,7 @@ function createMatchLine (root, { color = 0 } = {}) {
   })
   root.addEventListener('pointermove', e => {
     if (!drag) return
-    const [x, y] = stagePoint(e)
+    const [x, y] = framePoint(e, frame)
     live.setAttribute('x2', x); live.setAttribute('y2', y)
   })
   function endDrag (e) {
@@ -2931,11 +3059,25 @@ function createMatchLine (root, { color = 0 } = {}) {
     remaining = words.length
     selected = null
     drag = null
+    drawn = []
     doneG.innerHTML = ''
-    wordsEl.innerHTML = words.map((w, i) => `
-      <div class="mword" data-symbol="${w}" style="top:${ROW_Y[i] - 80}px"><span>${symbolMarkup(w)}</span></div>`).join('')
-    picsEl.innerHTML = shuffleWords(words).map((w, i) => `
-      <div class="mpic" data-symbol="${w}" style="top:${ROW_Y[i] - 80}px">${wordPicMarkup(w)}</div>`).join('')
+    wordsEl.innerHTML = words.map(w => `
+      <div class="mword" data-symbol="${w}"><span>${symbolMarkup(w)}</span></div>`).join('')
+    picsEl.innerHTML = shuffleWords(words).map(w => `
+      <div class="mpic" data-symbol="${w}">${wordPicMarkup(w)}</div>`).join('')
+    layout()
+  }
+
+  // 依目前版面放卡片、設線的畫布大小，並把畫過的線重畫
+  function layout () {
+    const g = geom()
+    linesSvg.setAttribute('viewBox', `0 0 ${g.w} ${g.h}`)
+    linesSvg.setAttribute('width', g.w)
+    linesSvg.setAttribute('height', g.h)
+    ;[...wordsEl.children].forEach((c, i) => { c.style.top = (g.rows[i] - 80) + 'px' })
+    ;[...picsEl.children].forEach((c, i) => { c.style.top = (g.rows[i] - 80) + 'px' })
+    doneG.innerHTML = ''
+    for (const d of drawn) drawLine(d.word, d.picked, d.cls)
   }
 
   function drawLine (word, pickedWord, cls) {
@@ -2948,6 +3090,7 @@ function createMatchLine (root, { color = 0 } = {}) {
     return l
   }
   function markCorrect (word, pickedWord) {
+    drawn.push({ word, picked: pickedWord, cls: 'ok' })
     drawLine(word, pickedWord, 'ok')
     const w = wordsEl.querySelector(`.mword[data-symbol="${word}"]`)
     const p = picsEl.querySelector(`.mpic[data-symbol="${pickedWord}"]`)
@@ -2976,23 +3119,35 @@ function createMatchLine (root, { color = 0 } = {}) {
     onPicTap (fn) { picTapFn = fn },
     markCorrect,
     markWrong,
+    layout,
     destroy () { root.innerHTML = ''; pairFn = doneFn = picTapFn = null },
   }
 }
 
 // ===== fillblank.js =====
 // 填空。左邊一張圖，牌子上詞的注音少一個音節（空格），下面幾塊音節，拖對的進空格（點一下也行）。
-// 介面：start(q, { blankIndex, tiles })、lock/unlock、onAnswer(fn(syllable))、onPicTap(fn(word))、fill()、bounce(syllable)、celebrate、sad、destroy。
+// 介面：start(q, { blankIndex, tiles })、lock/unlock、onAnswer(fn(syllable))、onPicTap(fn(word))、fill()、bounce(syllable)、celebrate、sad、layout、destroy。
 
 
+// 橫的：磁磚中心點（1200×800 frame 座標）
 const TILE_SLOTS = { 2: [[480, 620], [760, 620]], 3: [[380, 620], [620, 620], [860, 620]], 4: [[300, 620], [500, 620], [700, 620], [900, 620]] }
 
+// 直的：一排貼著下面，平均分
+function tileSlots (n) {
+  if (!STAGE.portrait) return TILE_SLOTS[n] || TILE_SLOTS[3]
+  const step = n >= 4 ? 200 : 240
+  const y = 110 + Math.max(0, (STAGE.h - 200 - 880) / 2) + 800
+  return Array.from({ length: n }, (_, i) => [Math.round(400 + (i - (n - 1) / 2) * step), y])
+}
+
 function createFillBlank (root, { color = 0 } = {}) {
-  root.innerHTML = homeBgSvg() +
+  root.innerHTML = bgHtml('home') + '<div class="frame">' +
     '<div class="dog-wrap fill-dog">' + dogSvg(color) + '</div>' +
     '<div class="fill-pic"></div>' +
     '<div class="sign fill-sign"><div class="sign-board"><span class="fill-word"></span></div><div class="sign-post"></div></div>' +
-    '<div class="tiles"></div>'
+    '<div class="tiles"></div></div>'
+  mountBgs(root)
+  const frame = root.querySelector('.frame')
   const dogWrap = root.querySelector('.fill-dog')
   const picEl = root.querySelector('.fill-pic')
   const signEl = root.querySelector('.fill-sign')
@@ -3017,14 +3172,14 @@ function createFillBlank (root, { color = 0 } = {}) {
   tilesEl.addEventListener('pointerdown', e => {
     const t = e.target.closest('.tile')
     if (!t || locked) return
-    const [sx, sy] = stagePoint(e)
+    const [sx, sy] = framePoint(e, frame)
     drag = { t, startX: sx, startY: sy, ox: parseFloat(t.style.left), oy: parseFloat(t.style.top), moved: false }
     t.classList.add('dragging')
     try { t.setPointerCapture(e.pointerId) } catch (err) { /* 不給鎖也能拖 */ }
   })
   tilesEl.addEventListener('pointermove', e => {
     if (!drag) return
-    const [sx, sy] = stagePoint(e)
+    const [sx, sy] = framePoint(e, frame)
     const dx = sx - drag.startX
     const dy = sy - drag.startY
     if (Math.abs(dx) + Math.abs(dy) > 6) drag.moved = true
@@ -3040,7 +3195,7 @@ function createFillBlank (root, { color = 0 } = {}) {
     const blank = wordEl.querySelector('.blank')
     let hit = !moved
     if (moved && blank) {
-      // 空格中心換成舞台座標，放手的點離它 130 以內就算放進去
+      // 空格中心換成舞台座標，放手的點離它夠近就算放進去
       const b = blank.getBoundingClientRect()
       const [bx, by] = stagePoint({ clientX: (b.left + b.right) / 2, clientY: (b.top + b.bottom) / 2 })
       const [px, py] = stagePoint(e)
@@ -3055,6 +3210,25 @@ function createFillBlank (root, { color = 0 } = {}) {
   tilesEl.addEventListener('pointerup', endDrag)
   tilesEl.addEventListener('pointercancel', endDrag)
 
+  // 直的：圖、牌子、磁磚整組在畫面裡置中；橫的位置交給 CSS
+  function placeTiles () {
+    if (STAGE.portrait) {
+      const groupTop = 110 + Math.max(0, (STAGE.h - 200 - 880) / 2)
+      picEl.style.top = groupTop + 'px'
+      signEl.style.top = (groupTop + 280) + 'px'
+    } else {
+      picEl.style.top = ''
+      signEl.style.top = ''
+    }
+    const tiles = [...tilesEl.children]
+    const slots = tileSlots(tiles.length)
+    tiles.forEach((t, i) => {
+      if (t.classList.contains('dragging') || t.classList.contains('gone')) return
+      t.style.left = (slots[i][0] - 80) + 'px'
+      t.style.top = (slots[i][1] - 80) + 'px'
+    })
+  }
+
   function start (question, { blankIndex: bi, tiles }) {
     current = question
     blankIndex = bi
@@ -3063,18 +3237,15 @@ function createFillBlank (root, { color = 0 } = {}) {
     picEl.innerHTML = wordPicMarkup(question.target)
     signEl.classList.remove('glow')
     renderWord()
-    const slots = TILE_SLOTS[tiles.length] || TILE_SLOTS[3]
     tilesEl.innerHTML = ''
-    tiles.forEach((syl, i) => {
-      const [x, y] = slots[i]
+    tiles.forEach(syl => {
       const t = document.createElement('div')
       t.className = 'tile'
       t.dataset.syllable = syl
-      t.style.left = (x - 80) + 'px'
-      t.style.top = (y - 80) + 'px'
       t.innerHTML = `<span>${symbolMarkup(syl)}</span>`
       tilesEl.appendChild(t)
     })
+    placeTiles()
   }
   function tileOf (syl) { return tilesEl.querySelector(`.tile[data-syllable="${syl}"]`) }
   function unlock () { locked = false }
@@ -3090,7 +3261,7 @@ function createFillBlank (root, { color = 0 } = {}) {
     const t = tileOf(syl)
     if (!t) return
     const i = [...tilesEl.children].indexOf(t)
-    const slots = TILE_SLOTS[tilesEl.children.length] || TILE_SLOTS[3]
+    const slots = tileSlots(tilesEl.children.length)
     t.classList.add('returning')
     t.style.left = (slots[i][0] - 80) + 'px'
     t.style.top = (slots[i][1] - 80) + 'px'
@@ -3112,9 +3283,10 @@ function createFillBlank (root, { color = 0 } = {}) {
   }
   function onAnswer (fn) { handler = fn }
   function onPicTap (fn) { picTapFn = fn }
+  function layout () { placeTiles() }
   function destroy () { root.innerHTML = ''; handler = picTapFn = null }
 
-  return { start, unlock, lock, fill, bounce, celebrate, sad, onAnswer, onPicTap, destroy }
+  return { start, unlock, lock, fill, bounce, celebrate, sad, onAnswer, onPicTap, layout, destroy }
 }
 
 // ===== ui.js =====
@@ -3122,26 +3294,64 @@ function createFillBlank (root, { color = 0 } = {}) {
 
 
 
-// 舞台固定 1200×800，依視窗等比縮放置中
-// 舞台固定 1200×800，等比縮到看得見的範圍裡置中。手機用 visualViewport，網址列縮放時才會跟著對。
-// 手機直的拿：整個舞台轉 90 度變橫的，不用等她轉手機（iPhone 不能鎖方向，只能這樣）。
+// 舞台會跟著螢幕比例變形，所以不留邊：
+//   橫的：高固定 800，寬照螢幕比例 1200～1800。畫面元素排在正中央 1200×800 的 .frame 裡，背景鋪滿整個舞台。
+//   直的：寬固定 800，高照螢幕比例 1100～1800。.frame 就是整個舞台，各畫面另有直版排法（#stage.portrait）。
+// 舞台大小放在 STAGE，也寫成 CSS 變數 --W、--H 給樣式用。
+const STAGE = { w: 1200, h: 800, portrait: false }
+
 function fitStage (stage) {
   const vv = window.visualViewport
-  const w = vv ? vv.width : window.innerWidth
-  const h = vv ? vv.height : window.innerHeight
-  const portraitPhone = h > w && w < 900
-  if (portraitPhone) {
-    const scale = Math.min(h / 1200, w / 800)
-    // rotate(90deg) 把舞台的 (x, y) 轉到螢幕的 (-y, x)，所以往右推一個舞台高度才會在畫面裡
-    const x = (w + 800 * scale) / 2
-    const y = (h - 1200 * scale) / 2
-    stage.style.transform = `translate(${x}px, ${y}px) rotate(90deg) scale(${scale})`
-    return
-  }
-  const scale = Math.min(w / 1200, h / 800)
-  const x = (w - 1200 * scale) / 2
-  const y = (h - 800 * scale) / 2
+  const vw = vv ? vv.width : window.innerWidth
+  const vh = vv ? vv.height : window.innerHeight
+  const portrait = vh > vw
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
+  const W = portrait ? 800 : Math.round(clamp(800 * vw / vh, 1200, 1800))
+  const H = portrait ? Math.round(clamp(800 * vh / vw, 1100, 1800)) : 800
+  const changed = W !== STAGE.w || H !== STAGE.h || portrait !== STAGE.portrait
+  STAGE.w = W
+  STAGE.h = H
+  STAGE.portrait = portrait
+  stage.style.width = W + 'px'
+  stage.style.height = H + 'px'
+  stage.style.setProperty('--W', W + 'px')
+  stage.style.setProperty('--H', H + 'px')
+  stage.classList.toggle('portrait', portrait)
+  const scale = Math.min(vw / W, vh / H)
+  const x = (vw - W * scale) / 2
+  const y = (vh - H * scale) / 2
   stage.style.transform = `translate(${x}px, ${y}px) scale(${scale})`
+  return changed
+}
+
+// 背景層定位。橫的：放大到填滿舞台、貼底（碼頭那張靠左，其他置中）。
+// 直的：草原一樣蓋滿（放大到填滿高度，左右裁掉）；碼頭那張要留住碼頭和狗狗的比例，
+// 所以只放大到占畫面下半（至少填滿寬），貼左下，上面由 .bg-fill 的天空色補。縮放結果記在 dataset 給釣魚算竿尖用。
+function layoutBg (el) {
+  const art = el.querySelector('.bg-art')
+  if (!art) return
+  const { w: W, h: H, portrait } = STAGE
+  let s, x, y
+  if (portrait && el.dataset.fit === 'left') {
+    s = Math.max(W / 1200, 0.45 * H / 800)
+    x = 0
+    y = H - 800 * s
+  } else if (portrait) {
+    s = H / 800
+    x = (W - 1200 * s) / 2
+    y = 0
+  } else {
+    s = Math.max(W / 1200, H / 800)
+    y = H - 800 * s
+    x = el.dataset.fit === 'left' ? 0 : (W - 1200 * s) / 2
+  }
+  art.style.transform = `translate(${x}px, ${y}px) scale(${s})`
+  art.dataset.s = s
+  art.dataset.x = x
+  art.dataset.y = y
+}
+function mountBgs (root) {
+  root.querySelectorAll('.bg').forEach(layoutBg)
 }
 
 // 螢幕座標換成舞台座標（1200×800 那套），縮放、旋轉都算進去。拖曳、畫字都用這個。
@@ -3150,6 +3360,12 @@ function stagePoint (e) {
   const m = new DOMMatrix(getComputedStyle(stage).transform)
   const p = m.inverse().transformPoint(new DOMPoint(e.clientX, e.clientY))
   return [p.x, p.y]
+}
+
+// 螢幕座標換成某個 .frame 裡的座標（橫的時候 frame 不在舞台左上角）
+function framePoint (e, frame) {
+  const [x, y] = stagePoint(e)
+  return [x - frame.offsetLeft, y - frame.offsetTop]
 }
 
 // 元素在舞台裡的位置（不含 transform），一路加 offsetLeft/offsetTop 到舞台
@@ -3183,7 +3399,7 @@ const GEAR_SVG = `<svg viewBox="0 0 24 24" width="40" height="40" fill="#fff"><p
 // 選人畫面：每人一張卡（狗狗頭像＋名字），最後一張是「＋」
 function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
   root.innerHTML = `
-    <div class="home-sky">${homeBgSvg()}</div>
+    ${bgHtml('home')}
     <div class="profiles">
       ${profiles.list.map(p => `
         <button class="profile-card" data-id="${p.id}" aria-label="${p.name}">
@@ -3207,6 +3423,7 @@ function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
       </div>
     </div>
     <button class="gear" id="btn-gear" aria-label="大人面板">${GEAR_SVG}</button>`
+  mountBgs(root)
 
   root.querySelectorAll('.profile-card[data-id]').forEach(b => {
     b.addEventListener('pointerdown', () => onPick(b.dataset.id))
@@ -3235,7 +3452,7 @@ function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
 // 首頁：目前使用者的狗狗、三張玩法卡
 function renderHome (root, { profile, speech = true }) {
   root.innerHTML = `
-    <div class="home-sky">${homeBgSvg()}</div>
+    ${bgHtml('home')}
     <button class="who" id="btn-who" aria-label="換人">
       <div class="who-avatar">${dogSvg(profile.color)}</div>
       <div class="who-name">${escapeHtml(profile.name)}</div>
@@ -3264,11 +3481,12 @@ function renderHome (root, { profile, speech = true }) {
       </button>
     </div>
     <button class="gear" id="btn-gear" aria-label="大人面板">${GEAR_SVG}</button>`
+  mountBgs(root)
 }
 
 function renderResult (root, color = 0) {
   root.innerHTML = `
-    <div class="result-bg">${homeBgSvg()}</div>
+    ${bgHtml('home')}
     <div class="result-burst"></div>
     <div class="confetti-wrap">${confettiHtml()}</div>
     <div class="result-dogs">${dogSvg(color)}${dogSvg((color + 1) % 6)}${dogSvg((color + 2) % 6)}</div>
@@ -3281,6 +3499,7 @@ function renderResult (root, color = 0) {
         <svg viewBox="0 0 24 24" width="64" height="64" fill="#fff"><path d="M12 3 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
       </button>
     </div>`
+  mountBgs(root)
 }
 
 // 結算動畫：星星一顆顆亮，3 秒後出按鈕
@@ -3686,10 +3905,17 @@ function saveSettings (s) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)
 
 function main () {
   const stage = document.getElementById('stage')
+  // 螢幕大小或方向變了：舞台變形、背景重鋪、正在玩的遊戲重排
+  function relayout () {
+    const changed = fitStage(stage)
+    if (!changed) return
+    document.querySelectorAll('.bg').forEach(layoutBg)
+    if (game && game.layout) game.layout()
+  }
   fitStage(stage)
-  window.addEventListener('resize', () => fitStage(stage))
-  window.addEventListener('orientationchange', () => setTimeout(() => fitStage(stage), 300))
-  if (window.visualViewport) window.visualViewport.addEventListener('resize', () => fitStage(stage))
+  window.addEventListener('resize', relayout)
+  window.addEventListener('orientationchange', () => setTimeout(relayout, 300))
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', relayout)
   // 手機上碰畫面就進全螢幕並鎖橫向（只在真的點下去時有效；退出全螢幕後再點會再進）
   document.addEventListener('pointerdown', goFullscreenOnPhone)
   showInstallHint()
