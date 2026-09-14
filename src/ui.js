@@ -6,11 +6,28 @@ import { dogSvg, confettiHtml, DOG_COLORS, homeBgSvg, cardArt } from './art.js'
 
 
 // 舞台固定 1200×800，依視窗等比縮放置中
+// 舞台固定 1200×800，等比縮到看得見的範圍裡置中。手機用 visualViewport，網址列縮放時才會跟著對。
+// 直的拿手機時舞台會變很小，蓋一層「轉橫」提示。
 export function fitStage (stage) {
-  const scale = Math.min(window.innerWidth / 1200, window.innerHeight / 800)
-  const x = (window.innerWidth - 1200 * scale) / 2
-  const y = (window.innerHeight - 800 * scale) / 2
+  const vv = window.visualViewport
+  const w = vv ? vv.width : window.innerWidth
+  const h = vv ? vv.height : window.innerHeight
+  const scale = Math.min(w / 1200, h / 800)
+  const x = (w - 1200 * scale) / 2
+  const y = (h - 800 * scale) / 2
   stage.style.transform = `translate(${x}px, ${y}px) scale(${scale})`
+  const rotate = document.getElementById('rotate')
+  if (rotate) rotate.hidden = !(h > w && w < 900)
+}
+
+// 手機：第一次點的時候進全螢幕並鎖橫向（要在使用者手勢裡呼叫；iPhone 不支援就算了）
+export function goFullscreenOnPhone () {
+  const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches
+  const standalone = window.matchMedia && window.matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches
+  if (!coarse || standalone || document.fullscreenElement || !document.documentElement.requestFullscreen) return
+  document.documentElement.requestFullscreen({ navigationUI: 'hide' }).then(() => {
+    if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {})
+  }).catch(() => {})
 }
 
 export function showScreen (name) {

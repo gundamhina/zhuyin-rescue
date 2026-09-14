@@ -10,7 +10,7 @@ import { createSpeak, speechAvailable, createListener, matchesSymbol, requestMic
 import { createWrite } from './write.js'
 import { createMatchLine } from './matchline.js'
 import { createFillBlank } from './fillblank.js'
-import { fitStage, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage } from './ui.js'
+import { fitStage, goFullscreenOnPhone, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage } from './ui.js'
 import { renderCheck } from './check.js'
 
 const SETTINGS_KEY = 'zhuyin-rescue-settings'
@@ -35,6 +35,10 @@ function main () {
   const stage = document.getElementById('stage')
   fitStage(stage)
   window.addEventListener('resize', () => fitStage(stage))
+  window.addEventListener('orientationchange', () => setTimeout(() => fitStage(stage), 300))
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', () => fitStage(stage))
+  // 手機上第一次碰畫面就進全螢幕（只在真的點下去時有效）
+  document.addEventListener('pointerdown', goFullscreenOnPhone, { once: true })
 
   const store = createStore(localStorage)
   let settings = loadSettings()

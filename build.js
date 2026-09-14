@@ -31,6 +31,7 @@ const html = readFileSync(join(root, 'src', 'index.html'), 'utf8')
 
 mkdirSync(join(root, 'dist'), { recursive: true })
 writeFileSync(join(root, 'dist', 'index.html'), html)
+copyFileSync(join(root, 'src', 'manifest.webmanifest'), join(root, 'dist', 'manifest.webmanifest'))
 console.log('dist/index.html', (html.length / 1024).toFixed(0) + ' KB')
 
 // 錄音檔：audio/ 底下的 mp3、wav 一起複製到 dist/audio/

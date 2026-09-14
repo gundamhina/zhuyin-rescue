@@ -2,11 +2,18 @@
 <html lang="zh-Hant-TW">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#26647E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="img/icon-192.png">
+<link rel="apple-touch-icon" href="img/icon-192.png">
 <title>注音救援隊</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; height: 100%; overflow: hidden; background: #26647E; touch-action: none; user-select: none; -webkit-user-select: none; }
+html, body { width: 100%; height: 100%; height: 100dvh; overflow: hidden; background: #26647E; touch-action: none; user-select: none; -webkit-user-select: none; }
 body { font-family: "Microsoft JhengHei", "Noto Sans TC", "PingFang TC", sans-serif; }
 button { font-family: inherit; border: 0; background: none; cursor: pointer; touch-action: manipulation; }
 .hidden { display: none !important; }
@@ -352,9 +359,19 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .tile.shake { animation: shake .45s ease-in-out; }
 .tile.gone { opacity: 0; transition: opacity .3s; pointer-events: none; }
 
+/* ---- 手機直拿：蓋一層轉橫提示 ---- */
+#rotate { position: fixed; inset: 0; z-index: 50; background: #26647E; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; font-size: 26px; font-weight: 700; }
+#rotate[hidden] { display: none; }
+.rotate-phone { width: 60px; height: 110px; border: 6px solid #fff; border-radius: 14px; animation: rotatePhone 2s ease-in-out infinite; }
+@keyframes rotatePhone { 0%, 20% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
+
 </style>
 </head>
 <body>
+<div id="rotate" hidden>
+  <div class="rotate-phone"></div>
+  <div>把手機轉橫著玩</div>
+</div>
 <div id="stage">
   <section class="screen" id="screen-profiles"></section>
   <section class="screen" id="screen-home"></section>
@@ -3114,11 +3131,28 @@ function createFillBlank (root, { color = 0 } = {}) {
 
 
 // 舞台固定 1200×800，依視窗等比縮放置中
+// 舞台固定 1200×800，等比縮到看得見的範圍裡置中。手機用 visualViewport，網址列縮放時才會跟著對。
+// 直的拿手機時舞台會變很小，蓋一層「轉橫」提示。
 function fitStage (stage) {
-  const scale = Math.min(window.innerWidth / 1200, window.innerHeight / 800)
-  const x = (window.innerWidth - 1200 * scale) / 2
-  const y = (window.innerHeight - 800 * scale) / 2
+  const vv = window.visualViewport
+  const w = vv ? vv.width : window.innerWidth
+  const h = vv ? vv.height : window.innerHeight
+  const scale = Math.min(w / 1200, h / 800)
+  const x = (w - 1200 * scale) / 2
+  const y = (h - 800 * scale) / 2
   stage.style.transform = `translate(${x}px, ${y}px) scale(${scale})`
+  const rotate = document.getElementById('rotate')
+  if (rotate) rotate.hidden = !(h > w && w < 900)
+}
+
+// 手機：第一次點的時候進全螢幕並鎖橫向（要在使用者手勢裡呼叫；iPhone 不支援就算了）
+function goFullscreenOnPhone () {
+  const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches
+  const standalone = window.matchMedia && window.matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches
+  if (!coarse || standalone || document.fullscreenElement || !document.documentElement.requestFullscreen) return
+  document.documentElement.requestFullscreen({ navigationUI: 'hide' }).then(() => {
+    if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {})
+  }).catch(() => {})
 }
 
 function showScreen (name) {
@@ -3637,6 +3671,10 @@ function main () {
   const stage = document.getElementById('stage')
   fitStage(stage)
   window.addEventListener('resize', () => fitStage(stage))
+  window.addEventListener('orientationchange', () => setTimeout(() => fitStage(stage), 300))
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', () => fitStage(stage))
+  // 手機上第一次碰畫面就進全螢幕（只在真的點下去時有效）
+  document.addEventListener('pointerdown', goFullscreenOnPhone, { once: true })
 
   const store = createStore(localStorage)
   let settings = loadSettings()
