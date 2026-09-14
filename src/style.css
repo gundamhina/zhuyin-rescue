@@ -1,5 +1,5 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; height: 100%; height: 100dvh; overflow: hidden; background: #26647E; touch-action: none; user-select: none; -webkit-user-select: none; }
+html, body { width: 100%; height: 100%; height: 100dvh; overflow: hidden; background: #26647E; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-text-size-adjust: none; text-size-adjust: none; } /* 手機 Chrome 會自己把它覺得太小的字放大（font boosting），注音的排版會被弄亂，關掉 */
 body { font-family: "Microsoft JhengHei", "Noto Sans TC", "PingFang TC", sans-serif; }
 button { font-family: inherit; border: 0; background: none; cursor: pointer; touch-action: manipulation; }
 .hidden { display: none !important; }

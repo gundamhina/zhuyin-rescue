@@ -14,18 +14,20 @@ const SLOTS = {
   6: [[500, 560], [680, 650], [860, 540], [1040, 650], [640, 480], [960, 470]],
 }
 
-// 直的：泡泡排成格子，貼在海面和狗狗上方，每列置中
-function bubbleSlots (n) {
+// 直的：泡泡排成格子，最下面一列緊貼狗狗頭頂上方，往上疊；太擠就把列距縮小，最上面不碰到上排按鈕
+function bubbleSlots (n, dogTop = STAGE.h - 500) {
   if (!STAGE.portrait) return SLOTS[n] || SLOTS[6]
   const cols = n <= 4 ? 2 : 3
   const rows = Math.ceil(n / cols)
   const cell = 215
-  const y0 = STAGE.h - 650 - (rows - 1) * cell
+  const last = dogTop - 110
+  const step = rows > 1 ? Math.min(cell, (last - 200) / (rows - 1)) : cell
+  const y0 = last - (rows - 1) * step
   const out = []
   for (let r = 0; r < rows; r++) {
     const inRow = Math.min(cols, n - r * cols)
     const x0 = STAGE.w / 2 - (inRow - 1) * cell / 2
-    for (let c = 0; c < inRow; c++) out.push([x0 + c * cell, y0 + r * cell])
+    for (let c = 0; c < inRow; c++) out.push([x0 + c * cell, y0 + r * step])
   }
   return out
 }
@@ -48,9 +50,13 @@ export function createFishing (root, { color = 0 } = {}) {
     handler(b.dataset.symbol, b)
   })
 
+  // 狗狗頭頂在舞台裡的 y：場景層位移加上狗狗在場景裡的位置乘縮放
+  function dogTop () {
+    return parseFloat(art.dataset.y || 0) + 226 * parseFloat(art.dataset.s || 1) - frame.offsetTop
+  }
   function place () {
     const bubbles = [...bubblesEl.children]
-    const slots = bubbleSlots(bubbles.length)
+    const slots = bubbleSlots(bubbles.length, dogTop())
     bubbles.forEach((b, i) => {
       if (b.classList.contains('caught')) return
       b.style.left = (slots[i][0] - 85) + 'px'

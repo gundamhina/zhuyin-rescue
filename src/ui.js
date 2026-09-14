@@ -44,7 +44,8 @@ export function layoutBg (el) {
   const { w: W, h: H, portrait } = STAGE
   let s, x, y
   if (portrait && el.dataset.fit === 'left') {
-    s = Math.max(W / 1200, 0.45 * H / 800)
+    // 螢幕越高，碼頭放得越大（1100 高時剛好填滿寬，1800 高時放大到 1.3 倍）
+    s = Math.max(W / 1200, 0.667 + (H - 1100) / 700 * 0.633)
     x = 0
     y = H - 800 * s
   } else if (portrait) {

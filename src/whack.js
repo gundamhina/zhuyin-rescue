@@ -1,4 +1,4 @@
-// 打地鼠玩法。符號一個一個從洞裡冒出來又縮回去，狗狗喊一個音，拍到對的就過關。
+// 打地鼠玩法。符號從洞裡冒出來又縮回去，同時會有兩三個在外面，狗狗喊一個音，拍到對的就過關。
 // 不計時、不扣分：沒拍到就等它下次再冒出來，拍錯才算錯（交給 main.js 記錄）。
 // 介面跟釣魚一樣：start、lock/unlock、hint、shake、celebrate、sad、onAnswer、layout、destroy。
 
@@ -6,8 +6,8 @@ import { dogSvg, bgHtml, symbolMarkup } from './art.js'
 import { STAGE, mountBgs } from './ui.js'
 
 const HOLES = [[330, 430], [600, 430], [870, 430], [460, 620], [730, 620], [1000, 620]]
-const UP_MS = 1700 // 冒出來停多久
-const GAP_MS = 350 // 縮回去到下一個冒出來
+const UP_MS = 2100 // 每一個冒出來停多久
+const POP_MS = 700 // 每隔多久冒下一個（所以同時最多三個在外面）
 
 // 直的：兩欄三排，在狗狗下面、星星上面那段置中，排距 190～300
 function holesFor () {
@@ -40,15 +40,15 @@ export function createWhack (root, { color = 0 } = {}) {
   mountBgs(root)
   const dogWrap = root.querySelector('.whack-dog')
   const holes = [...root.querySelectorAll('.hole')]
+  const moles = holes.map(h => h.querySelector('.mole'))
+  const hideTimers = new Map() // mole → 縮回去的計時器
   let handler = null
   let locked = true
   let current = null
   let running = false
   let timer = null
   let queue = []
-  let lastHole = -1
   let glowOnce = false
-  let upMole = null // 目前冒出來的那一個
 
   function layout () {
     holesFor().forEach(([x, y], i) => {
@@ -64,6 +64,15 @@ export function createWhack (root, { color = 0 } = {}) {
     handler(mole.dataset.symbol, mole)
   })
 
+  function upMoles () { return moles.filter(m => m.classList.contains('up')) }
+  function moleOf (symbol) { return upMoles().find(m => m.dataset.symbol === symbol) || null }
+  function hideMole (m) {
+    clearTimeout(hideTimers.get(m))
+    hideTimers.delete(m)
+    m.classList.remove('up')
+  }
+  function hideAll () { moles.forEach(hideMole) }
+
   // 出場順序：干擾項隨機，目標排在第 2 個，之後每 3 個出現一次
   function refill () {
     const distractors = shuffleList(current.options.filter(s => s !== current.target))
@@ -76,14 +85,18 @@ export function createWhack (root, { color = 0 } = {}) {
     queue.push(...seq)
   }
 
+  // 每 POP_MS 從空的洞冒一個出來；同一個符號不會同時出現兩個
   function popNext () {
     if (!running) return
-    if (!queue.length) refill()
-    const sym = queue.shift()
-    let idx = Math.floor(Math.random() * holes.length)
-    if (idx === lastHole) idx = (idx + 1) % holes.length
-    lastHole = idx
-    const mole = holes[idx].querySelector('.mole')
+    timer = setTimeout(popNext, POP_MS)
+    if (queue.length < 3) refill()
+    const free = moles.filter(m => !m.classList.contains('up'))
+    if (!free.length) return
+    const showing = new Set(upMoles().map(m => m.dataset.symbol))
+    const idx = queue.findIndex(s => !showing.has(s))
+    if (idx < 0) return
+    const sym = queue.splice(idx, 1)[0]
+    const mole = free[Math.floor(Math.random() * free.length)]
     mole.dataset.symbol = sym
     mole.querySelector('span').innerHTML = symbolMarkup(sym)
     mole.classList.remove('shake', 'hit', 'hint-loop')
@@ -92,12 +105,7 @@ export function createWhack (root, { color = 0 } = {}) {
       glowOnce = false
     }
     mole.classList.add('up')
-    upMole = mole
-    timer = setTimeout(() => {
-      mole.classList.remove('up')
-      upMole = null
-      timer = setTimeout(popNext, GAP_MS)
-    }, UP_MS)
+    hideTimers.set(mole, setTimeout(() => hideMole(mole), UP_MS))
   }
 
   function stopLoop () {
@@ -112,11 +120,8 @@ export function createWhack (root, { color = 0 } = {}) {
     queue = []
     glowOnce = false
     stopLoop()
-    holes.forEach(h => {
-      const m = h.querySelector('.mole')
-      m.classList.remove('up', 'hit', 'shake', 'hint-loop')
-    })
-    upMole = null
+    hideAll()
+    moles.forEach(m => m.classList.remove('hit', 'shake', 'hint-loop'))
   }
 
   function unlock () {
@@ -125,34 +130,36 @@ export function createWhack (root, { color = 0 } = {}) {
   }
   function lock () { locked = true }
 
-  // 提示：目標下一次冒出來時發一次光；若它正好在外面，現在就發
+  // 提示：目標在外面就發光；不在就等它下一次冒出來時發一次
   function hint () {
-    if (upMole && upMole.dataset.symbol === current.target) {
-      upMole.classList.remove('hint-loop')
-      void upMole.offsetWidth
-      upMole.classList.add('hint-loop')
+    const m = moleOf(current.target)
+    if (m) {
+      m.classList.remove('hint-loop')
+      void m.offsetWidth
+      m.classList.add('hint-loop')
       return
     }
     glowOnce = true
   }
   function shake (symbol) {
-    const mole = upMole && upMole.dataset.symbol === symbol ? upMole : null
+    const mole = moleOf(symbol)
     if (!mole) return
     mole.classList.remove('shake')
     void mole.offsetWidth
     mole.classList.add('shake')
   }
 
-  // 拍到了：停止冒出，那一個彈一下留在外面
+  // 拍到了：停止冒出，其他的縮回去，拍到的那一個彈一下留在外面
   function celebrate (symbol) {
     return new Promise(resolve => {
       stopLoop()
-      const mole = upMole && upMole.dataset.symbol === symbol ? upMole : null
-      if (mole) { mole.classList.remove('hint-loop'); mole.classList.add('hit') }
+      const mole = moleOf(symbol)
+      upMoles().forEach(m => { if (m !== mole) hideMole(m) })
+      if (mole) { clearTimeout(hideTimers.get(mole)); mole.classList.remove('hint-loop'); mole.classList.add('hit') }
       dogWrap.classList.remove('jump')
       void dogWrap.offsetWidth
       dogWrap.classList.add('jump')
-      setTimeout(() => { if (mole) mole.classList.remove('up', 'hit'); resolve() }, 650)
+      setTimeout(() => { if (mole) { mole.classList.remove('hit'); hideMole(mole) } resolve() }, 650)
     })
   }
   function sad () {
@@ -161,7 +168,7 @@ export function createWhack (root, { color = 0 } = {}) {
     dogWrap.classList.add('tilt')
   }
   function onAnswer (fn) { handler = fn }
-  function destroy () { stopLoop(); root.innerHTML = ''; handler = null }
+  function destroy () { stopLoop(); hideAll(); root.innerHTML = ''; handler = null }
 
   return { start, unlock, lock, hint, shake, celebrate, sad, onAnswer, layout, destroy }
 }
