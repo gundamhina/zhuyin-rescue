@@ -242,17 +242,9 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .issue-chip { background: #FFE0E0; color: #B32B37; padding: 4px 12px; border-radius: 10px; font-weight: 700; }
 .check-rec code { background: #E8EEF5; padding: 2px 8px; border-radius: 6px; }
 
-/* ---- 結合韻直排：字縮到 58%，兩個疊起來跟單一符號差不多高 ---- */
-.compound { display: inline-flex; flex-direction: column; align-items: center; line-height: 0.92; }
-.compound i { font-style: normal; font-size: 0.58em; }
-.ptile-sym .compound i { font-size: 0.6em; }
-
-.compound.n3 i { font-size: 0.42em; }
-.ptile-sym .compound.n3 i { font-size: 0.44em; }
-
-.compound { position: relative; }
-.compound .tone { position: absolute; right: -0.42em; bottom: 0.05em; font-size: 0.5em; font-weight: 900; line-height: 1; }
-.compound.n2 .tone { bottom: 0.15em; }
+/* ---- 音節（結合韻、拼讀字）是一張 1em 見方的小 SVG，符號直排；調號畫在框外右邊，所以 overflow 要 visible ---- */
+svg.syl { display: inline-block; width: 1em; height: 1em; overflow: visible; vertical-align: middle; }
+svg.syl text { font-weight: 900; fill: currentColor; text-anchor: middle; dominant-baseline: central; }
 
 /* ---- 寫給狗狗看 ---- */
 .write-dog { left: 40px; top: 300px; width: 300px; height: 346px; }
@@ -297,16 +289,10 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .dbar-n { position: absolute; top: -18px; font-size: 12px; color: #5A6B85; }
 .dbar-date { font-size: 11px; color: #5A6B85; margin-top: 4px; }
 
-/* ---- 詞：音節左右並列 ---- */
-.compound .tone.light { position: static; font-size: 0.5em; line-height: 0.5; }
-
-/* ---- 詞的排版：每個音節一欄，欄裡的字一樣大（不管一個還是三個符號），
-   每欄右邊留一小條放調號，輕聲點在欄頂。整個詞的大小由容器的 .word 字級決定 ---- */
-.word { display: inline-flex; align-items: center; gap: 0.1em; }
-.word .compound { font-size: 1em; margin-right: 0.3em; }
-.word .compound i, .word .compound.n3 i { font-size: 0.5em; }
-.word .compound .tone { right: -0.34em; bottom: 0.14em; font-size: 0.4em; }
-.word .compound .tone.light { position: static; font-size: 0.3em; line-height: 0.9; }
+/* ---- 詞的排版：每個音節一欄（80×170 的 SVG，符號一律 50），欄裡置中，欄右邊留一條放調號。
+   整個詞的大小由容器的 .word 字級決定：欄高 1.6em、欄寬 0.75em ---- */
+.word { display: inline-flex; align-items: center; gap: 0.05em; }
+.word svg.syl { width: 0.75em; height: 1.6em; }
 .sign-board .word { font-size: 0.6em; }
 .sign-board .word.w3 { font-size: 0.48em; }
 .mword .word { font-size: 0.9em; }
@@ -348,7 +334,7 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .fill-sign .sign-board { width: 700px; height: 300px; }
 .fill-sign .sign-board span.fill-word { font-size: 150px; }
 .fill-sign .sign-post { height: 40px; }
-.blank { display: inline-block; width: 0.55em; height: 1.4em; margin-right: 0.3em; border: 6px dashed #E0955B; border-radius: 14px; vertical-align: middle; background: rgba(224,149,91,0.08); box-sizing: border-box; }
+.blank { display: inline-block; width: 0.6em; height: 1.55em; margin: 0 0.1em 0 0.05em; border: 6px dashed #E0955B; border-radius: 14px; vertical-align: middle; background: rgba(224,149,91,0.08); box-sizing: border-box; }
 .tiles { position: absolute; inset: 0; pointer-events: none; }
 .tile { position: absolute; width: 160px; height: 160px; border-radius: 28px; background: #FFF3B0; border: 8px solid #F6F3E6; box-shadow: 0 10px 0 #D9AA1B; display: flex; align-items: center; justify-content: center; pointer-events: auto; touch-action: none; cursor: grab; }
 .tile span { font-size: 100px; font-weight: 900; color: #2B3A4A; line-height: 1; pointer-events: none; }

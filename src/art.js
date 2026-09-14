@@ -13,17 +13,30 @@ export function symbolMarkup (sym) {
   return syllableMarkup(sym, false)
 }
 
+// 一個音節畫成一張小 SVG：符號直排、調號在最後一個符號右邊、輕聲點在最上面。
+// 用 SVG 而不用 HTML 文字，是因為手機瀏覽器會自己放大它覺得太小的文字，注音每欄被放大的程度不一樣，排版就亂了；SVG 的字不會被動。
+// 單獨一個音節（泡泡、地鼠、磁磚、牌子）：畫在 100×100 裡，整個音節跟單一符號一樣高。
+// 詞裡的音節：每欄 80×170，符號一律 54，欄裡置中，一個詞的各欄才會對齊、字一樣大。
 function syllableMarkup (sym, inWord) {
-  // 輕聲的點在音節上方，寫在字串最前面
   const light = sym.startsWith('˙')
   if (light) sym = sym.slice(1)
   const tone = (sym.match(/[ˊˇˋ]$/) || [''])[0]
   const core = tone ? sym.slice(0, -1) : sym
   if (!inWord && core.length < 2 && !tone && !light) return sym
-  const marks = [...core].map(ch => `<i>${ch}</i>`).join('')
-  const lightHtml = light ? '<b class="tone light">˙</b>' : ''
-  const toneHtml = tone ? `<b class="tone">${tone}</b>` : ''
-  return `<span class="compound n${core.length}">${lightHtml}${marks}${toneHtml}</span>`
+  const n = core.length
+  let W, H, g, cx, centers, toneX, toneSize
+  if (inWord) {
+    W = 80; H = 170; g = 54; cx = 28; toneX = 67; toneSize = 32
+    centers = [...core].map((_, i) => 85 + (i - (n - 1) / 2) * 54)
+  } else {
+    W = 100; H = 100; cx = 50; toneX = 94; toneSize = 40
+    g = n === 1 ? 90 : n === 2 ? 54 : 38
+    centers = n === 1 ? [50] : n === 2 ? [26, 74] : [17, 50, 83]
+  }
+  const glyphs = [...core].map((ch, i) => `<text x="${cx}" y="${centers[i]}" font-size="${g}">${ch}</text>`).join('')
+  const toneSvg = tone ? `<text class="tone" x="${toneX}" y="${centers[n - 1] + g * 0.15}" font-size="${toneSize}">${tone}</text>` : ''
+  const lightSvg = light ? `<text class="tone" x="${cx}" y="${centers[0] - g * 0.62}" font-size="${toneSize}">˙</text>` : ''
+  return `<svg class="syl n${n}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-label="${light ? '˙' : ''}${core}${tone}">${lightSvg}${glyphs}${toneSvg}</svg>`
 }
 
 // 詞的圖：img/words/<國字>.png 有就用，沒有退回表情符號
