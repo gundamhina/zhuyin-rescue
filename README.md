@@ -33,7 +33,7 @@ Northflank 上建服務：Combined service → Git repo 選 `gundamhina/zhuyin-r
 
 ## 手機
 
-舞台固定 1200×800 等比縮放，直的拿會蓋一層「把手機轉橫著玩」。橫著拿第一次點畫面會進全螢幕並鎖橫向（Android Chrome；iPhone 的 Safari 不給網頁全螢幕）。要更像 app 就用瀏覽器選單「加到主畫面」，`src/manifest.webmanifest` 設了全螢幕與橫向，圖示由 `tools/make_icons.py` 從 dog-0 做出來。
+舞台固定 1200×800 等比縮放。直的拿手機時整個舞台轉 90 度變橫的，不用轉手機也能玩；拖曳和畫字都經過 `stagePoint()` 換算，旋轉後座標一樣對。碰畫面會進全螢幕並鎖橫向（Android Chrome；iPhone 的 Safari 不給網頁全螢幕，就維持轉 90 度的畫面）。要更像 app 就用瀏覽器選單「加到主畫面」，`src/manifest.webmanifest` 設了全螢幕與橫向，圖示由 `tools/make_icons.py` 從 dog-0 做出來。
 
 ## 部署到 GitHub Pages（目前用這個）
 

@@ -359,19 +359,9 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .tile.shake { animation: shake .45s ease-in-out; }
 .tile.gone { opacity: 0; transition: opacity .3s; pointer-events: none; }
 
-/* ---- 手機直拿：蓋一層轉橫提示 ---- */
-#rotate { position: fixed; inset: 0; z-index: 50; background: #26647E; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; font-size: 26px; font-weight: 700; }
-#rotate[hidden] { display: none; }
-.rotate-phone { width: 60px; height: 110px; border: 6px solid #fff; border-radius: 14px; animation: rotatePhone 2s ease-in-out infinite; }
-@keyframes rotatePhone { 0%, 20% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
-
 </style>
 </head>
 <body>
-<div id="rotate" hidden>
-  <div class="rotate-phone"></div>
-  <div>把手機轉橫著玩</div>
-</div>
 <div id="stage">
   <section class="screen" id="screen-profiles"></section>
   <section class="screen" id="screen-home"></section>
@@ -2719,9 +2709,11 @@ function createWrite (root, { color = 0 } = {}) {
   ctx.lineWidth = INK_WIDTH
   ctx.strokeStyle = '#2B3A4A'
 
+  // 用舞台座標算，手機直拿舞台轉 90 度時也對
   function canvasPoint (e) {
-    const r = canvas.getBoundingClientRect()
-    return [(e.clientX - r.left) / r.width * PAD, (e.clientY - r.top) / r.height * PAD]
+    const [px, py] = stagePoint(e)
+    const [ox, oy] = stageOffset(canvas)
+    return [(px - ox) / canvas.offsetWidth * PAD, (py - oy) / canvas.offsetHeight * PAD]
   }
   canvas.addEventListener('pointerdown', e => {
     if (locked) return
@@ -2876,12 +2868,6 @@ function createMatchLine (root, { color = 0 } = {}) {
   let drag = null // { word, x0, y0 }
   let selected = null // 點一下詞再點一下圖也可以
 
-  function stageScale () { return document.getElementById('stage').getBoundingClientRect().width / 1200 }
-  function stagePoint (e) {
-    const r = document.getElementById('stage').getBoundingClientRect()
-    const s = stageScale()
-    return [(e.clientX - r.left) / s, (e.clientY - r.top) / s]
-  }
   function anchorOfWord (word) {
     const i = [...wordsEl.children].findIndex(c => c.dataset.symbol === word)
     return [LEFT_X, ROW_Y[i]]
@@ -2994,7 +2980,7 @@ function createMatchLine (root, { color = 0 } = {}) {
 // 介面：start(q, { blankIndex, tiles })、lock/unlock、onAnswer(fn(syllable))、onPicTap(fn(word))、fill()、bounce(syllable)、celebrate、sad、destroy。
 
 
-const TILE_SLOTS = { 2: [[480, 660], [760, 660]], 3: [[380, 660], [620, 660], [860, 660]], 4: [[300, 660], [500, 660], [700, 660], [900, 660]] }
+const TILE_SLOTS = { 2: [[480, 620], [760, 620]], 3: [[380, 620], [620, 620], [860, 620]], 4: [[300, 620], [500, 620], [700, 620], [900, 620]] }
 
 function createFillBlank (root, { color = 0 } = {}) {
   root.innerHTML = homeBgSvg() +
@@ -3014,8 +3000,6 @@ function createFillBlank (root, { color = 0 } = {}) {
   let blankIndex = 0
   let drag = null
 
-  function stageScale () { return document.getElementById('stage').getBoundingClientRect().width / 1200 }
-
   function renderWord (filled = null) {
     const syls = current.target.split(' ')
     wordEl.innerHTML = `<span class="word w${syls.length}">${syls.map((s, i) => i === blankIndex
@@ -3028,15 +3012,16 @@ function createFillBlank (root, { color = 0 } = {}) {
   tilesEl.addEventListener('pointerdown', e => {
     const t = e.target.closest('.tile')
     if (!t || locked) return
-    drag = { t, startX: e.clientX, startY: e.clientY, ox: parseFloat(t.style.left), oy: parseFloat(t.style.top), moved: false }
+    const [sx, sy] = stagePoint(e)
+    drag = { t, startX: sx, startY: sy, ox: parseFloat(t.style.left), oy: parseFloat(t.style.top), moved: false }
     t.classList.add('dragging')
     try { t.setPointerCapture(e.pointerId) } catch (err) { /* 不給鎖也能拖 */ }
   })
   tilesEl.addEventListener('pointermove', e => {
     if (!drag) return
-    const s = stageScale()
-    const dx = (e.clientX - drag.startX) / s
-    const dy = (e.clientY - drag.startY) / s
+    const [sx, sy] = stagePoint(e)
+    const dx = sx - drag.startX
+    const dy = sy - drag.startY
     if (Math.abs(dx) + Math.abs(dy) > 6) drag.moved = true
     drag.t.style.left = (drag.ox + dx) + 'px'
     drag.t.style.top = (drag.oy + dy) + 'px'
@@ -3050,9 +3035,11 @@ function createFillBlank (root, { color = 0 } = {}) {
     const blank = wordEl.querySelector('.blank')
     let hit = !moved
     if (moved && blank) {
+      // 空格中心換成舞台座標，放手的點離它 130 以內就算放進去
       const b = blank.getBoundingClientRect()
-      const pad = 60 * stageScale()
-      hit = e.clientX > b.left - pad && e.clientX < b.right + pad && e.clientY > b.top - pad && e.clientY < b.bottom + pad
+      const [bx, by] = stagePoint({ clientX: (b.left + b.right) / 2, clientY: (b.top + b.bottom) / 2 })
+      const [px, py] = stagePoint(e)
+      hit = Math.abs(px - bx) < 130 && Math.abs(py - by) < 160
     }
     if (hit && handler) { handler(t.dataset.syllable, t); return }
     t.classList.add('returning')
@@ -3132,27 +3119,52 @@ function createFillBlank (root, { color = 0 } = {}) {
 
 // 舞台固定 1200×800，依視窗等比縮放置中
 // 舞台固定 1200×800，等比縮到看得見的範圍裡置中。手機用 visualViewport，網址列縮放時才會跟著對。
-// 直的拿手機時舞台會變很小，蓋一層「轉橫」提示。
+// 手機直的拿：整個舞台轉 90 度變橫的，不用等她轉手機（iPhone 不能鎖方向，只能這樣）。
 function fitStage (stage) {
   const vv = window.visualViewport
   const w = vv ? vv.width : window.innerWidth
   const h = vv ? vv.height : window.innerHeight
+  const portraitPhone = h > w && w < 900
+  if (portraitPhone) {
+    const scale = Math.min(h / 1200, w / 800)
+    // rotate(90deg) 把舞台的 (x, y) 轉到螢幕的 (-y, x)，所以往右推一個舞台高度才會在畫面裡
+    const x = (w + 800 * scale) / 2
+    const y = (h - 1200 * scale) / 2
+    stage.style.transform = `translate(${x}px, ${y}px) rotate(90deg) scale(${scale})`
+    return
+  }
   const scale = Math.min(w / 1200, h / 800)
   const x = (w - 1200 * scale) / 2
   const y = (h - 800 * scale) / 2
   stage.style.transform = `translate(${x}px, ${y}px) scale(${scale})`
-  const rotate = document.getElementById('rotate')
-  if (rotate) rotate.hidden = !(h > w && w < 900)
+}
+
+// 螢幕座標換成舞台座標（1200×800 那套），縮放、旋轉都算進去。拖曳、畫字都用這個。
+function stagePoint (e) {
+  const stage = document.getElementById('stage')
+  const m = new DOMMatrix(getComputedStyle(stage).transform)
+  const p = m.inverse().transformPoint(new DOMPoint(e.clientX, e.clientY))
+  return [p.x, p.y]
+}
+
+// 元素在舞台裡的位置（不含 transform），一路加 offsetLeft/offsetTop 到舞台
+function stageOffset (el) {
+  let x = 0
+  let y = 0
+  for (let n = el; n && n.id !== 'stage'; n = n.offsetParent) { x += n.offsetLeft; y += n.offsetTop }
+  return [x, y]
 }
 
 // 手機：第一次點的時候進全螢幕並鎖橫向（要在使用者手勢裡呼叫；iPhone 不支援就算了）
+let fullscreenPending = false
 function goFullscreenOnPhone () {
   const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches
   const standalone = window.matchMedia && window.matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches
-  if (!coarse || standalone || document.fullscreenElement || !document.documentElement.requestFullscreen) return
+  if (!coarse || standalone || fullscreenPending || document.fullscreenElement || !document.documentElement.requestFullscreen) return
+  fullscreenPending = true
   document.documentElement.requestFullscreen({ navigationUI: 'hide' }).then(() => {
-    if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {})
-  }).catch(() => {})
+    if (screen.orientation && screen.orientation.lock) return screen.orientation.lock('landscape')
+  }).catch(() => {}).finally(() => { fullscreenPending = false })
 }
 
 function showScreen (name) {
@@ -3673,8 +3685,8 @@ function main () {
   window.addEventListener('resize', () => fitStage(stage))
   window.addEventListener('orientationchange', () => setTimeout(() => fitStage(stage), 300))
   if (window.visualViewport) window.visualViewport.addEventListener('resize', () => fitStage(stage))
-  // 手機上第一次碰畫面就進全螢幕（只在真的點下去時有效）
-  document.addEventListener('pointerdown', goFullscreenOnPhone, { once: true })
+  // 手機上碰畫面就進全螢幕並鎖橫向（只在真的點下去時有效；退出全螢幕後再點會再進）
+  document.addEventListener('pointerdown', goFullscreenOnPhone)
 
   const store = createStore(localStorage)
   let settings = loadSettings()

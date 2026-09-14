@@ -2,8 +2,9 @@
 // 介面：start(q, { blankIndex, tiles })、lock/unlock、onAnswer(fn(syllable))、onPicTap(fn(word))、fill()、bounce(syllable)、celebrate、sad、destroy。
 
 import { dogSvg, homeBgSvg, symbolMarkup, wordPicMarkup } from './art.js'
+import { stagePoint } from './ui.js'
 
-const TILE_SLOTS = { 2: [[480, 660], [760, 660]], 3: [[380, 660], [620, 660], [860, 660]], 4: [[300, 660], [500, 660], [700, 660], [900, 660]] }
+const TILE_SLOTS = { 2: [[480, 620], [760, 620]], 3: [[380, 620], [620, 620], [860, 620]], 4: [[300, 620], [500, 620], [700, 620], [900, 620]] }
 
 export function createFillBlank (root, { color = 0 } = {}) {
   root.innerHTML = homeBgSvg() +
@@ -23,8 +24,6 @@ export function createFillBlank (root, { color = 0 } = {}) {
   let blankIndex = 0
   let drag = null
 
-  function stageScale () { return document.getElementById('stage').getBoundingClientRect().width / 1200 }
-
   function renderWord (filled = null) {
     const syls = current.target.split(' ')
     wordEl.innerHTML = `<span class="word w${syls.length}">${syls.map((s, i) => i === blankIndex
@@ -37,15 +36,16 @@ export function createFillBlank (root, { color = 0 } = {}) {
   tilesEl.addEventListener('pointerdown', e => {
     const t = e.target.closest('.tile')
     if (!t || locked) return
-    drag = { t, startX: e.clientX, startY: e.clientY, ox: parseFloat(t.style.left), oy: parseFloat(t.style.top), moved: false }
+    const [sx, sy] = stagePoint(e)
+    drag = { t, startX: sx, startY: sy, ox: parseFloat(t.style.left), oy: parseFloat(t.style.top), moved: false }
     t.classList.add('dragging')
     try { t.setPointerCapture(e.pointerId) } catch (err) { /* 不給鎖也能拖 */ }
   })
   tilesEl.addEventListener('pointermove', e => {
     if (!drag) return
-    const s = stageScale()
-    const dx = (e.clientX - drag.startX) / s
-    const dy = (e.clientY - drag.startY) / s
+    const [sx, sy] = stagePoint(e)
+    const dx = sx - drag.startX
+    const dy = sy - drag.startY
     if (Math.abs(dx) + Math.abs(dy) > 6) drag.moved = true
     drag.t.style.left = (drag.ox + dx) + 'px'
     drag.t.style.top = (drag.oy + dy) + 'px'
@@ -59,9 +59,11 @@ export function createFillBlank (root, { color = 0 } = {}) {
     const blank = wordEl.querySelector('.blank')
     let hit = !moved
     if (moved && blank) {
+      // 空格中心換成舞台座標，放手的點離它 130 以內就算放進去
       const b = blank.getBoundingClientRect()
-      const pad = 60 * stageScale()
-      hit = e.clientX > b.left - pad && e.clientX < b.right + pad && e.clientY > b.top - pad && e.clientY < b.bottom + pad
+      const [bx, by] = stagePoint({ clientX: (b.left + b.right) / 2, clientY: (b.top + b.bottom) / 2 })
+      const [px, py] = stagePoint(e)
+      hit = Math.abs(px - bx) < 130 && Math.abs(py - by) < 160
     }
     if (hit && handler) { handler(t.dataset.syllable, t); return }
     t.classList.add('returning')

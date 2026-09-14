@@ -7,27 +7,52 @@ import { dogSvg, confettiHtml, DOG_COLORS, homeBgSvg, cardArt } from './art.js'
 
 // 舞台固定 1200×800，依視窗等比縮放置中
 // 舞台固定 1200×800，等比縮到看得見的範圍裡置中。手機用 visualViewport，網址列縮放時才會跟著對。
-// 直的拿手機時舞台會變很小，蓋一層「轉橫」提示。
+// 手機直的拿：整個舞台轉 90 度變橫的，不用等她轉手機（iPhone 不能鎖方向，只能這樣）。
 export function fitStage (stage) {
   const vv = window.visualViewport
   const w = vv ? vv.width : window.innerWidth
   const h = vv ? vv.height : window.innerHeight
+  const portraitPhone = h > w && w < 900
+  if (portraitPhone) {
+    const scale = Math.min(h / 1200, w / 800)
+    // rotate(90deg) 把舞台的 (x, y) 轉到螢幕的 (-y, x)，所以往右推一個舞台高度才會在畫面裡
+    const x = (w + 800 * scale) / 2
+    const y = (h - 1200 * scale) / 2
+    stage.style.transform = `translate(${x}px, ${y}px) rotate(90deg) scale(${scale})`
+    return
+  }
   const scale = Math.min(w / 1200, h / 800)
   const x = (w - 1200 * scale) / 2
   const y = (h - 800 * scale) / 2
   stage.style.transform = `translate(${x}px, ${y}px) scale(${scale})`
-  const rotate = document.getElementById('rotate')
-  if (rotate) rotate.hidden = !(h > w && w < 900)
+}
+
+// 螢幕座標換成舞台座標（1200×800 那套），縮放、旋轉都算進去。拖曳、畫字都用這個。
+export function stagePoint (e) {
+  const stage = document.getElementById('stage')
+  const m = new DOMMatrix(getComputedStyle(stage).transform)
+  const p = m.inverse().transformPoint(new DOMPoint(e.clientX, e.clientY))
+  return [p.x, p.y]
+}
+
+// 元素在舞台裡的位置（不含 transform），一路加 offsetLeft/offsetTop 到舞台
+export function stageOffset (el) {
+  let x = 0
+  let y = 0
+  for (let n = el; n && n.id !== 'stage'; n = n.offsetParent) { x += n.offsetLeft; y += n.offsetTop }
+  return [x, y]
 }
 
 // 手機：第一次點的時候進全螢幕並鎖橫向（要在使用者手勢裡呼叫；iPhone 不支援就算了）
+let fullscreenPending = false
 export function goFullscreenOnPhone () {
   const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches
   const standalone = window.matchMedia && window.matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches
-  if (!coarse || standalone || document.fullscreenElement || !document.documentElement.requestFullscreen) return
+  if (!coarse || standalone || fullscreenPending || document.fullscreenElement || !document.documentElement.requestFullscreen) return
+  fullscreenPending = true
   document.documentElement.requestFullscreen({ navigationUI: 'hide' }).then(() => {
-    if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {})
-  }).catch(() => {})
+    if (screen.orientation && screen.orientation.lock) return screen.orientation.lock('landscape')
+  }).catch(() => {}).finally(() => { fullscreenPending = false })
 }
 
 export function showScreen (name) {

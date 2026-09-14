@@ -37,8 +37,8 @@ function main () {
   window.addEventListener('resize', () => fitStage(stage))
   window.addEventListener('orientationchange', () => setTimeout(() => fitStage(stage), 300))
   if (window.visualViewport) window.visualViewport.addEventListener('resize', () => fitStage(stage))
-  // 手機上第一次碰畫面就進全螢幕（只在真的點下去時有效）
-  document.addEventListener('pointerdown', goFullscreenOnPhone, { once: true })
+  // 手機上碰畫面就進全螢幕並鎖橫向（只在真的點下去時有效；退出全螢幕後再點會再進）
+  document.addEventListener('pointerdown', goFullscreenOnPhone)
 
   const store = createStore(localStorage)
   let settings = loadSettings()

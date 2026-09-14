@@ -3,6 +3,7 @@
 // 介面跟釣魚一樣：start、lock/unlock、hint、shake、celebrate、sad、onAnswer、destroy。
 
 import { dogSvg, homeBgSvg } from './art.js'
+import { stagePoint, stageOffset } from './ui.js'
 import { normalizePoints, rasterize, coverage, bestMatch } from './ink.js'
 import { SIMILAR_SHAPE } from './data.js'
 
@@ -73,9 +74,11 @@ export function createWrite (root, { color = 0 } = {}) {
   ctx.lineWidth = INK_WIDTH
   ctx.strokeStyle = '#2B3A4A'
 
+  // 用舞台座標算，手機直拿舞台轉 90 度時也對
   function canvasPoint (e) {
-    const r = canvas.getBoundingClientRect()
-    return [(e.clientX - r.left) / r.width * PAD, (e.clientY - r.top) / r.height * PAD]
+    const [px, py] = stagePoint(e)
+    const [ox, oy] = stageOffset(canvas)
+    return [(px - ox) / canvas.offsetWidth * PAD, (py - oy) / canvas.offsetHeight * PAD]
   }
   canvas.addEventListener('pointerdown', e => {
     if (locked) return

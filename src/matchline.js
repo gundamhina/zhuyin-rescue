@@ -3,6 +3,7 @@
 // 沒選詞的時候點圖，會呼叫 onPicTap（主流程拿去唸這個詞）。
 
 import { dogSvg, homeBgSvg, symbolMarkup, wordPicMarkup } from './art.js'
+import { stagePoint } from './ui.js'
 
 const LEFT_X = 330 // 詞卡右緣（線的起點）
 const RIGHT_X = 740 // 圖卡左緣（線的終點）
@@ -34,12 +35,6 @@ export function createMatchLine (root, { color = 0 } = {}) {
   let drag = null // { word, x0, y0 }
   let selected = null // 點一下詞再點一下圖也可以
 
-  function stageScale () { return document.getElementById('stage').getBoundingClientRect().width / 1200 }
-  function stagePoint (e) {
-    const r = document.getElementById('stage').getBoundingClientRect()
-    const s = stageScale()
-    return [(e.clientX - r.left) / s, (e.clientY - r.top) / s]
-  }
   function anchorOfWord (word) {
     const i = [...wordsEl.children].findIndex(c => c.dataset.symbol === word)
     return [LEFT_X, ROW_Y[i]]
