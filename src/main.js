@@ -39,6 +39,7 @@ function main () {
   if (window.visualViewport) window.visualViewport.addEventListener('resize', () => fitStage(stage))
   // 手機上碰畫面就進全螢幕並鎖橫向（只在真的點下去時有效；退出全螢幕後再點會再進）
   document.addEventListener('pointerdown', goFullscreenOnPhone)
+  showInstallHint()
 
   const store = createStore(localStorage)
   let settings = loadSettings()
@@ -155,6 +156,22 @@ function main () {
     state = applyTrack(state, track, recordAnswer(trackView(state, track), answer))
     store.save(profile.id, state)
   }
+  // 手機、不是加到主畫面開的、又沒有全螢幕 API（app 內建瀏覽器）：提示改用 Chrome 加到主畫面
+  function showInstallHint () {
+    const hint = document.getElementById('install-hint')
+    if (!hint) return
+    const coarse = window.matchMedia('(pointer: coarse)').matches
+    const standalone = window.matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches
+    const dismissed = (() => { try { return localStorage.getItem('zhuyin-rescue-hint') === '1' } catch (e) { return false } })()
+    if (!coarse || standalone || dismissed || document.fullscreenEnabled) return
+    hint.hidden = false
+    hint.addEventListener('pointerdown', e => {
+      e.stopPropagation()
+      hint.hidden = true
+      try { localStorage.setItem('zhuyin-rescue-hint', '1') } catch (err) { /* 存不了就下次再提示 */ }
+    })
+  }
+
   function currentView () { return trackView(state, TRACK_OF[kind]) }
 
   function finishRound () {
