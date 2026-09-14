@@ -13,24 +13,25 @@ export function speechAvailable () {
 }
 
 // 一條連續的辨識：整局只開一次，瀏覽器就只問一次麥克風。
-// next(ms) 等下一段辨識結果（可能的字串列表），等不到回空陣列。
+// next(ms) 回 { status, transcripts }：
+//   heard 有聽到字、silent 時間到沒聲音、denied 麥克風被擋、network 辨識服務連不上、unavailable 瀏覽器沒這功能
 export function createListener () {
   const R = window.SpeechRecognition || window.webkitSpeechRecognition
   let r = null
   let active = false
   let waiter = null // { resolve, timer }
-  let denied = false
+  let fault = null // 'denied' | 'network' | null
 
-  function deliver (list) {
+  function deliver (status, transcripts = []) {
     if (!waiter) return
     clearTimeout(waiter.timer)
     const { resolve } = waiter
     waiter = null
-    resolve(list)
+    resolve({ status, transcripts })
   }
 
   function spawn () {
-    if (!R || !active || denied) return
+    if (!R || !active || fault) return
     r = new R()
     r.lang = 'zh-TW'
     r.continuous = true
@@ -41,13 +42,15 @@ export function createListener () {
       for (let i = e.resultIndex; i < e.results.length; i++) {
         for (const alt of e.results[i]) alts.push(alt.transcript)
       }
-      if (alts.length) deliver(alts)
+      if (alts.length) deliver('heard', alts)
     }
     r.onerror = e => {
-      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { denied = true; deliver([]) }
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { fault = 'denied'; deliver('denied') }
+      else if (e.error === 'network') { fault = 'network'; deliver('network') }
+      // no-speech、aborted 這類不算故障，onend 會重開
     }
     // Chrome 一段時間沒聲音會自己結束，活著就重開（不會再問權限）
-    r.onend = () => { r = null; if (active && !denied) setTimeout(spawn, 200) }
+    r.onend = () => { r = null; if (active && !fault) setTimeout(spawn, 200) }
     try { r.start() } catch (err) { r = null }
   }
 
@@ -55,17 +58,31 @@ export function createListener () {
     start () { if (active) return; active = true; spawn() },
     stop () {
       active = false
-      deliver([])
+      deliver('silent')
       if (r) { try { r.onend = null; r.stop() } catch (err) { /* 已停 */ } r = null }
     },
+    fault () { return !R ? 'unavailable' : fault },
     next (ms = 5000) {
-      if (!R || denied) return Promise.resolve([])
+      if (!R) return Promise.resolve({ status: 'unavailable', transcripts: [] })
+      if (fault) return Promise.resolve({ status: fault, transcripts: [] })
       if (!r && active) spawn()
       return new Promise(resolve => {
-        if (waiter) deliver([])
-        waiter = { resolve, timer: setTimeout(() => deliver([]), ms) }
+        if (waiter) deliver('silent')
+        waiter = { resolve, timer: setTimeout(() => deliver('silent'), ms) }
       })
     },
+  }
+}
+
+// 進遊戲先問一次麥克風。回 'granted' | 'denied' | 'unknown'。
+export async function requestMic () {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return 'unknown'
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    stream.getTracks().forEach(t => t.stop())
+    return 'granted'
+  } catch (err) {
+    return (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) ? 'denied' : 'unknown'
   }
 }
 
@@ -104,10 +121,19 @@ export function createSpeak (root, { color = 0 } = {}) {
     micBtn.classList.toggle('listening', on)
     dogWrap.classList.toggle('listening', on)
   }
-  // 顯示辨識到的字，給旁邊的大人看，小孩不用看得懂
+  // 顯示辨識到的字或狀態，給旁邊的大人看，小孩不用看得懂
   function heard (text) {
     heardEl.textContent = text ? '「' + text + '」' : '…？'
+    heardEl.classList.remove('warn')
     heardEl.classList.add('show')
+  }
+  function notice (text, isWarn = true) {
+    heardEl.textContent = text
+    heardEl.classList.toggle('warn', isWarn)
+    heardEl.classList.add('show')
+  }
+  function setMicEnabled (on) {
+    micBtn.classList.toggle('disabled', !on)
   }
   function celebrate () {
     return new Promise(resolve => {
@@ -126,5 +152,5 @@ export function createSpeak (root, { color = 0 } = {}) {
   function onMic (fn) { handler = fn }
   function destroy () { root.innerHTML = ''; handler = null }
 
-  return { show, setListening, heard, celebrate, sad, onMic, destroy }
+  return { show, setListening, heard, notice, setMicEnabled, celebrate, sad, onMic, destroy }
 }

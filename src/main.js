@@ -6,7 +6,7 @@ import { createAudio } from './audio.js'
 import { createFishing } from './fishing.js'
 import { createWhack } from './whack.js'
 import { createMemory } from './memory.js'
-import { createSpeak, speechAvailable, createListener, matchesSymbol } from './speak.js'
+import { createSpeak, speechAvailable, createListener, matchesSymbol, requestMic } from './speak.js'
 import { createWrite } from './write.js'
 import { fitStage, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage } from './ui.js'
 import { renderCheck } from './check.js'
@@ -15,6 +15,13 @@ const SETTINGS_KEY = 'zhuyin-rescue-settings'
 const MEMORY_PAIRS = 5
 // 每個玩法練哪一軌：聽（釣魚、打地鼠、翻牌）、讀（唸給狗狗聽）、寫（寫給狗狗看）
 const TRACK_OF = { fishing: 'listen', whack: 'listen', memory: 'listen', speak: 'read', write: 'write' }
+// 唸給狗狗聽的狀態訊息，寫給旁邊的大人看
+const MIC_MSG = {
+  silent: '沒聽到聲音，靠近一點再唸一次',
+  denied: '麥克風被封鎖了：按網址列左邊的鎖頭或圖示，把麥克風改成「允許」，再重新整理',
+  network: '語音辨識要連網才能用，請確認網路',
+  unavailable: '這個瀏覽器沒有語音辨識，請用 Chrome',
+}
 
 function loadSettings () {
   try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {} } catch (err) { return {} }
@@ -280,6 +287,12 @@ function main () {
     if (listener) listener.stop()
     listener = createListener()
     listener.start()
+    // 先主動要一次權限，被擋就直接告訴大人，不用等她按
+    const myGame = game
+    requestMic().then(result => {
+      if (game !== myGame) return
+      if (result === 'denied') { game.notice(MIC_MSG.denied); game.setMicEnabled(false) }
+    })
     round = buildRound(currentView(), Math.random)
     index = 0
     starTotal = round.length
@@ -305,11 +318,17 @@ function main () {
     busy = true
     audio.stop()
     game.setListening(true)
-    const heard = await listener.next(5000)
+    const { status, transcripts } = await listener.next(5000)
     if (game !== myGame) return
     game.setListening(false)
-    game.heard(heard[0] || '')
-    if (matchesSymbol(q.target, heard)) {
+    // 沒聽到聲音、或麥克風／辨識不能用：不算她唸錯，不播答案
+    if (status !== 'heard') {
+      if (status === 'silent') { game.notice(MIC_MSG.silent, false); game.sad() } else { game.notice(MIC_MSG[status] || MIC_MSG.unavailable); game.setMicEnabled(false) }
+      busy = false
+      return
+    }
+    game.heard(transcripts[0] || '')
+    if (matchesSymbol(q.target, transcripts)) {
       if (firstAttempt) commit({ target: q.target, ok: true, picked: q.target, ms: 0, drill: q.drill })
       earned.push(firstAttempt)
       setStars()
