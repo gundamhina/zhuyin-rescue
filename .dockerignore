@@ -1,0 +1,8 @@
+node_modules
+dist
+releases
+img/raw
+docs
+test
+.git
+.claude

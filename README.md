@@ -20,3 +20,12 @@ npm run build     # 把 src/ 合成 dist/index.html，並複製 audio/、img/
 ```
 
 `src/` 是分檔的原始碼，`dist/` 是交付物。發音檔在 `audio/`（教育部手冊官方錄音，CC BY 4.0），圖在 `img/`（生圖後用 `tools/prep_images.py` 整理）。設計文件在 `docs/superpowers/specs/`。
+
+
+## 部署到 Northflank
+
+根目錄的 `Dockerfile` 兩段式：node 跑 `npm run build` 合成 `dist/`，再用 nginx 端出來，聽 8080。nginx 設定在 `deploy/nginx.conf`（index.html 不快取，錄音和圖片快取 30 天）。
+
+Northflank 上建服務：Combined service → Git repo 選 `gundamhina/zhuyin-rescue`、分支 `master` → Build type 選 Dockerfile（路徑 `/Dockerfile`）→ Networking 加一個 port `8080`、HTTP、Public → 最小的 compute plan 就夠。之後每次 push master 會自動重建。
+
+注意：存檔在瀏覽器 localStorage，綁網址。從本機 `dist/index.html` 換到 Northflank 網址時，先在舊的那邊家長區「匯出」，到新網址「匯入」。語音辨識要 HTTPS，Northflank 給的網址本來就是。
