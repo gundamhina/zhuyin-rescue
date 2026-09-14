@@ -3,12 +3,21 @@
 
 // 符號怎麼顯示：單一符號直接放，結合韻兩個直排
 export function symbolMarkup (sym) {
-  const tone = (sym.match(/[ˊˇˋ˙]$/) || [''])[0]
+  // 詞：音節左右並列，每個音節各自直排
+  if (sym.includes(' ')) {
+    const syls = sym.split(' ')
+    return `<span class="word w${syls.length}">${syls.map(symbolMarkup).join('')}</span>`
+  }
+  // 輕聲的點在音節上方，寫在字串最前面
+  const light = sym.startsWith('˙')
+  if (light) sym = sym.slice(1)
+  const tone = (sym.match(/[ˊˇˋ]$/) || [''])[0]
   const core = tone ? sym.slice(0, -1) : sym
-  if (core.length < 2 && !tone) return sym
+  if (core.length < 2 && !tone && !light) return sym
   const marks = [...core].map(ch => `<i>${ch}</i>`).join('')
+  const lightHtml = light ? '<b class="tone light">˙</b>' : ''
   const toneHtml = tone ? `<b class="tone">${tone}</b>` : ''
-  return `<span class="compound n${core.length}">${marks}${toneHtml}</span>`
+  return `<span class="compound n${core.length}">${lightHtml}${marks}${toneHtml}</span>`
 }
 
 // 六隻救援狗的配色：帽子／背心顏色，深色版做陰影

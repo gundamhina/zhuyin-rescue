@@ -137,8 +137,13 @@ function partnersOf (symbol, pairs) {
   return out
 }
 
-// 兩個字有幾個位置的符號一樣（長度不同算 0）
+// 兩個字有幾個位置的符號一樣（長度不同算 0）。詞（有空白）改成比音節：有幾個音節相同。
 function sharedSymbols (a, b) {
+  if (a.includes(' ') || b.includes(' ')) {
+    const sa = a.split(' ').map(coreOf)
+    const sb = b.split(' ').map(coreOf)
+    return sa.filter(x => sb.includes(x)).length
+  }
   a = coreOf(a)
   b = coreOf(b)
   if (a.length !== b.length) return 0
@@ -157,8 +162,10 @@ function pickDistractors (target, pool, count, mode, rng, useSimilar = true) {
     const second = mode === 'sound' ? SIMILAR_SHAPE : SIMILAR_SOUND
     preferred.push(...shuffle(partnersOf(target, first), rng))
     preferred.push(...shuffle(partnersOf(target, second), rng))
-    // 拼讀字：只差一個符號的，越像越前面
-    if (coreOf(target).length > 1) {
+    // 拼讀字：只差一個符號的；詞：至少共用一個音節的
+    if (target.includes(' ')) {
+      preferred.push(...shuffle(candidates.filter(c => sharedSymbols(target, c) >= 1), rng))
+    } else if (coreOf(target).length > 1) {
       preferred.push(...shuffle(candidates.filter(c => sharedSymbols(target, c) >= coreOf(target).length - 1), rng))
     }
   }
@@ -200,7 +207,9 @@ export function buildRound (state, rng, size = ROUND_SIZE) {
     }
     const source = forced.has(i) ? weakest : pool
     const target = weightedPick(source, weightOf, rng)
-    const distractors = pickDistractors(target, pool, optionCount - 1, tier.distract, rng, rng() < tier.similar)
+    // 詞比較大，最多 4 個選項
+    const count = target.includes(' ') ? Math.min(optionCount, 4) : optionCount
+    const distractors = pickDistractors(target, pool, count - 1, tier.distract, rng, rng() < tier.similar)
     round.push({ target, options: shuffle([target, ...distractors], rng), idleHint: tier.idleHint, drill: null })
   }
   return round

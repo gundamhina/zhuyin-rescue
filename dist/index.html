@@ -294,6 +294,13 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .dbar-n { position: absolute; top: -18px; font-size: 12px; color: #5A6B85; }
 .dbar-date { font-size: 11px; color: #5A6B85; margin-top: 4px; }
 
+/* ---- 詞：音節左右並列 ---- */
+.word { display: inline-flex; align-items: center; gap: 0.14em; }
+.word .compound { font-size: 0.8em; }
+.word.w3 .compound { font-size: 0.62em; }
+.word .compound.n1 i { font-size: 0.58em; }
+.compound .tone.light { position: static; font-size: 0.5em; line-height: 0.5; }
+
 </style>
 </head>
 <body>
@@ -686,6 +693,95 @@ const SYLLABLE_CHAR = {
   'ㄙㄨㄥˋ': '送',
 }
 
+// 詞：音節之間空白，輕聲點在音節前。接在拼讀字後面。
+const WORD_GROUPS = [
+  { name: '家人', items: ['ㄅㄚˋ ˙ㄅㄚ', 'ㄇㄚ ˙ㄇㄚ', 'ㄍㄜ ˙ㄍㄜ', 'ㄐㄧㄝˇ ˙ㄐㄧㄝ', 'ㄉㄧˋ ˙ㄉㄧ', 'ㄇㄟˋ ˙ㄇㄟ', 'ㄧㄝˊ ˙ㄧㄝ', 'ㄋㄞˇ ˙ㄋㄞ', 'ㄚ ㄧˊ', 'ㄕㄨˊ ˙ㄕㄨ'] },
+  { name: '動物', items: ['ㄒㄧㄠˇ ㄍㄡˇ', 'ㄒㄧㄠˇ ㄇㄠ', 'ㄒㄧㄠˇ ㄋㄧㄠˇ', 'ㄒㄧㄠˇ ㄩˊ', 'ㄌㄠˇ ㄏㄨˇ', 'ㄕ ˙ㄗ', 'ㄉㄚˋ ㄒㄧㄤˋ', 'ㄊㄨˋ ˙ㄗ', 'ㄏㄡˊ ˙ㄗ', 'ㄒㄩㄥˊ ㄇㄠ', 'ㄑㄧㄥ ㄨㄚ', 'ㄏㄨˊ ㄉㄧㄝˊ'] },
+  { name: '食物', items: ['ㄆㄧㄥˊ ㄍㄨㄛˇ', 'ㄒㄧㄤ ㄐㄧㄠ', 'ㄒㄧ ㄍㄨㄚ', 'ㄇㄧㄢˋ ㄅㄠ', 'ㄋㄧㄡˊ ㄋㄞˇ', 'ㄐㄧ ㄉㄢˋ', 'ㄅㄧㄥˇ ㄍㄢ', 'ㄊㄤˊ ㄍㄨㄛˇ', 'ㄉㄢˋ ㄍㄠ', 'ㄇㄧˇ ㄈㄢˋ', 'ㄕㄨㄟˇ ㄍㄨㄛˇ', 'ㄘㄠˇ ㄇㄟˊ'] },
+  { name: '身體', items: ['ㄧㄢˇ ˙ㄐㄧㄥ', 'ㄅㄧˊ ˙ㄗ', 'ㄦˇ ˙ㄉㄨㄛ', 'ㄗㄨㄟˇ ˙ㄅㄚ', 'ㄊㄡˊ ˙ㄈㄚ', 'ㄉㄨˋ ˙ㄗ', 'ㄕㄡˇ ㄓˇ', 'ㄐㄧㄠˇ ㄧㄚ'] },
+  { name: '顏色', items: ['ㄏㄨㄥˊ ㄙㄜˋ', 'ㄏㄨㄤˊ ㄙㄜˋ', 'ㄌㄢˊ ㄙㄜˋ', 'ㄌㄩˋ ㄙㄜˋ', 'ㄅㄞˊ ㄙㄜˋ', 'ㄏㄟ ㄙㄜˋ', 'ㄈㄣˇ ㄏㄨㄥˊ', 'ㄗˇ ㄙㄜˋ'] },
+  { name: '生活', items: ['ㄔ ㄈㄢˋ', 'ㄕㄨㄟˋ ㄐㄧㄠˋ', 'ㄒㄧˇ ㄗㄠˇ', 'ㄕㄨㄚ ㄧㄚˊ', 'ㄕㄤˋ ㄒㄩㄝˊ', 'ㄨㄢˊ ㄐㄩˋ', 'ㄕㄨ ㄅㄠ', 'ㄒㄩㄝˊ ㄒㄧㄠˋ', 'ㄌㄠˇ ㄕ', 'ㄆㄥˊ ˙ㄧㄡ', 'ㄊㄞˋ ˙ㄧㄤ', 'ㄩㄝˋ ˙ㄌㄧㄤ', 'ㄒㄧㄚˋ ㄩˇ', 'ㄒㄧㄥ ˙ㄒㄧㄥ'] },
+  { name: '三個字', items: ['ㄅㄧㄥ ㄑㄧˊ ㄌㄧㄣˊ', 'ㄑㄧㄠˇ ㄎㄜˋ ㄌㄧˋ', 'ㄧㄡˋ ㄦˊ ㄩㄢˊ', 'ㄐㄧㄠˇ ㄊㄚˋ ㄔㄜ', 'ㄒㄧˇ ㄧ ㄐㄧ', 'ㄉㄧㄢˋ ㄕˋ ㄐㄧ', 'ㄒㄧㄠˇ ㄅㄞˊ ㄊㄨˋ', 'ㄉㄚˋ ㄧㄝˇ ㄌㄤˊ', 'ㄒㄧㄠˇ ㄑㄧˋ ㄔㄜ', 'ㄌㄧㄡ ㄏㄨㄚˊ ㄊㄧ'] },
+]
+
+// 每個詞的國字（語音合成唸這個詞，語音辨識也比對它）
+const WORD_TEXT = {
+  'ㄅㄚˋ ˙ㄅㄚ': '爸爸',
+  'ㄇㄚ ˙ㄇㄚ': '媽媽',
+  'ㄍㄜ ˙ㄍㄜ': '哥哥',
+  'ㄐㄧㄝˇ ˙ㄐㄧㄝ': '姐姐',
+  'ㄉㄧˋ ˙ㄉㄧ': '弟弟',
+  'ㄇㄟˋ ˙ㄇㄟ': '妹妹',
+  'ㄧㄝˊ ˙ㄧㄝ': '爺爺',
+  'ㄋㄞˇ ˙ㄋㄞ': '奶奶',
+  'ㄚ ㄧˊ': '阿姨',
+  'ㄕㄨˊ ˙ㄕㄨ': '叔叔',
+  'ㄒㄧㄠˇ ㄍㄡˇ': '小狗',
+  'ㄒㄧㄠˇ ㄇㄠ': '小貓',
+  'ㄒㄧㄠˇ ㄋㄧㄠˇ': '小鳥',
+  'ㄒㄧㄠˇ ㄩˊ': '小魚',
+  'ㄌㄠˇ ㄏㄨˇ': '老虎',
+  'ㄕ ˙ㄗ': '獅子',
+  'ㄉㄚˋ ㄒㄧㄤˋ': '大象',
+  'ㄊㄨˋ ˙ㄗ': '兔子',
+  'ㄏㄡˊ ˙ㄗ': '猴子',
+  'ㄒㄩㄥˊ ㄇㄠ': '熊貓',
+  'ㄑㄧㄥ ㄨㄚ': '青蛙',
+  'ㄏㄨˊ ㄉㄧㄝˊ': '蝴蝶',
+  'ㄆㄧㄥˊ ㄍㄨㄛˇ': '蘋果',
+  'ㄒㄧㄤ ㄐㄧㄠ': '香蕉',
+  'ㄒㄧ ㄍㄨㄚ': '西瓜',
+  'ㄇㄧㄢˋ ㄅㄠ': '麵包',
+  'ㄋㄧㄡˊ ㄋㄞˇ': '牛奶',
+  'ㄐㄧ ㄉㄢˋ': '雞蛋',
+  'ㄅㄧㄥˇ ㄍㄢ': '餅乾',
+  'ㄊㄤˊ ㄍㄨㄛˇ': '糖果',
+  'ㄉㄢˋ ㄍㄠ': '蛋糕',
+  'ㄇㄧˇ ㄈㄢˋ': '米飯',
+  'ㄕㄨㄟˇ ㄍㄨㄛˇ': '水果',
+  'ㄘㄠˇ ㄇㄟˊ': '草莓',
+  'ㄧㄢˇ ˙ㄐㄧㄥ': '眼睛',
+  'ㄅㄧˊ ˙ㄗ': '鼻子',
+  'ㄦˇ ˙ㄉㄨㄛ': '耳朵',
+  'ㄗㄨㄟˇ ˙ㄅㄚ': '嘴巴',
+  'ㄊㄡˊ ˙ㄈㄚ': '頭髮',
+  'ㄉㄨˋ ˙ㄗ': '肚子',
+  'ㄕㄡˇ ㄓˇ': '手指',
+  'ㄐㄧㄠˇ ㄧㄚ': '腳丫',
+  'ㄏㄨㄥˊ ㄙㄜˋ': '紅色',
+  'ㄏㄨㄤˊ ㄙㄜˋ': '黃色',
+  'ㄌㄢˊ ㄙㄜˋ': '藍色',
+  'ㄌㄩˋ ㄙㄜˋ': '綠色',
+  'ㄅㄞˊ ㄙㄜˋ': '白色',
+  'ㄏㄟ ㄙㄜˋ': '黑色',
+  'ㄈㄣˇ ㄏㄨㄥˊ': '粉紅',
+  'ㄗˇ ㄙㄜˋ': '紫色',
+  'ㄔ ㄈㄢˋ': '吃飯',
+  'ㄕㄨㄟˋ ㄐㄧㄠˋ': '睡覺',
+  'ㄒㄧˇ ㄗㄠˇ': '洗澡',
+  'ㄕㄨㄚ ㄧㄚˊ': '刷牙',
+  'ㄕㄤˋ ㄒㄩㄝˊ': '上學',
+  'ㄨㄢˊ ㄐㄩˋ': '玩具',
+  'ㄕㄨ ㄅㄠ': '書包',
+  'ㄒㄩㄝˊ ㄒㄧㄠˋ': '學校',
+  'ㄌㄠˇ ㄕ': '老師',
+  'ㄆㄥˊ ˙ㄧㄡ': '朋友',
+  'ㄊㄞˋ ˙ㄧㄤ': '太陽',
+  'ㄩㄝˋ ˙ㄌㄧㄤ': '月亮',
+  'ㄒㄧㄚˋ ㄩˇ': '下雨',
+  'ㄒㄧㄥ ˙ㄒㄧㄥ': '星星',
+  'ㄅㄧㄥ ㄑㄧˊ ㄌㄧㄣˊ': '冰淇淋',
+  'ㄑㄧㄠˇ ㄎㄜˋ ㄌㄧˋ': '巧克力',
+  'ㄧㄡˋ ㄦˊ ㄩㄢˊ': '幼兒園',
+  'ㄐㄧㄠˇ ㄊㄚˋ ㄔㄜ': '腳踏車',
+  'ㄒㄧˇ ㄧ ㄐㄧ': '洗衣機',
+  'ㄉㄧㄢˋ ㄕˋ ㄐㄧ': '電視機',
+  'ㄒㄧㄠˇ ㄅㄞˊ ㄊㄨˋ': '小白兔',
+  'ㄉㄚˋ ㄧㄝˇ ㄌㄤˊ': '大野狼',
+  'ㄒㄧㄠˇ ㄑㄧˋ ㄔㄜ': '小汽車',
+  'ㄌㄧㄡ ㄏㄨㄚˊ ㄊㄧ': '溜滑梯',
+}
+
 // ===== data.js =====
 // 37 個注音符號與相關靜態資料。純資料，不含邏輯。
 
@@ -717,19 +813,23 @@ const GROUPS = [
 
 // 拼讀字（兩拼、三拼）由 syllables.js 產生的表接在後面
 for (const g of SYLLABLE_GROUPS) GROUPS.push(g.items)
+// 詞（兩三個音節）接在最後
+for (const g of WORD_GROUPS) GROUPS.push(g.items)
 // 第 14 組起的組名，家長區顯示用（索引對應 GROUPS）
-const GROUP_NAMES = SYLLABLE_GROUPS.map(g => g.name)
+const GROUP_NAMES = [...SYLLABLE_GROUPS.map(g => g.name), ...WORD_GROUPS.map(g => '詞：' + g.name)]
 
 // 22 個結合韻
 
 // 22 個結合韻：介音 ㄧㄨㄩ 加韻符。畫面上直排，跟課本一樣。
 const COMPOUNDS = GROUPS.slice(10, 13).flat()
 // 拼讀字：兩拼與三拼，字串尾端帶調號（一聲不標）
-const SYLLABLES = GROUPS.slice(13).flat()
+const SYLLABLES = SYLLABLE_GROUPS.flatMap(g => g.items)
+// 詞
+const WORDS = WORD_GROUPS.flatMap(g => g.items)
 const TONE_MARKS = 'ˊˇˋ˙'
 // 去掉調號，只留符號
 function coreOf (sym) { return sym.replace(/[ˊˇˋ˙]/g, '') }
-const ALL_SYMBOLS = [...SYMBOLS, ...COMPOUNDS, ...SYLLABLES]
+const ALL_SYMBOLS = [...SYMBOLS, ...COMPOUNDS, ...SYLLABLES, ...WORDS]
 
 // 語音合成唸不好單一符號，改唸代表字（注音教學的標準唸法）。
 // ㄝ、ㄥ 沒有常用單字，先放字典用字，試聽頁可改。
@@ -749,7 +849,7 @@ const REP_CHAR_BASE = {
   ㄨㄚ: '蛙', ㄨㄛ: '窩', ㄨㄞ: '歪', ㄨㄟ: '威', ㄨㄢ: '彎', ㄨㄣ: '溫', ㄨㄤ: '汪', ㄨㄥ: '翁',
   ㄩㄝ: '約', ㄩㄢ: '冤', ㄩㄣ: '暈', ㄩㄥ: '雍',
 }
-const REP_CHAR = { ...REP_CHAR_BASE, ...SYLLABLE_CHAR }
+const REP_CHAR = { ...REP_CHAR_BASE, ...SYLLABLE_CHAR, ...WORD_TEXT }
 
 // 長得像的對，用來當刁鑽的干擾項。
 const SIMILAR_SHAPE = [
@@ -797,7 +897,7 @@ const SPEAK_ACCEPT_BASE = {
   ㄉㄨㄛ: '多躲朵奪', ㄎㄨㄞˋ: '快筷塊', ㄏㄨㄢ: '歡換還環緩', ㄑㄩㄢ: '圈全泉勸犬', ㄍㄨㄥ: '公工功宮共', ㄉㄨㄥ: '東冬動懂洞',
 }
 // 拼讀字沒有手寫同音字表的，至少接受代表字本身
-const SPEAK_ACCEPT = { ...Object.fromEntries(Object.entries(SYLLABLE_CHAR).map(([k, v]) => [k, v])), ...SPEAK_ACCEPT_BASE }
+const SPEAK_ACCEPT = { ...SYLLABLE_CHAR, ...WORD_TEXT, ...SPEAK_ACCEPT_BASE }
 
 // ===== scheduler.js =====
 // 出題邏輯：熟練度、解鎖、加權出題、混淆對加練、階級升降。
@@ -938,8 +1038,13 @@ function partnersOf (symbol, pairs) {
   return out
 }
 
-// 兩個字有幾個位置的符號一樣（長度不同算 0）
+// 兩個字有幾個位置的符號一樣（長度不同算 0）。詞（有空白）改成比音節：有幾個音節相同。
 function sharedSymbols (a, b) {
+  if (a.includes(' ') || b.includes(' ')) {
+    const sa = a.split(' ').map(coreOf)
+    const sb = b.split(' ').map(coreOf)
+    return sa.filter(x => sb.includes(x)).length
+  }
   a = coreOf(a)
   b = coreOf(b)
   if (a.length !== b.length) return 0
@@ -958,8 +1063,10 @@ function pickDistractors (target, pool, count, mode, rng, useSimilar = true) {
     const second = mode === 'sound' ? SIMILAR_SHAPE : SIMILAR_SOUND
     preferred.push(...shuffle(partnersOf(target, first), rng))
     preferred.push(...shuffle(partnersOf(target, second), rng))
-    // 拼讀字：只差一個符號的，越像越前面
-    if (coreOf(target).length > 1) {
+    // 拼讀字：只差一個符號的；詞：至少共用一個音節的
+    if (target.includes(' ')) {
+      preferred.push(...shuffle(candidates.filter(c => sharedSymbols(target, c) >= 1), rng))
+    } else if (coreOf(target).length > 1) {
       preferred.push(...shuffle(candidates.filter(c => sharedSymbols(target, c) >= coreOf(target).length - 1), rng))
     }
   }
@@ -1001,7 +1108,9 @@ function buildRound (state, rng, size = ROUND_SIZE) {
     }
     const source = forced.has(i) ? weakest : pool
     const target = weightedPick(source, weightOf, rng)
-    const distractors = pickDistractors(target, pool, optionCount - 1, tier.distract, rng, rng() < tier.similar)
+    // 詞比較大，最多 4 個選項
+    const count = target.includes(' ') ? Math.min(optionCount, 4) : optionCount
+    const distractors = pickDistractors(target, pool, count - 1, tier.distract, rng, rng() < tier.similar)
     round.push({ target, options: shuffle([target, ...distractors], rng), idleHint: tier.idleHint, drill: null })
   }
   return round
@@ -1397,12 +1506,21 @@ function createAudio (getSettings) {
 
 // 符號怎麼顯示：單一符號直接放，結合韻兩個直排
 function symbolMarkup (sym) {
-  const tone = (sym.match(/[ˊˇˋ˙]$/) || [''])[0]
+  // 詞：音節左右並列，每個音節各自直排
+  if (sym.includes(' ')) {
+    const syls = sym.split(' ')
+    return `<span class="word w${syls.length}">${syls.map(symbolMarkup).join('')}</span>`
+  }
+  // 輕聲的點在音節上方，寫在字串最前面
+  const light = sym.startsWith('˙')
+  if (light) sym = sym.slice(1)
+  const tone = (sym.match(/[ˊˇˋ]$/) || [''])[0]
   const core = tone ? sym.slice(0, -1) : sym
-  if (core.length < 2 && !tone) return sym
+  if (core.length < 2 && !tone && !light) return sym
   const marks = [...core].map(ch => `<i>${ch}</i>`).join('')
+  const lightHtml = light ? '<b class="tone light">˙</b>' : ''
   const toneHtml = tone ? `<b class="tone">${tone}</b>` : ''
-  return `<span class="compound n${core.length}">${marks}${toneHtml}</span>`
+  return `<span class="compound n${core.length}">${lightHtml}${marks}${toneHtml}</span>`
 }
 
 // 六隻救援狗的配色：帽子／背心顏色，深色版做陰影

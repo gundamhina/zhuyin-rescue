@@ -286,3 +286,10 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .dbar-bad { background: #E0955B; border-bottom: 2px solid #fff; }
 .dbar-n { position: absolute; top: -18px; font-size: 12px; color: #5A6B85; }
 .dbar-date { font-size: 11px; color: #5A6B85; margin-top: 4px; }
+
+/* ---- 詞：音節左右並列 ---- */
+.word { display: inline-flex; align-items: center; gap: 0.14em; }
+.word .compound { font-size: 0.8em; }
+.word.w3 .compound { font-size: 0.62em; }
+.word .compound.n1 i { font-size: 0.58em; }
+.compound .tone.light { position: static; font-size: 0.5em; line-height: 0.5; }

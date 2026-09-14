@@ -1,6 +1,6 @@
 // 37 個注音符號與相關靜態資料。純資料，不含邏輯。
 
-import { SYLLABLE_GROUPS, SYLLABLE_CHAR } from './syllables.js'
+import { SYLLABLE_GROUPS, SYLLABLE_CHAR, WORD_GROUPS, WORD_TEXT } from './syllables.js'
 
 export const SYMBOLS = [
   'ㄅ', 'ㄆ', 'ㄇ', 'ㄈ', 'ㄉ', 'ㄊ', 'ㄋ', 'ㄌ', 'ㄍ', 'ㄎ', 'ㄏ',
@@ -29,19 +29,23 @@ export const GROUPS = [
 
 // 拼讀字（兩拼、三拼）由 syllables.js 產生的表接在後面
 for (const g of SYLLABLE_GROUPS) GROUPS.push(g.items)
+// 詞（兩三個音節）接在最後
+for (const g of WORD_GROUPS) GROUPS.push(g.items)
 // 第 14 組起的組名，家長區顯示用（索引對應 GROUPS）
-export const GROUP_NAMES = SYLLABLE_GROUPS.map(g => g.name)
+export const GROUP_NAMES = [...SYLLABLE_GROUPS.map(g => g.name), ...WORD_GROUPS.map(g => '詞：' + g.name)]
 
 // 22 個結合韻
 
 // 22 個結合韻：介音 ㄧㄨㄩ 加韻符。畫面上直排，跟課本一樣。
 export const COMPOUNDS = GROUPS.slice(10, 13).flat()
 // 拼讀字：兩拼與三拼，字串尾端帶調號（一聲不標）
-export const SYLLABLES = GROUPS.slice(13).flat()
+export const SYLLABLES = SYLLABLE_GROUPS.flatMap(g => g.items)
+// 詞
+export const WORDS = WORD_GROUPS.flatMap(g => g.items)
 export const TONE_MARKS = 'ˊˇˋ˙'
 // 去掉調號，只留符號
 export function coreOf (sym) { return sym.replace(/[ˊˇˋ˙]/g, '') }
-export const ALL_SYMBOLS = [...SYMBOLS, ...COMPOUNDS, ...SYLLABLES]
+export const ALL_SYMBOLS = [...SYMBOLS, ...COMPOUNDS, ...SYLLABLES, ...WORDS]
 
 // 語音合成唸不好單一符號，改唸代表字（注音教學的標準唸法）。
 // ㄝ、ㄥ 沒有常用單字，先放字典用字，試聽頁可改。
@@ -61,7 +65,7 @@ const REP_CHAR_BASE = {
   ㄨㄚ: '蛙', ㄨㄛ: '窩', ㄨㄞ: '歪', ㄨㄟ: '威', ㄨㄢ: '彎', ㄨㄣ: '溫', ㄨㄤ: '汪', ㄨㄥ: '翁',
   ㄩㄝ: '約', ㄩㄢ: '冤', ㄩㄣ: '暈', ㄩㄥ: '雍',
 }
-export const REP_CHAR = { ...REP_CHAR_BASE, ...SYLLABLE_CHAR }
+export const REP_CHAR = { ...REP_CHAR_BASE, ...SYLLABLE_CHAR, ...WORD_TEXT }
 
 // 長得像的對，用來當刁鑽的干擾項。
 export const SIMILAR_SHAPE = [
@@ -109,4 +113,4 @@ const SPEAK_ACCEPT_BASE = {
   ㄉㄨㄛ: '多躲朵奪', ㄎㄨㄞˋ: '快筷塊', ㄏㄨㄢ: '歡換還環緩', ㄑㄩㄢ: '圈全泉勸犬', ㄍㄨㄥ: '公工功宮共', ㄉㄨㄥ: '東冬動懂洞',
 }
 // 拼讀字沒有手寫同音字表的，至少接受代表字本身
-export const SPEAK_ACCEPT = { ...Object.fromEntries(Object.entries(SYLLABLE_CHAR).map(([k, v]) => [k, v])), ...SPEAK_ACCEPT_BASE }
+export const SPEAK_ACCEPT = { ...SYLLABLE_CHAR, ...WORD_TEXT, ...SPEAK_ACCEPT_BASE }

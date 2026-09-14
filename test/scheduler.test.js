@@ -429,3 +429,24 @@ test('三軌的日誌分開；舊存檔沒有 log 欄位也能用', () => {
   assert.equal(lifetimeStats(legacy).total, 0);
   assert.equal(recordAnswer(legacy, { target: 'ㄚ', ok: true, picked: 'ㄚ', ms: 1, at: 1 }).log.length, 1);
 });
+
+test('詞的干擾項優先挑共用一個音節的，而且最多 4 個選項', () => {
+  const wordGroup = GROUPS.findIndex(g => g[0].includes(' ') && g.includes('ㄒㄧㄠˇ ㄍㄡˇ'));
+  assert.ok(wordGroup > 0, '要有含小狗的動物組');
+  const s = { ...view(), rangeGroups: [wordGroup], lockTier: 5 };
+  const rng = seededRng(41);
+  let share = 0, total = 0;
+  for (let i = 0; i < 60; i++) {
+    for (const q of buildRound(s, rng)) {
+      if (q.drill) continue;
+      assert.ok(q.options.length <= 4, `詞最多 4 選項，現在 ${q.options.length}`);
+      const tSyl = q.target.split(' ').map(coreOf);
+      for (const o of q.options) {
+        if (o === q.target) continue;
+        total++;
+        if (o.split(' ').map(coreOf).some((x, k) => tSyl.includes(x))) share++;
+      }
+    }
+  }
+  assert.ok(share / total > 0.5, `共用音節比例 ${share}/${total}`);
+});
