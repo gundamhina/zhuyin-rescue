@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  createState, stars, activePool, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, trackView, applyTrack, effectiveTier, TIERS,
+  createState, stars, activePool, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, trackView, applyTrack, effectiveTier, lifetimeStats, dailyStats, TIERS,
 } from '../src/scheduler.js';
 import { GROUPS, coreOf } from '../src/data.js';
 
@@ -380,4 +380,52 @@ test('最低階也會常放形似或音似的干擾項（約六成），第三�
   const low = rate(0);
   assert.ok(low > 0.45 && low < 0.8, `第 1 階命中率 ${low.toFixed(2)}`);
   assert.ok(rate(2) > 0.95, `第 3 階命中率 ${rate(2).toFixed(2)}`);
+});
+
+// ---- 長期紀錄 ----
+test('每題都記一筆帶時間的日誌，星星仍只看最近 10 次', () => {
+  let s = view();
+  const t0 = Date.UTC(2026, 8, 1, 2, 0, 0);
+  for (let i = 0; i < 15; i++) {
+    s = recordAnswer(s, { target: 'ㄚ', ok: i >= 5, picked: 'ㄚ', ms: 800, at: t0 + i * 60000 });
+  }
+  assert.equal(s.log.length, 15);
+  assert.deepEqual(s.log[0], { at: t0, s: 'ㄚ', ok: false });
+  assert.equal(stars(s, 'ㄚ'), 5, '最近 10 次全對');
+  const sum = lifetimeStats(s);
+  assert.equal(sum.total, 15);
+  assert.equal(sum.correct, 10);
+  assert.equal(sum.bySymbol['ㄚ'].total, 15);
+  assert.equal(sum.bySymbol['ㄚ'].correct, 10);
+});
+
+test('日誌最多留 3000 筆，最舊的先丟', () => {
+  let s = view();
+  for (let i = 0; i < 3005; i++) s = recordAnswer(s, { target: 'ㄚ', ok: true, picked: 'ㄚ', ms: 1, at: i });
+  assert.equal(s.log.length, 3000);
+  assert.equal(s.log[0].at, 5);
+});
+
+test('按天統計最近 N 天（用本地日期），沒練的天數是 0', () => {
+  let s = view();
+  const day = 24 * 3600 * 1000;
+  const now = new Date(2026, 8, 14, 20, 0, 0).getTime();
+  s = recordAnswer(s, { target: 'ㄚ', ok: true, picked: 'ㄚ', ms: 1, at: now - 2 * day });
+  s = recordAnswer(s, { target: 'ㄛ', ok: false, picked: 'ㄜ', ms: 1, at: now - 2 * day + 1000 });
+  s = recordAnswer(s, { target: 'ㄚ', ok: true, picked: 'ㄚ', ms: 1, at: now });
+  const days = dailyStats(s, 7, now);
+  assert.equal(days.length, 7);
+  assert.deepEqual(days[6], { date: '9/14', total: 1, correct: 1 });
+  assert.deepEqual(days[4], { date: '9/12', total: 2, correct: 1 });
+  assert.deepEqual(days[5], { date: '9/13', total: 0, correct: 0 });
+});
+
+test('三軌的日誌分開；舊存檔沒有 log 欄位也能用', () => {
+  let s = createState();
+  s = applyTrack(s, 'read', recordAnswer(trackView(s, 'read'), { target: 'ㄚ', ok: true, picked: 'ㄚ', ms: 1, at: 1 }));
+  assert.equal(lifetimeStats(trackView(s, 'read')).total, 1);
+  assert.equal(lifetimeStats(trackView(s, 'listen')).total, 0);
+  const legacy = { ...trackView(createState(), 'listen') }; delete legacy.log;
+  assert.equal(lifetimeStats(legacy).total, 0);
+  assert.equal(recordAnswer(legacy, { target: 'ㄚ', ok: true, picked: 'ㄚ', ms: 1, at: 1 }).log.length, 1);
 });

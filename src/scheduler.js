@@ -26,10 +26,11 @@ export const TIERS = [
 // 聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）三軌各自記，練的是不同的東西。
 export const TRACKS = ['listen', 'read', 'write']
 export const TRACK_NAMES = { listen: '聽', read: '讀', write: '寫' }
-const TRACK_FIELDS = ['mastery', 'confusions', 'tier', 'recent']
+const TRACK_FIELDS = ['mastery', 'confusions', 'tier', 'recent', 'log']
+export const LOG_CAP = 3000
 
 export function emptyTrack () {
-  return { mastery: {}, confusions: {}, tier: 0, recent: [] }
+  return { mastery: {}, confusions: {}, tier: 0, recent: [], log: [] }
 }
 
 // version 2：家長設定在外層共用，練習紀錄分三軌。
@@ -49,7 +50,7 @@ export function createState ({ known = [], groups = null } = {}) {
 export function trackView (state, track) {
   const t = (state.tracks && state.tracks[track]) || emptyTrack()
   const { tracks, ...shared } = state
-  return { ...shared, ...t, track }
+  return { ...shared, ...emptyTrack(), ...t, track }
 }
 
 // 把攤平的一軌寫回去，只動這軌的紀錄欄位。
@@ -241,10 +242,12 @@ function adjustTier (tier, recent) {
 }
 
 // 每題只記第一次點的結果。picked 是她點的符號；drill 是這題若為加練題的混淆對 key。
-export function recordAnswer (state, { target, ok, picked, ms, drill = null }) {
+// at 是答題時間（毫秒），寫進長期日誌；不給就用現在。
+export function recordAnswer (state, { target, ok, picked, ms, drill = null, at = Date.now() }) {
   const oldHistory = (state.mastery[target] && state.mastery[target].history) || []
   const history = [...oldHistory, { ok, ms }].slice(-HISTORY_CAP)
   const mastery = { ...state.mastery, [target]: { history } }
+  const log = [...(state.log || []), { at, s: target, ok }].slice(-LOG_CAP)
 
   const confusions = { ...state.confusions }
   if (!ok && picked && picked !== target) {
@@ -261,5 +264,42 @@ export function recordAnswer (state, { target, ok, picked, ms, drill = null }) {
   }
 
   const { tier, recent } = adjustTier(state.tier, [...state.recent, ok].slice(-RECENT_CAP))
-  return { ...state, mastery, confusions, tier, recent }
+  return { ...state, mastery, confusions, tier, recent, log }
+}
+
+// 長期統計：累計題數、答對數，以及每個符號的累計
+export function lifetimeStats (state) {
+  const bySymbol = {}
+  let total = 0, correct = 0
+  for (const e of state.log || []) {
+    total++
+    if (e.ok) correct++
+    const b = bySymbol[e.s] || (bySymbol[e.s] = { total: 0, correct: 0 })
+    b.total++
+    if (e.ok) b.correct++
+  }
+  return { total, correct, bySymbol }
+}
+
+// 最近 days 天每天的題數與答對數（本地日期），今天在最後一格
+export function dailyStats (state, days, now = Date.now()) {
+  const out = []
+  const keyOf = d => `${d.getMonth() + 1}/${d.getDate()}`
+  const index = {}
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now)
+    d.setHours(0, 0, 0, 0)
+    d.setDate(d.getDate() - i)
+    const row = { date: keyOf(d), total: 0, correct: 0 }
+    index[keyOf(d) + '|' + d.getFullYear()] = row
+    out.push(row)
+  }
+  for (const e of state.log || []) {
+    const d = new Date(e.at)
+    const row = index[keyOf(d) + '|' + d.getFullYear()]
+    if (!row) continue
+    row.total++
+    if (e.ok) row.correct++
+  }
+  return out
 }

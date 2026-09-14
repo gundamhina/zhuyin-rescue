@@ -1,7 +1,7 @@
 // 選人、首頁、結算、大人面板、舞台縮放。
 
 import { GROUPS, REP_CHAR } from './data.js'
-import { stars, activePool, effectiveTier, unlockedCount, TIERS, TRACKS, TRACK_NAMES } from './scheduler.js'
+import { stars, activePool, effectiveTier, unlockedCount, lifetimeStats, dailyStats, TIERS, TRACKS, TRACK_NAMES } from './scheduler.js'
 import { dogSvg, confettiHtml, DOG_COLORS, homeBgSvg, cardArt } from './art.js'
 
 
@@ -164,7 +164,37 @@ function armButton (btn, confirmText, onConfirm) {
   }
 }
 
+// 長期統計：累計題數與答對率，加最近 14 天每天練了幾題（藍＝答對、橘＝答錯，疊起來是當天總題數）
+function statsHtml (state) {
+  const life = lifetimeStats(state)
+  const days = dailyStats(state, 14)
+  const max = Math.max(1, ...days.map(d => d.total))
+  const pct = life.total ? Math.round(life.correct / life.total * 100) : 0
+  const bars = days.map(d => {
+    const h = Math.round(d.total / max * 100)
+    const hOk = d.total ? Math.round(d.correct / d.total * h) : 0
+    const tip = `${d.date}：${d.total} 題，答對 ${d.correct}`
+    return `<div class="dbar" title="${tip}" aria-label="${tip}">
+      <div class="dbar-col" style="height:${h}%">
+        <div class="dbar-bad" style="height:${100 - (d.total ? hOk / h * 100 : 0)}%"></div>
+        <div class="dbar-ok" style="flex:1"></div>
+      </div>
+      <div class="dbar-n">${d.total || ''}</div>
+      <div class="dbar-date">${d.date}</div>
+    </div>`
+  }).join('')
+  return `
+      <div class="panel-row panel-stats">
+        <div class="stats-sum">累計 <b>${life.total}</b> 題，答對 <b>${life.correct}</b>（${pct}%）</div>
+        <div class="dchart">
+          <div class="dchart-title">最近 14 天每天練幾題　<span class="lg lg-ok"></span>答對　<span class="lg lg-bad"></span>答錯</div>
+          <div class="dbars">${bars}</div>
+        </div>
+      </div>`
+}
+
 export function renderPanel (root, { profile, profiles, state, track = 'listen', onTrack, settings, voices, onKnownChange, onSettings, onStateChange, onExport, onImport, onResetProgress, onRemoveProfile, onClose, onSay, onCheck }) {
+  const lifetime = state ? lifetimeStats(state) : { bySymbol: {} }
   const usersHtml = profiles.list.length
     ? profiles.list.map(p => `
       <div class="puser">
@@ -181,10 +211,11 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
         const n = stars(state, s)
         const known = state.known.includes(s)
         const hist = (state.mastery[s] && state.mastery[s].history) || []
+        const life = lifetime.bySymbol[s]
         return `<div class="ptile ${starColor(n)}">
           <button class="ptile-sym" data-say="${s}" title="點一下試聽">${s}</button>
           <div class="ptile-stars">${'★'.repeat(n)}${'☆'.repeat(5 - n)}</div>
-          <div class="ptile-hist">${hist.length ? hist.filter(h => h.ok).length + '/' + hist.length : '沒練過'}</div>
+          <div class="ptile-hist" title="最近 10 次答對／已答">${hist.length ? '近 ' + hist.filter(h => h.ok).length + '/' + hist.length : '沒練過'}${life ? '　累計 ' + life.correct + '/' + life.total : ''}</div>
           <label class="ptile-known"><input type="checkbox" data-known="${s}" ${known ? 'checked' : ''}> 認得</label>
           <input class="ptile-rep" data-rep="${s}" value="${(settings.repChar && settings.repChar[s]) || REP_CHAR[s]}" maxlength="2" title="唸成什麼字">
         </div>`
@@ -218,6 +249,7 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
           ，最近 10 題 ${state.recent.filter(Boolean).length}/${state.recent.length} 對</div>
         <div>混淆中：${confusions.length ? confusions.map(k => k.replace('|', '／')).join('、') : '沒有'}</div>
       </div>
+      ${profile ? statsHtml(state) : ''}
       <div class="panel-row panel-difficulty">
         <label>難度
           <select id="sel-tier">

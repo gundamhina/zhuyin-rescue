@@ -280,6 +280,20 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .heard.warn { color: #B32B37; font-size: 24px; line-height: 1.3; }
 .mic-btn.disabled { background: #A9BFCF; box-shadow: 0 12px 0 #8A9DAB; cursor: default; }
 
+/* ---- 家長區長期統計 ---- */
+.panel-stats { flex-direction: column; align-items: stretch; gap: 10px; }
+.stats-sum { font-size: 20px; }
+.dchart-title { font-size: 14px; color: #5A6B85; margin-bottom: 6px; }
+.lg { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 3px; }
+.lg-ok { background: #4A6FA5; } .lg-bad { background: #E0955B; }
+.dbars { display: flex; align-items: flex-end; gap: 8px; height: 120px; padding-top: 18px; }
+.dbar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; position: relative; }
+.dbar-col { width: 100%; max-width: 34px; display: flex; flex-direction: column; border-radius: 4px 4px 0 0; overflow: hidden; background: transparent; }
+.dbar-ok { background: #4A6FA5; }
+.dbar-bad { background: #E0955B; border-bottom: 2px solid #fff; }
+.dbar-n { position: absolute; top: -18px; font-size: 12px; color: #5A6B85; }
+.dbar-date { font-size: 11px; color: #5A6B85; margin-top: 4px; }
+
 </style>
 </head>
 <body>
@@ -447,10 +461,11 @@ const TIERS = [
 // 聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）三軌各自記，練的是不同的東西。
 const TRACKS = ['listen', 'read', 'write']
 const TRACK_NAMES = { listen: '聽', read: '讀', write: '寫' }
-const TRACK_FIELDS = ['mastery', 'confusions', 'tier', 'recent']
+const TRACK_FIELDS = ['mastery', 'confusions', 'tier', 'recent', 'log']
+const LOG_CAP = 3000
 
 function emptyTrack () {
-  return { mastery: {}, confusions: {}, tier: 0, recent: [] }
+  return { mastery: {}, confusions: {}, tier: 0, recent: [], log: [] }
 }
 
 // version 2：家長設定在外層共用，練習紀錄分三軌。
@@ -470,7 +485,7 @@ function createState ({ known = [], groups = null } = {}) {
 function trackView (state, track) {
   const t = (state.tracks && state.tracks[track]) || emptyTrack()
   const { tracks, ...shared } = state
-  return { ...shared, ...t, track }
+  return { ...shared, ...emptyTrack(), ...t, track }
 }
 
 // 把攤平的一軌寫回去，只動這軌的紀錄欄位。
@@ -662,10 +677,12 @@ function adjustTier (tier, recent) {
 }
 
 // 每題只記第一次點的結果。picked 是她點的符號；drill 是這題若為加練題的混淆對 key。
-function recordAnswer (state, { target, ok, picked, ms, drill = null }) {
+// at 是答題時間（毫秒），寫進長期日誌；不給就用現在。
+function recordAnswer (state, { target, ok, picked, ms, drill = null, at = Date.now() }) {
   const oldHistory = (state.mastery[target] && state.mastery[target].history) || []
   const history = [...oldHistory, { ok, ms }].slice(-HISTORY_CAP)
   const mastery = { ...state.mastery, [target]: { history } }
+  const log = [...(state.log || []), { at, s: target, ok }].slice(-LOG_CAP)
 
   const confusions = { ...state.confusions }
   if (!ok && picked && picked !== target) {
@@ -682,7 +699,44 @@ function recordAnswer (state, { target, ok, picked, ms, drill = null }) {
   }
 
   const { tier, recent } = adjustTier(state.tier, [...state.recent, ok].slice(-RECENT_CAP))
-  return { ...state, mastery, confusions, tier, recent }
+  return { ...state, mastery, confusions, tier, recent, log }
+}
+
+// 長期統計：累計題數、答對數，以及每個符號的累計
+function lifetimeStats (state) {
+  const bySymbol = {}
+  let total = 0, correct = 0
+  for (const e of state.log || []) {
+    total++
+    if (e.ok) correct++
+    const b = bySymbol[e.s] || (bySymbol[e.s] = { total: 0, correct: 0 })
+    b.total++
+    if (e.ok) b.correct++
+  }
+  return { total, correct, bySymbol }
+}
+
+// 最近 days 天每天的題數與答對數（本地日期），今天在最後一格
+function dailyStats (state, days, now = Date.now()) {
+  const out = []
+  const keyOf = d => `${d.getMonth() + 1}/${d.getDate()}`
+  const index = {}
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now)
+    d.setHours(0, 0, 0, 0)
+    d.setDate(d.getDate() - i)
+    const row = { date: keyOf(d), total: 0, correct: 0 }
+    index[keyOf(d) + '|' + d.getFullYear()] = row
+    out.push(row)
+  }
+  for (const e of state.log || []) {
+    const d = new Date(e.at)
+    const row = index[keyOf(d) + '|' + d.getFullYear()]
+    if (!row) continue
+    row.total++
+    if (e.ok) row.correct++
+  }
+  return out
 }
 
 // ===== store.js =====
@@ -2252,7 +2306,37 @@ function armButton (btn, confirmText, onConfirm) {
   }
 }
 
+// 長期統計：累計題數與答對率，加最近 14 天每天練了幾題（藍＝答對、橘＝答錯，疊起來是當天總題數）
+function statsHtml (state) {
+  const life = lifetimeStats(state)
+  const days = dailyStats(state, 14)
+  const max = Math.max(1, ...days.map(d => d.total))
+  const pct = life.total ? Math.round(life.correct / life.total * 100) : 0
+  const bars = days.map(d => {
+    const h = Math.round(d.total / max * 100)
+    const hOk = d.total ? Math.round(d.correct / d.total * h) : 0
+    const tip = `${d.date}：${d.total} 題，答對 ${d.correct}`
+    return `<div class="dbar" title="${tip}" aria-label="${tip}">
+      <div class="dbar-col" style="height:${h}%">
+        <div class="dbar-bad" style="height:${100 - (d.total ? hOk / h * 100 : 0)}%"></div>
+        <div class="dbar-ok" style="flex:1"></div>
+      </div>
+      <div class="dbar-n">${d.total || ''}</div>
+      <div class="dbar-date">${d.date}</div>
+    </div>`
+  }).join('')
+  return `
+      <div class="panel-row panel-stats">
+        <div class="stats-sum">累計 <b>${life.total}</b> 題，答對 <b>${life.correct}</b>（${pct}%）</div>
+        <div class="dchart">
+          <div class="dchart-title">最近 14 天每天練幾題　<span class="lg lg-ok"></span>答對　<span class="lg lg-bad"></span>答錯</div>
+          <div class="dbars">${bars}</div>
+        </div>
+      </div>`
+}
+
 function renderPanel (root, { profile, profiles, state, track = 'listen', onTrack, settings, voices, onKnownChange, onSettings, onStateChange, onExport, onImport, onResetProgress, onRemoveProfile, onClose, onSay, onCheck }) {
+  const lifetime = state ? lifetimeStats(state) : { bySymbol: {} }
   const usersHtml = profiles.list.length
     ? profiles.list.map(p => `
       <div class="puser">
@@ -2269,10 +2353,11 @@ function renderPanel (root, { profile, profiles, state, track = 'listen', onTrac
         const n = stars(state, s)
         const known = state.known.includes(s)
         const hist = (state.mastery[s] && state.mastery[s].history) || []
+        const life = lifetime.bySymbol[s]
         return `<div class="ptile ${starColor(n)}">
           <button class="ptile-sym" data-say="${s}" title="點一下試聽">${s}</button>
           <div class="ptile-stars">${'★'.repeat(n)}${'☆'.repeat(5 - n)}</div>
-          <div class="ptile-hist">${hist.length ? hist.filter(h => h.ok).length + '/' + hist.length : '沒練過'}</div>
+          <div class="ptile-hist" title="最近 10 次答對／已答">${hist.length ? '近 ' + hist.filter(h => h.ok).length + '/' + hist.length : '沒練過'}${life ? '　累計 ' + life.correct + '/' + life.total : ''}</div>
           <label class="ptile-known"><input type="checkbox" data-known="${s}" ${known ? 'checked' : ''}> 認得</label>
           <input class="ptile-rep" data-rep="${s}" value="${(settings.repChar && settings.repChar[s]) || REP_CHAR[s]}" maxlength="2" title="唸成什麼字">
         </div>`
@@ -2306,6 +2391,7 @@ function renderPanel (root, { profile, profiles, state, track = 'listen', onTrac
           ，最近 10 題 ${state.recent.filter(Boolean).length}/${state.recent.length} 對</div>
         <div>混淆中：${confusions.length ? confusions.map(k => k.replace('|', '／')).join('、') : '沒有'}</div>
       </div>
+      ${profile ? statsHtml(state) : ''}
       <div class="panel-row panel-difficulty">
         <label>難度
           <select id="sel-tier">
