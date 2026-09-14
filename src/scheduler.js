@@ -10,15 +10,17 @@ export const UNLOCK_STARS = 4
 export const DRILL_CLEAR_STREAK = 3
 
 // 一個數字代表整體難度，往上走選項變多、干擾項變刁、提示變少。
+// similar：這題放形似／音似干擾項的機率（每階都會放，只是低階不一定）。
+// distract：形似、音似誰先放（shape 先放長得像的，sound 先放聽起來像的）。
 // idleHint：幾秒沒點就重唸並晃一下正確的（0 = 不提示）。只有最低兩階有，其他一律沒有。
 // 一開始永遠沒有提示，答錯也不顯示答案，只重唸一次。
 export const TIERS = [
-  { options: 2, distract: 'random', idleHint: 10 },
-  { options: 3, distract: 'random', idleHint: 10 },
-  { options: 3, distract: 'shape', idleHint: 0 },
-  { options: 4, distract: 'shape', idleHint: 0 },
-  { options: 4, distract: 'sound', idleHint: 0 },
-  { options: 6, distract: 'sound', idleHint: 0 },
+  { options: 2, distract: 'shape', similar: 0.6, idleHint: 10 },
+  { options: 3, distract: 'shape', similar: 0.7, idleHint: 10 },
+  { options: 3, distract: 'shape', similar: 1, idleHint: 0 },
+  { options: 4, distract: 'shape', similar: 1, idleHint: 0 },
+  { options: 4, distract: 'sound', similar: 1, idleHint: 0 },
+  { options: 6, distract: 'sound', similar: 1, idleHint: 0 },
 ]
 
 // 聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）三軌各自記，練的是不同的東西。
@@ -144,15 +146,20 @@ function sharedSymbols (a, b) {
   return n
 }
 
-function pickDistractors (target, pool, count, mode, rng) {
+// 干擾項：形似、音似的對先放（誰先看 mode），拼讀字再放只差一個符號的；不夠再隨機補。
+// useSimilar 為 false 時整題隨機。
+function pickDistractors (target, pool, count, mode, rng, useSimilar = true) {
   const candidates = pool.filter(s => s !== target)
   const preferred = []
-  if (mode === 'sound') preferred.push(...partnersOf(target, SIMILAR_SOUND))
-  if (mode === 'sound' || mode === 'shape') preferred.push(...partnersOf(target, SIMILAR_SHAPE))
-  // 拼讀字：形似／音似階級優先挑只差一個符號的，越像越前面
-  if (coreOf(target).length > 1 && mode !== 'random') {
-    const close = shuffle(candidates.filter(c => sharedSymbols(target, c) >= coreOf(target).length - 1), rng)
-    preferred.push(...close)
+  if (useSimilar) {
+    const first = mode === 'sound' ? SIMILAR_SOUND : SIMILAR_SHAPE
+    const second = mode === 'sound' ? SIMILAR_SHAPE : SIMILAR_SOUND
+    preferred.push(...shuffle(partnersOf(target, first), rng))
+    preferred.push(...shuffle(partnersOf(target, second), rng))
+    // 拼讀字：只差一個符號的，越像越前面
+    if (coreOf(target).length > 1) {
+      preferred.push(...shuffle(candidates.filter(c => sharedSymbols(target, c) >= coreOf(target).length - 1), rng))
+    }
   }
   const chosen = []
   for (const p of preferred) {
@@ -192,7 +199,7 @@ export function buildRound (state, rng, size = ROUND_SIZE) {
     }
     const source = forced.has(i) ? weakest : pool
     const target = weightedPick(source, weightOf, rng)
-    const distractors = pickDistractors(target, pool, optionCount - 1, tier.distract, rng)
+    const distractors = pickDistractors(target, pool, optionCount - 1, tier.distract, rng, rng() < tier.similar)
     round.push({ target, options: shuffle([target, ...distractors], rng), idleHint: tier.idleHint, drill: null })
   }
   return round

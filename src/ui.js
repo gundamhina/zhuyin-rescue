@@ -144,7 +144,8 @@ function escapeHtml (s) {
 const DISTRACT_LABEL = { random: '隨機', shape: '形似', sound: '音似' }
 function tierLabel (t) {
   const idle = t.idleHint ? `發呆 ${t.idleHint} 秒才提示` : '不提示'
-  return `${t.options} 選項、${DISTRACT_LABEL[t.distract]}干擾、${idle}`
+  const sim = t.similar >= 1 ? `一定放${DISTRACT_LABEL[t.distract]}干擾` : `${Math.round(t.similar * 10)} 成機率放形似音似干擾`
+  return `${t.options} 選項、${sim}、${idle}`
 }
 
 // 兩段式確認：第一下按鈕變成確認文字，4 秒內再按一下才執行。不用瀏覽器對話框。

@@ -361,3 +361,23 @@ test('清除練習紀錄清三軌，保留家長設定', () => {
   assert.deepEqual(r.known, ['ㄅ']);
   assert.equal(r.lockTier, 1);
 });
+
+test('最低階也會常放形似或音似的干擾項（約六成），第三階起一定放', () => {
+  const partnerOf = { ㄅ: ['ㄆ'], ㄆ: ['ㄅ'], ㄉ: ['ㄊ'], ㄊ: ['ㄉ'], ㄋ: ['ㄇ', 'ㄌ'], ㄌ: ['ㄋ'] };
+  function rate (tier) {
+    let s = { ...view({ known: ['ㄅ', 'ㄆ', 'ㄉ', 'ㄊ', 'ㄋ', 'ㄌ'] }), rangeGroups: [4, 5], lockTier: tier };
+    const rng = seededRng(31);
+    let hit = 0, total = 0;
+    for (let i = 0; i < 120; i++) {
+      for (const q of buildRound(s, rng)) {
+        if (q.drill || !partnerOf[q.target]) continue;
+        total++;
+        if (partnerOf[q.target].some(p => q.options.includes(p))) hit++;
+      }
+    }
+    return hit / total;
+  }
+  const low = rate(0);
+  assert.ok(low > 0.45 && low < 0.8, `第 1 階命中率 ${low.toFixed(2)}`);
+  assert.ok(rate(2) > 0.95, `第 3 階命中率 ${rate(2).toFixed(2)}`);
+});
