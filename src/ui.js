@@ -1,6 +1,6 @@
 // 選人、首頁、結算、大人面板、舞台縮放。
 
-import { GROUPS, REP_CHAR } from './data.js'
+import { GROUPS, REP_CHAR, GROUP_NAMES } from './data.js'
 import { stars, activePool, effectiveTier, unlockedCount, lifetimeStats, dailyStats, TIERS, TRACKS, TRACK_NAMES } from './scheduler.js'
 import { dogSvg, confettiHtml, DOG_COLORS, homeBgSvg, cardArt } from './art.js'
 
@@ -130,6 +130,12 @@ export function playResult (root, earned) {
   setTimeout(() => root.querySelector('#result-actions').classList.remove('hidden'), 3000)
 }
 
+// 第 14 組起有名字（聲母組＋韻類），前面的組顯示符號本身
+function groupName (i, g) {
+  const n = GROUP_NAMES[i - 13]
+  return n ? ' ' + n + '（' + g.length + ' 字）' : ''
+}
+
 function starColor (n) {
   if (n >= 4) return 'green'
   if (n >= 2) return 'yellow'
@@ -206,7 +212,7 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
   const pool = state ? activePool(state) : []
   const groupsHtml = !state ? '' : GROUPS.map((g, gi) => `
     <div class="pgroup">
-      <div class="pgroup-title">第 ${gi + 1} 組${g.every(s => pool.includes(s)) ? '' : '（未解鎖）'}</div>
+      <div class="pgroup-title">第 ${gi + 1} 組${groupName(gi, g)}${g.every(s => pool.includes(s)) ? '' : '（未解鎖）'}</div>
       <div class="ptiles">${g.map(s => {
         const n = stars(state, s)
         const known = state.known.includes(s)
@@ -261,11 +267,11 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
           <label><input type="checkbox" id="range-auto" ${!(state.rangeGroups && state.rangeGroups.length) ? 'checked' : ''}> 範圍自動解鎖</label>
           <label class="${(state.rangeGroups && state.rangeGroups.length) ? 'dimmed' : ''}">已解鎖到第
             <select id="sel-unlocked" ${(state.rangeGroups && state.rangeGroups.length) ? 'disabled' : ''}>
-              ${GROUPS.map((g, i) => `<option value="${i + 1}" ${unlockedCount(state) === i + 1 ? 'selected' : ''}>${i + 1} 組（${g.join('')}）</option>`).join('')}
+              ${GROUPS.map((g, i) => `<option value="${i + 1}" ${unlockedCount(state) === i + 1 ? 'selected' : ''}>${i + 1} 組（${g.length > 8 ? groupName(i, g).trim() : g.join('')}）</option>`).join('')}
             </select>，之後照常自動往後解鎖
           </label>
           <span class="range-groups ${!(state.rangeGroups && state.rangeGroups.length) ? 'dimmed' : ''}">
-            ${GROUPS.map((g, i) => `<label><input type="checkbox" data-range="${i}" ${(state.rangeGroups || []).includes(i) ? 'checked' : ''}> ${g.join('')}</label>`).join('')}
+            ${GROUPS.map((g, i) => `<label><input type="checkbox" data-range="${i}" ${(state.rangeGroups || []).includes(i) ? 'checked' : ''}> ${i + 1}.${g.length > 8 ? groupName(i, g) : g.join('')}</label>`).join('')}
           </span>
         </div>
       </div>` : ''}

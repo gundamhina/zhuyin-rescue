@@ -17,10 +17,11 @@ test('22 個結合韻，每個都是兩個符號、以 ㄧㄨㄩ 開頭', () => 
   }
 });
 
-test('拼讀字：六組各 8 到 12 個，兩拼或三拼，每個部件都是合法符號，聲符開頭', () => {
+test('拼讀字：兩拼或三拼，聲符開頭，符合拼音條例，帶正確格式的調號', () => {
   assert.equal(SYLLABLES.length, GROUPS.slice(13).flat().length);
   assert.equal(new Set(SYLLABLES).size, SYLLABLES.length, '拼讀字不重複');
-  for (const g of GROUPS.slice(13)) assert.ok(g.length >= 8 && g.length <= 12, `一組 ${g.length} 個`);
+  assert.ok(SYLLABLES.length >= 200, `拼讀字只有 ${SYLLABLES.length} 個`);
+  for (const g of GROUPS.slice(13)) assert.ok(g.length >= 6 && g.length <= 40, `一組 ${g.length} 個`);
   const initials = SYMBOLS.slice(0, 21);
   for (const w of SYLLABLES) {
     const core = coreOf(w);
@@ -29,18 +30,27 @@ test('拼讀字：六組各 8 到 12 個，兩拼或三拼，每個部件都是�
     for (const ch of core) assert.ok(SYMBOLS.includes(ch), `${w} 含非法符號 ${ch}`);
     const tone = w.slice(core.length);
     assert.ok(tone === '' || (tone.length === 1 && TONE_MARKS.includes(tone)), `${w} 調號不對`);
+    // 教育部拼音條例
+    const ini = core[0], fin = core.slice(1);
+    if ('ㄅㄆㄇㄈ'.includes(ini)) assert.ok(!fin.includes('ㄜ') && !fin.startsWith('ㄩ'), `${w}：ㄅㄆㄇㄈ 不接 ㄜ、ㄩ`);
+    if (ini === 'ㄈ') assert.ok(!fin.startsWith('ㄧ'), `${w}：ㄈ 沒有齊齒`);
+    if ('ㄉㄊㄋㄌㄍㄎㄏㄓㄔㄕㄖㄗㄘㄙ'.includes(ini)) assert.ok(fin !== 'ㄛ', `${w}：這些聲母不單獨拼 ㄛ`);
+    if ('ㄐㄑㄒ'.includes(ini)) assert.ok('ㄧㄩ'.includes(fin[0]), `${w}：ㄐㄑㄒ 只接 ㄧㄩ`);
+    if ('ㄍㄎㄏㄓㄔㄕㄖㄗㄘㄙ'.includes(ini)) assert.ok(!'ㄧㄩ'.includes(fin[0]), `${w}：這些聲母沒有齊齒撮口`);
+    if ('ㄉㄊㄍㄎㄏㄓㄔㄕㄖㄗㄘㄙㄅㄆㄇㄈ'.includes(ini)) assert.ok(!fin.startsWith('ㄩ'), `${w}：只有 ㄋㄌㄐㄑㄒ 接 ㄩ`);
   }
-  // 前四組兩拼、後兩組三拼
-  for (const w of GROUPS.slice(13, 17).flat()) assert.equal(coreOf(w).length, 2, `${w} 應為兩拼`);
-  for (const w of GROUPS.slice(17).flat()) assert.equal(coreOf(w).length, 3, `${w} 應為三拼`);
+  // 兩拼組在前、三拼組在後
+  const lengths = GROUPS.slice(13).map(g => coreOf(g[0]).length);
+  const firstThree = lengths.indexOf(3);
+  assert.ok(lengths.slice(firstThree).every(n => n === 3), '三拼組要排在兩拼組後面');
   // 幾個代表字是二三四聲的要帶調號
   assert.ok(SYLLABLES.includes('ㄉㄢˋ'), '蛋是四聲');
   assert.ok(SYLLABLES.includes('ㄒㄧㄠˇ'), '小是三聲');
   assert.ok(SYLLABLES.includes('ㄇㄠ'), '貓是一聲不標');
 });
 
-test('十九組合起來是 37 符號、22 結合韻、全部拼讀字', () => {
-  assert.equal(GROUPS.length, 19);
+test('所有組合起來是 37 符號、22 結合韻、全部拼讀字', () => {
+  assert.ok(GROUPS.length >= 20);
   const flat = GROUPS.flat();
   assert.equal(flat.length, ALL_SYMBOLS.length);
   assert.deepEqual(new Set(flat), new Set(ALL_SYMBOLS));
