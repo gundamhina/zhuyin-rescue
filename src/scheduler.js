@@ -229,6 +229,34 @@ export function singleSymbolState (state) {
   return { ...state, rangeGroups: chosen }
 }
 
+function isWordGroup (g) { return g.length > 0 && g[0].includes(' ') }
+
+// 聽的玩法（釣魚、打地鼠、翻牌）不出詞：把詞的組排除。範圍全是詞就退回第一組。
+export function noWordsState (state) {
+  const groups = state.groups || GROUPS
+  const nonWord = [...groups.keys()].filter(i => !isWordGroup(groups[i]))
+  let chosen
+  if (Array.isArray(state.rangeGroups) && state.rangeGroups.length) {
+    chosen = state.rangeGroups.filter(i => nonWord.includes(i))
+  } else {
+    chosen = nonWord.filter(i => i < unlockedCount(state))
+  }
+  if (!chosen.length) chosen = [nonWord[0]]
+  return { ...state, rangeGroups: chosen }
+}
+
+// 連連看、填空只出詞：家長範圍裡有詞的組就用那些，否則全部詞的組。
+export function wordsOnlyState (state) {
+  const groups = state.groups || GROUPS
+  const wordIdx = [...groups.keys()].filter(i => isWordGroup(groups[i]))
+  let chosen = []
+  if (Array.isArray(state.rangeGroups) && state.rangeGroups.length) {
+    chosen = state.rangeGroups.filter(i => wordIdx.includes(i))
+  }
+  if (!chosen.length) chosen = wordIdx
+  return { ...state, rangeGroups: chosen }
+}
+
 // 翻牌用：從出題池挑 n 個不重複的符號，弱的優先。池子不夠就全給。
 export function pickSymbols (state, rng, n) {
   let candidates = activePool(state)

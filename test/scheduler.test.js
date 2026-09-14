@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  createState, stars, activePool, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, trackView, applyTrack, effectiveTier, lifetimeStats, dailyStats, TIERS,
+  createState, stars, activePool, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, trackView, applyTrack, effectiveTier, lifetimeStats, dailyStats, TIERS,
 } from '../src/scheduler.js';
 import { GROUPS, coreOf } from '../src/data.js';
 
@@ -449,4 +449,24 @@ test('詞的干擾項優先挑共用一個音節的，而且最多 4 個選項',
     }
   }
   assert.ok(share / total > 0.5, `共用音節比例 ${share}/${total}`);
+});
+
+test('聽的玩法不出詞：noWordsState 把詞的組排除在自動解鎖與範圍之外', () => {
+  const wordGroup = GROUPS.findIndex(g => g[0].includes(' '));
+  const all = { ...view(), unlockedUpTo: GROUPS.length };
+  const pool = activePool(noWordsState(all));
+  assert.ok(pool.length > 300, `池子 ${pool.length}`);
+  assert.ok(pool.every(s => !s.includes(' ')), '不該有詞');
+  const ranged = { ...view(), rangeGroups: [wordGroup, wordGroup + 1] };
+  assert.deepEqual(activePool(noWordsState(ranged)), GROUPS[0], '範圍全是詞就退回第一組');
+});
+
+test('讀讀看用的狀態：只留詞的組，家長沒指定就是全部詞', () => {
+  const s = wordsOnlyState(view());
+  const pool = activePool(s);
+  assert.ok(pool.length >= 60);
+  assert.ok(pool.every(w => w.includes(' ')));
+  const wordGroup = GROUPS.findIndex(g => g[0].includes(' '));
+  const ranged = wordsOnlyState({ ...view(), rangeGroups: [2, wordGroup] });
+  assert.deepEqual(activePool(ranged), GROUPS[wordGroup], '有指定就只留指定的詞組');
 });

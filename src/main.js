@@ -1,6 +1,6 @@
 // 把所有模組接起來：使用者、狀態、出題、三種玩法、畫面切換。
 
-import { buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, effectiveTier, trackView, applyTrack } from './scheduler.js'
+import { buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, activePool, effectiveTier, trackView, applyTrack } from './scheduler.js'
 import { createStore } from './store.js'
 import { createAudio } from './audio.js'
 import { createFishing } from './fishing.js'
@@ -8,13 +8,16 @@ import { createWhack } from './whack.js'
 import { createMemory } from './memory.js'
 import { createSpeak, speechAvailable, createListener, matchesSymbol, requestMic } from './speak.js'
 import { createWrite } from './write.js'
+import { createMatchLine } from './matchline.js'
+import { createFillBlank } from './fillblank.js'
 import { fitStage, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage } from './ui.js'
 import { renderCheck } from './check.js'
 
 const SETTINGS_KEY = 'zhuyin-rescue-settings'
 const MEMORY_PAIRS = 5
 // 每個玩法練哪一軌：聽（釣魚、打地鼠、翻牌）、讀（唸給狗狗聽）、寫（寫給狗狗看）
-const TRACK_OF = { fishing: 'listen', whack: 'listen', memory: 'listen', speak: 'read', write: 'write' }
+const TRACK_OF = { fishing: 'listen', whack: 'listen', memory: 'listen', speak: 'read', write: 'write', match: 'read', fill: 'read' }
+const MATCH_PAIRS = 4
 // 唸給狗狗聽的狀態訊息，寫給旁邊的大人看
 const MIC_MSG = {
   silent: '沒聽到聲音，靠近一點再唸一次',
@@ -135,6 +138,8 @@ function main () {
     showScreen('game')
     if (which === 'memory') return runMemory()
     if (which === 'speak') return runSpeak()
+    if (which === 'match') return runMatch()
+    if (which === 'fill') return runFill()
     runQuestions(which)
   }
 
@@ -186,9 +191,9 @@ function main () {
     else if (which === 'write') game = createWrite(playArea, { color: profile.color })
     else game = createFishing(playArea, { color: profile.color })
     replayBtn.classList.remove('hidden')
-    // 寫字只出單一符號；低階級描寫、高階級聽寫
+    // 寫字只出單一符號；聽的玩法不出詞
     const v = currentView()
-    round = which === 'write' ? buildRound(singleSymbolState(v), Math.random) : buildRound(v, Math.random)
+    round = which === 'write' ? buildRound(singleSymbolState(v), Math.random) : buildRound(noWordsState(v), Math.random)
     index = 0
     starTotal = round.length
     setStars()
@@ -221,7 +226,7 @@ function main () {
   }
 
   replayBtn.addEventListener('pointerdown', () => {
-    if (kind === 'memory' || kind === 'speak' || !round[index]) return
+    if (kind === 'memory' || kind === 'speak' || kind === 'match' || kind === 'fill' || !round[index]) return
     if (busy) return
     audio.say(round[index].target)
   })
@@ -361,11 +366,97 @@ function main () {
     busy = false
   }
 
+  // ---- 連連看（讀）：4 個詞配 4 張圖，記在讀那軌 ----
+  function runMatch () {
+    game = createMatchLine(playArea, { color: profile.color })
+    replayBtn.classList.add('hidden')
+    const words = pickSymbols(wordsOnlyState(currentView()), Math.random, MATCH_PAIRS)
+    starTotal = words.length
+    setStars()
+    const firstTry = {}
+    for (const w of words) firstTry[w] = true
+    busy = false
+    game.onPair(async (word, picked) => {
+      if (busy) return
+      if (word === picked) {
+        busy = true
+        if (firstTry[word]) commit({ target: word, ok: true, picked: word, ms: 0, drill: null })
+        earned.push(firstTry[word])
+        setStars()
+        audio.ding()
+        game.markCorrect(word, picked)
+        await audio.say(word) // 對答案：唸一次這個詞
+        busy = false
+        return
+      }
+      if (firstTry[word]) { commit({ target: word, ok: false, picked, ms: 0, drill: null }); firstTry[word] = false }
+      audio.wrong()
+      game.markWrong(word, picked)
+    })
+    game.onDone(finishRound)
+    game.start(words)
+  }
+
+  // ---- 填空（讀）：詞少一個音節，拖對的音節進去 ----
+  function runFill () {
+    game = createFillBlank(playArea, { color: profile.color })
+    replayBtn.classList.add('hidden')
+    const v = wordsOnlyState(currentView())
+    round = buildRound(v, Math.random)
+    index = 0
+    starTotal = round.length
+    setStars()
+    const pool = activePool(v)
+    const allSyllables = [...new Set(pool.flatMap(w => w.split(' ')))]
+    let correct = null
+    const askFill = () => {
+      const q = round[index]
+      const syls = q.target.split(' ')
+      const bi = Math.floor(Math.random() * syls.length)
+      correct = syls[bi]
+      const others = allSyllables.filter(s => s !== correct && !syls.includes(s))
+      const tiles = [correct]
+      while (tiles.length < 3 && others.length) tiles.push(others.splice(Math.floor(Math.random() * others.length), 1)[0])
+      tiles.sort(() => Math.random() - 0.5)
+      firstAttempt = true
+      busy = true
+      game.start(q, { blankIndex: bi, tiles })
+      setTimeout(() => { if (game) { game.unlock(); busy = false } }, 350)
+    }
+    game.onAnswer(async syl => {
+      if (busy) return
+      const q = round[index]
+      const myGame = game
+      if (syl === correct) {
+        busy = true
+        game.lock()
+        if (firstAttempt) commit({ target: q.target, ok: true, picked: q.target, ms: 0, drill: q.drill })
+        earned.push(firstAttempt)
+        setStars()
+        audio.ding()
+        game.fill(syl)
+        await game.celebrate()
+        if (game !== myGame) return
+        await audio.say(q.target) // 對答案
+        if (game !== myGame) return
+        index++
+        if (index >= round.length) return finishRound()
+        askFill()
+        return
+      }
+      if (firstAttempt) { commit({ target: q.target, ok: false, picked: null, ms: 0, drill: q.drill }); firstAttempt = false }
+      audio.wrong()
+      game.bounce(syl)
+      game.sad()
+    })
+    askFill()
+  }
+
   // ---- 翻牌：配對，不記進度 ----
   function runMemory () {
     game = createMemory(playArea)
     replayBtn.classList.add('hidden')
-    const symbols = pickSymbols(trackView(state, 'listen'), Math.random, MEMORY_PAIRS)
+    const symbols = pickSymbols(noWordsState(trackView(state, 'listen')), Math.random, MEMORY_PAIRS)
     starTotal = symbols.length
     setStars()
     game.onFlip(sym => { audio.flip(); audio.say(sym) })

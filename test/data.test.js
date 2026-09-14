@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { SYMBOLS, COMPOUNDS, SYLLABLES, WORDS, ALL_SYMBOLS, GROUPS, REP_CHAR, SIMILAR_SHAPE, SIMILAR_SOUND, SPEAK_ACCEPT, coreOf, TONE_MARKS } from '../src/data.js';
+import { SYMBOLS, COMPOUNDS, SYLLABLES, WORDS, WORD_ICON, ALL_SYMBOLS, GROUPS, REP_CHAR, SIMILAR_SHAPE, SIMILAR_SOUND, SPEAK_ACCEPT, coreOf, TONE_MARKS } from '../src/data.js';
 
 test('有 37 個不重複的注音符號', () => {
   assert.equal(SYMBOLS.length, 37);
@@ -114,4 +114,15 @@ test('詞：每個音節都是合法拼法（含零聲母），音節之間用�
   }
   assert.ok(WORDS.includes('ㄒㄧㄠˇ ㄍㄡˇ'), '小狗');
   assert.ok(WORDS.includes('ㄅㄚˋ ˙ㄅㄚ'), '爸爸');
+});
+
+test('每個詞都有一張圖（表情符號），同組的詞圖不重複', () => {
+  for (const w of WORDS) {
+    assert.equal(typeof WORD_ICON[w], 'string', `${w}（${REP_CHAR[w]}）沒有圖`);
+    assert.ok(WORD_ICON[w].length >= 1);
+  }
+  for (const g of GROUPS.filter(g => g[0].includes(' '))) {
+    const icons = g.map(w => WORD_ICON[w]);
+    assert.equal(new Set(icons).size, icons.length, '同組圖重複：' + g.map(w => REP_CHAR[w] + WORD_ICON[w]).join(' '));
+  }
 });

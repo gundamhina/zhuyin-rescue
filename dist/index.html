@@ -71,12 +71,10 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .who-avatar .dog { width: 74px; height: 86px; margin-bottom: -6px; }
 .who-avatar .rod { display: none; }
 .who-name { font-size: 34px; font-weight: 900; color: #2B3A4A; }
-.cards { position: absolute; left: 0; right: 0; top: 210px; display: flex; justify-content: center; align-items: flex-end; gap: 22px; }
-.card { position: relative; width: 208px; height: 278px; border-radius: 30px; background: #fff; border: 8px solid #fff; overflow: hidden; box-shadow: 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,0.22); transition: transform .12s, box-shadow .12s; }
-.card:nth-child(1) { transform: rotate(-3deg); }
-.card:nth-child(2) { transform: rotate(-1.5deg); }
-.card:nth-child(4) { transform: rotate(1.5deg); }
-.card:nth-child(5) { transform: rotate(3deg); }
+.cards { position: absolute; left: 0; right: 0; top: 130px; display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 22px 24px; padding: 0 60px; }
+.card { position: relative; width: 200px; height: 268px; border-radius: 28px; background: #fff; border: 8px solid #fff; overflow: hidden; box-shadow: 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,0.22); transition: transform .12s, box-shadow .12s; }
+.card:nth-child(odd) { transform: rotate(-1.5deg); }
+.card:nth-child(even) { transform: rotate(1.5deg); }
 .card:active { transform: translateY(10px) scale(0.98); box-shadow: 0 4px 0 #A9BFCF; }
 .card.locked .card-pic { filter: grayscale(0.9) brightness(0.9); opacity: 0.55; }
 .card-pic { width: 100%; height: 100%; border-radius: 30px; overflow: hidden; }
@@ -300,6 +298,49 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .word.w3 .compound { font-size: 0.62em; }
 .word .compound.n1 i { font-size: 0.58em; }
 .compound .tone.light { position: static; font-size: 0.5em; line-height: 0.5; }
+
+/* ---- 連連看 ---- */
+.match-dog { left: 460px; top: 560px; width: 180px; height: 208px; }
+.match-dog .dog { width: 180px; height: 208px; }
+.match-dog .dog-slot .art-slot { width: 180px; height: 208px; }
+.lines { position: absolute; left: 0; top: 0; pointer-events: none; }
+.lines line { stroke-width: 10; stroke-linecap: round; }
+.lines .live { stroke: #4A6FA5; opacity: 0; }
+.lines .live.show { opacity: 0.8; }
+.lines .ok { stroke: #6B9E6B; }
+.lines .bad { stroke: #C8553D; }
+.match-words, .match-pics { position: absolute; top: 0; }
+.mword { position: absolute; left: 30px; width: 300px; height: 160px; border-radius: 24px; background: #FFFDF7; border: 8px solid #B08A63; box-shadow: 0 8px 0 #8E6D4C; display: flex; align-items: center; justify-content: center; cursor: grab; touch-action: none; }
+.mword span { font-size: 100px; font-weight: 900; color: #2B3A4A; line-height: 1; pointer-events: none; }
+/* 連連看的卡片夠高，音節不必縮進單一符號的高度，讓字大一點 */
+.mword .word.w3 .compound { font-size: 0.8em; }
+.mword .compound.n3 i { font-size: 0.5em; }
+.mword .compound .tone.light { font-size: 0.4em; line-height: 0.6; }
+.mword.picked { box-shadow: 0 0 0 10px rgba(74,111,165,0.5), 0 8px 0 #8E6D4C; }
+.mword.matched { opacity: 0.55; border-color: #6B9E6B; box-shadow: 0 8px 0 #4E7A4E; cursor: default; }
+.mpic { position: absolute; left: 760px; width: 130px; height: 130px; border-radius: 24px; background: #FFFDF7; border: 8px solid #F6F3E6; box-shadow: 0 8px 0 #A9BFCF; display: flex; align-items: center; justify-content: center; }
+.mpic span { font-size: 80px; line-height: 1; pointer-events: none; }
+.mpic.matched { opacity: 0.55; border-color: #6B9E6B; }
+.mpic.shake { animation: shake .45s ease-in-out; }
+
+/* ---- 填空 ---- */
+.fill-dog { left: 10px; top: 440px; width: 220px; height: 254px; }
+.fill-dog .dog { width: 220px; height: 254px; }
+.fill-dog .dog-slot .art-slot { width: 220px; height: 254px; }
+.fill-pic { position: absolute; left: 120px; top: 120px; width: 240px; height: 240px; border-radius: 40px; background: #FFFDF7; border: 8px solid #F6F3E6; box-shadow: 0 10px 0 #A9BFCF; display: flex; align-items: center; justify-content: center; }
+.fill-pic span { font-size: 150px; line-height: 1; }
+.fill-sign { left: 420px; top: 90px; width: 700px; }
+.fill-sign .sign-board { width: 700px; height: 300px; }
+.fill-sign .sign-board span.fill-word { font-size: 150px; }
+.fill-sign .sign-post { height: 40px; }
+.blank { display: inline-block; width: 0.75em; height: 1.05em; border: 6px dashed #E0955B; border-radius: 14px; vertical-align: middle; background: rgba(224,149,91,0.08); }
+.tiles { position: absolute; inset: 0; pointer-events: none; }
+.tile { position: absolute; width: 160px; height: 160px; border-radius: 28px; background: #FFF3B0; border: 8px solid #F6F3E6; box-shadow: 0 10px 0 #D9AA1B; display: flex; align-items: center; justify-content: center; pointer-events: auto; touch-action: none; cursor: grab; }
+.tile span { font-size: 100px; font-weight: 900; color: #2B3A4A; line-height: 1; pointer-events: none; }
+.tile.dragging { z-index: 6; box-shadow: 0 16px 20px rgba(0,0,0,0.25); transform: scale(1.06); cursor: grabbing; }
+.tile.returning { transition: left .3s ease-out, top .3s ease-out; }
+.tile.shake { animation: shake .45s ease-in-out; }
+.tile.gone { opacity: 0; transition: opacity .3s; pointer-events: none; }
 
 </style>
 </head>
@@ -698,7 +739,7 @@ const WORD_GROUPS = [
   { name: '家人', items: ['ㄅㄚˋ ˙ㄅㄚ', 'ㄇㄚ ˙ㄇㄚ', 'ㄍㄜ ˙ㄍㄜ', 'ㄐㄧㄝˇ ˙ㄐㄧㄝ', 'ㄉㄧˋ ˙ㄉㄧ', 'ㄇㄟˋ ˙ㄇㄟ', 'ㄧㄝˊ ˙ㄧㄝ', 'ㄋㄞˇ ˙ㄋㄞ', 'ㄚ ㄧˊ', 'ㄕㄨˊ ˙ㄕㄨ'] },
   { name: '動物', items: ['ㄒㄧㄠˇ ㄍㄡˇ', 'ㄒㄧㄠˇ ㄇㄠ', 'ㄒㄧㄠˇ ㄋㄧㄠˇ', 'ㄒㄧㄠˇ ㄩˊ', 'ㄌㄠˇ ㄏㄨˇ', 'ㄕ ˙ㄗ', 'ㄉㄚˋ ㄒㄧㄤˋ', 'ㄊㄨˋ ˙ㄗ', 'ㄏㄡˊ ˙ㄗ', 'ㄒㄩㄥˊ ㄇㄠ', 'ㄑㄧㄥ ㄨㄚ', 'ㄏㄨˊ ㄉㄧㄝˊ'] },
   { name: '食物', items: ['ㄆㄧㄥˊ ㄍㄨㄛˇ', 'ㄒㄧㄤ ㄐㄧㄠ', 'ㄒㄧ ㄍㄨㄚ', 'ㄇㄧㄢˋ ㄅㄠ', 'ㄋㄧㄡˊ ㄋㄞˇ', 'ㄐㄧ ㄉㄢˋ', 'ㄅㄧㄥˇ ㄍㄢ', 'ㄊㄤˊ ㄍㄨㄛˇ', 'ㄉㄢˋ ㄍㄠ', 'ㄇㄧˇ ㄈㄢˋ', 'ㄕㄨㄟˇ ㄍㄨㄛˇ', 'ㄘㄠˇ ㄇㄟˊ'] },
-  { name: '身體', items: ['ㄧㄢˇ ˙ㄐㄧㄥ', 'ㄅㄧˊ ˙ㄗ', 'ㄦˇ ˙ㄉㄨㄛ', 'ㄗㄨㄟˇ ˙ㄅㄚ', 'ㄊㄡˊ ˙ㄈㄚ', 'ㄉㄨˋ ˙ㄗ', 'ㄕㄡˇ ㄓˇ', 'ㄐㄧㄠˇ ㄧㄚ'] },
+  { name: '身體', items: ['ㄧㄢˇ ˙ㄐㄧㄥ', 'ㄅㄧˊ ˙ㄗ', 'ㄦˇ ˙ㄉㄨㄛ', 'ㄗㄨㄟˇ ˙ㄅㄚ', 'ㄊㄡˊ ˙ㄈㄚ', 'ㄧㄚˊ ˙ㄔ', 'ㄕㄡˇ ㄓˇ', 'ㄐㄧㄠˇ ㄧㄚ'] },
   { name: '顏色', items: ['ㄏㄨㄥˊ ㄙㄜˋ', 'ㄏㄨㄤˊ ㄙㄜˋ', 'ㄌㄢˊ ㄙㄜˋ', 'ㄌㄩˋ ㄙㄜˋ', 'ㄅㄞˊ ㄙㄜˋ', 'ㄏㄟ ㄙㄜˋ', 'ㄈㄣˇ ㄏㄨㄥˊ', 'ㄗˇ ㄙㄜˋ'] },
   { name: '生活', items: ['ㄔ ㄈㄢˋ', 'ㄕㄨㄟˋ ㄐㄧㄠˋ', 'ㄒㄧˇ ㄗㄠˇ', 'ㄕㄨㄚ ㄧㄚˊ', 'ㄕㄤˋ ㄒㄩㄝˊ', 'ㄨㄢˊ ㄐㄩˋ', 'ㄕㄨ ㄅㄠ', 'ㄒㄩㄝˊ ㄒㄧㄠˋ', 'ㄌㄠˇ ㄕ', 'ㄆㄥˊ ˙ㄧㄡ', 'ㄊㄞˋ ˙ㄧㄤ', 'ㄩㄝˋ ˙ㄌㄧㄤ', 'ㄒㄧㄚˋ ㄩˇ', 'ㄒㄧㄥ ˙ㄒㄧㄥ'] },
   { name: '三個字', items: ['ㄅㄧㄥ ㄑㄧˊ ㄌㄧㄣˊ', 'ㄑㄧㄠˇ ㄎㄜˋ ㄌㄧˋ', 'ㄧㄡˋ ㄦˊ ㄩㄢˊ', 'ㄐㄧㄠˇ ㄊㄚˋ ㄔㄜ', 'ㄒㄧˇ ㄧ ㄐㄧ', 'ㄉㄧㄢˋ ㄕˋ ㄐㄧ', 'ㄒㄧㄠˇ ㄅㄞˊ ㄊㄨˋ', 'ㄉㄚˋ ㄧㄝˇ ㄌㄤˊ', 'ㄒㄧㄠˇ ㄑㄧˋ ㄔㄜ', 'ㄌㄧㄡ ㄏㄨㄚˊ ㄊㄧ'] },
@@ -745,7 +786,7 @@ const WORD_TEXT = {
   'ㄦˇ ˙ㄉㄨㄛ': '耳朵',
   'ㄗㄨㄟˇ ˙ㄅㄚ': '嘴巴',
   'ㄊㄡˊ ˙ㄈㄚ': '頭髮',
-  'ㄉㄨˋ ˙ㄗ': '肚子',
+  'ㄧㄚˊ ˙ㄔ': '牙齒',
   'ㄕㄡˇ ㄓˇ': '手指',
   'ㄐㄧㄠˇ ㄧㄚ': '腳丫',
   'ㄏㄨㄥˊ ㄙㄜˋ': '紅色',
@@ -780,6 +821,84 @@ const WORD_TEXT = {
   'ㄉㄚˋ ㄧㄝˇ ㄌㄤˊ': '大野狼',
   'ㄒㄧㄠˇ ㄑㄧˋ ㄔㄜ': '小汽車',
   'ㄌㄧㄡ ㄏㄨㄚˊ ㄊㄧ': '溜滑梯',
+}
+
+// 每個詞的圖（表情符號），連連看與填空用
+const WORD_ICON = {
+  'ㄅㄚˋ ˙ㄅㄚ': '👨',
+  'ㄇㄚ ˙ㄇㄚ': '👩',
+  'ㄍㄜ ˙ㄍㄜ': '👦',
+  'ㄐㄧㄝˇ ˙ㄐㄧㄝ': '👧',
+  'ㄉㄧˋ ˙ㄉㄧ': '🧒',
+  'ㄇㄟˋ ˙ㄇㄟ': '👶',
+  'ㄧㄝˊ ˙ㄧㄝ': '👴',
+  'ㄋㄞˇ ˙ㄋㄞ': '👵',
+  'ㄚ ㄧˊ': '👱‍♀️',
+  'ㄕㄨˊ ˙ㄕㄨ': '🧔',
+  'ㄒㄧㄠˇ ㄍㄡˇ': '🐶',
+  'ㄒㄧㄠˇ ㄇㄠ': '🐱',
+  'ㄒㄧㄠˇ ㄋㄧㄠˇ': '🐦',
+  'ㄒㄧㄠˇ ㄩˊ': '🐟',
+  'ㄌㄠˇ ㄏㄨˇ': '🐯',
+  'ㄕ ˙ㄗ': '🦁',
+  'ㄉㄚˋ ㄒㄧㄤˋ': '🐘',
+  'ㄊㄨˋ ˙ㄗ': '🐰',
+  'ㄏㄡˊ ˙ㄗ': '🐵',
+  'ㄒㄩㄥˊ ㄇㄠ': '🐼',
+  'ㄑㄧㄥ ㄨㄚ': '🐸',
+  'ㄏㄨˊ ㄉㄧㄝˊ': '🦋',
+  'ㄆㄧㄥˊ ㄍㄨㄛˇ': '🍎',
+  'ㄒㄧㄤ ㄐㄧㄠ': '🍌',
+  'ㄒㄧ ㄍㄨㄚ': '🍉',
+  'ㄇㄧㄢˋ ㄅㄠ': '🍞',
+  'ㄋㄧㄡˊ ㄋㄞˇ': '🥛',
+  'ㄐㄧ ㄉㄢˋ': '🥚',
+  'ㄅㄧㄥˇ ㄍㄢ': '🍪',
+  'ㄊㄤˊ ㄍㄨㄛˇ': '🍬',
+  'ㄉㄢˋ ㄍㄠ': '🍰',
+  'ㄇㄧˇ ㄈㄢˋ': '🍚',
+  'ㄕㄨㄟˇ ㄍㄨㄛˇ': '🍇',
+  'ㄘㄠˇ ㄇㄟˊ': '🍓',
+  'ㄧㄢˇ ˙ㄐㄧㄥ': '👀',
+  'ㄅㄧˊ ˙ㄗ': '👃',
+  'ㄦˇ ˙ㄉㄨㄛ': '👂',
+  'ㄗㄨㄟˇ ˙ㄅㄚ': '👄',
+  'ㄊㄡˊ ˙ㄈㄚ': '💇',
+  'ㄧㄚˊ ˙ㄔ': '🦷',
+  'ㄕㄡˇ ㄓˇ': '☝️',
+  'ㄐㄧㄠˇ ㄧㄚ': '🦶',
+  'ㄏㄨㄥˊ ㄙㄜˋ': '🟥',
+  'ㄏㄨㄤˊ ㄙㄜˋ': '🟨',
+  'ㄌㄢˊ ㄙㄜˋ': '🟦',
+  'ㄌㄩˋ ㄙㄜˋ': '🟩',
+  'ㄅㄞˊ ㄙㄜˋ': '⬜',
+  'ㄏㄟ ㄙㄜˋ': '⬛',
+  'ㄈㄣˇ ㄏㄨㄥˊ': '🌸',
+  'ㄗˇ ㄙㄜˋ': '🟪',
+  'ㄔ ㄈㄢˋ': '🍽️',
+  'ㄕㄨㄟˋ ㄐㄧㄠˋ': '😴',
+  'ㄒㄧˇ ㄗㄠˇ': '🛁',
+  'ㄕㄨㄚ ㄧㄚˊ': '🪥',
+  'ㄕㄤˋ ㄒㄩㄝˊ': '🚌',
+  'ㄨㄢˊ ㄐㄩˋ': '🧸',
+  'ㄕㄨ ㄅㄠ': '🎒',
+  'ㄒㄩㄝˊ ㄒㄧㄠˋ': '🏫',
+  'ㄌㄠˇ ㄕ': '👩‍🏫',
+  'ㄆㄥˊ ˙ㄧㄡ': '👫',
+  'ㄊㄞˋ ˙ㄧㄤ': '☀️',
+  'ㄩㄝˋ ˙ㄌㄧㄤ': '🌙',
+  'ㄒㄧㄚˋ ㄩˇ': '🌧️',
+  'ㄒㄧㄥ ˙ㄒㄧㄥ': '⭐',
+  'ㄅㄧㄥ ㄑㄧˊ ㄌㄧㄣˊ': '🍦',
+  'ㄑㄧㄠˇ ㄎㄜˋ ㄌㄧˋ': '🍫',
+  'ㄧㄡˋ ㄦˊ ㄩㄢˊ': '🏫',
+  'ㄐㄧㄠˇ ㄊㄚˋ ㄔㄜ': '🚲',
+  'ㄒㄧˇ ㄧ ㄐㄧ': '🧺',
+  'ㄉㄧㄢˋ ㄕˋ ㄐㄧ': '📺',
+  'ㄒㄧㄠˇ ㄅㄞˊ ㄊㄨˋ': '🐇',
+  'ㄉㄚˋ ㄧㄝˇ ㄌㄤˊ': '🐺',
+  'ㄒㄧㄠˇ ㄑㄧˋ ㄔㄜ': '🚗',
+  'ㄌㄧㄡ ㄏㄨㄚˊ ㄊㄧ': '🎢',
 }
 
 // ===== data.js =====
@@ -1127,6 +1246,34 @@ function singleSymbolState (state) {
     chosen = singles.filter(i => i < unlockedCount(state))
   }
   if (!chosen.length) chosen = [singles[0]]
+  return { ...state, rangeGroups: chosen }
+}
+
+function isWordGroup (g) { return g.length > 0 && g[0].includes(' ') }
+
+// 聽的玩法（釣魚、打地鼠、翻牌）不出詞：把詞的組排除。範圍全是詞就退回第一組。
+function noWordsState (state) {
+  const groups = state.groups || GROUPS
+  const nonWord = [...groups.keys()].filter(i => !isWordGroup(groups[i]))
+  let chosen
+  if (Array.isArray(state.rangeGroups) && state.rangeGroups.length) {
+    chosen = state.rangeGroups.filter(i => nonWord.includes(i))
+  } else {
+    chosen = nonWord.filter(i => i < unlockedCount(state))
+  }
+  if (!chosen.length) chosen = [nonWord[0]]
+  return { ...state, rangeGroups: chosen }
+}
+
+// 連連看、填空只出詞：家長範圍裡有詞的組就用那些，否則全部詞的組。
+function wordsOnlyState (state) {
+  const groups = state.groups || GROUPS
+  const wordIdx = [...groups.keys()].filter(i => isWordGroup(groups[i]))
+  let chosen = []
+  if (Array.isArray(state.rangeGroups) && state.rangeGroups.length) {
+    chosen = state.rangeGroups.filter(i => wordIdx.includes(i))
+  }
+  if (!chosen.length) chosen = wordIdx
   return { ...state, rangeGroups: chosen }
 }
 
@@ -1757,6 +1904,35 @@ function cardArt (kind) {
   <path d="M120 120 q10 60 -4 120 q40 -6 62 -30" fill="none" stroke="#2B3A4A" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
   <rect x="200" y="290" width="26" height="90" rx="8" fill="#E0955B" transform="rotate(-30 213 335)"/>
   <polygon points="188,372 200,395 210,380" fill="#2B3A4A" transform="rotate(-30 213 335)"/>
+</svg>`
+  }
+  if (kind === 'match') {
+    return `<img class="art-slot" src="img/card-match.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="400" fill="#DCEBF2"/>
+  <rect x="30" y="70" width="100" height="70" rx="14" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <rect x="30" y="230" width="100" height="70" rx="14" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <text x="80" y="118" text-anchor="middle" font-size="40" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄒㄍ</text>
+  <text x="80" y="278" text-anchor="middle" font-size="40" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄒㄇ</text>
+  <line x1="130" y1="105" x2="200" y2="265" stroke="#6B9E6B" stroke-width="8" stroke-linecap="round"/>
+  <line x1="130" y1="265" x2="200" y2="105" stroke="#6B9E6B" stroke-width="8" stroke-linecap="round"/>
+  <text x="240" y="130" text-anchor="middle" font-size="60">\u{1F431}</text>
+  <text x="240" y="290" text-anchor="middle" font-size="60">\u{1F436}</text>
+</svg>`
+  }
+  if (kind === 'fill') {
+    return `<img class="art-slot" src="img/card-fill.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="400" fill="#F3E4C2"/>
+  <text x="70" y="150" text-anchor="middle" font-size="80">\u{1F34E}</text>
+  <rect x="130" y="60" width="140" height="130" rx="18" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <text x="165" y="140" text-anchor="middle" font-size="44" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄆ</text>
+  <rect x="200" y="90" width="50" height="70" rx="10" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="10 8"/>
+  <rect x="60" y="260" width="70" height="70" rx="14" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <rect x="170" y="260" width="70" height="70" rx="14" fill="#FFF3B0" stroke="#E0955B" stroke-width="6"/>
+  <text x="95" y="310" text-anchor="middle" font-size="40" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄍ</text>
+  <text x="205" y="310" text-anchor="middle" font-size="40" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄨ</text>
+  <path d="M215 250 q10 -40 10 -70" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="6 6"/>
 </svg>`
   }
   if (kind === 'speak') {
@@ -2626,6 +2802,281 @@ function createWrite (root, { color = 0 } = {}) {
   return { start, unlock, lock, hint, shake, celebrate, sad, onAnswer, destroy }
 }
 
+// ===== matchline.js =====
+// 連連看。左邊 4 個詞的注音，右邊 4 張圖打亂，從詞拉線到圖。對了線留著，錯了線消失。
+// 介面：start(words)、onPair(fn(word, pickedWord))、markCorrect(word, pickedWord)、markWrong(word, pickedWord)、onDone(fn)、destroy。
+
+
+const LEFT_X = 330 // 詞卡右緣（線的起點）
+const RIGHT_X = 760 // 圖卡左緣（線的終點）
+const ROW_Y = [120, 290, 460, 630]
+
+function shuffleWords (arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+function createMatchLine (root, { color = 0 } = {}) {
+  root.innerHTML = homeBgSvg() +
+    '<div class="dog-wrap match-dog">' + dogSvg(color) + '</div>' +
+    '<svg class="lines" viewBox="0 0 1200 800" width="1200" height="800" xmlns="http://www.w3.org/2000/svg"><g class="done"></g><line class="live" x1="0" y1="0" x2="0" y2="0"/></svg>' +
+    '<div class="match-words"></div><div class="match-pics"></div>'
+  const dogWrap = root.querySelector('.match-dog')
+  const wordsEl = root.querySelector('.match-words')
+  const picsEl = root.querySelector('.match-pics')
+  const doneG = root.querySelector('.lines .done')
+  const live = root.querySelector('.lines .live')
+  let pairFn = null
+  let doneFn = null
+  let remaining = 0
+  let drag = null // { word, x0, y0 }
+  let selected = null // 點一下詞再點一下圖也可以
+
+  function stageScale () { return document.getElementById('stage').getBoundingClientRect().width / 1200 }
+  function stagePoint (e) {
+    const r = document.getElementById('stage').getBoundingClientRect()
+    const s = stageScale()
+    return [(e.clientX - r.left) / s, (e.clientY - r.top) / s]
+  }
+  function anchorOfWord (word) {
+    const i = [...wordsEl.children].findIndex(c => c.dataset.symbol === word)
+    return [LEFT_X, ROW_Y[i]]
+  }
+  function anchorOfPic (word) {
+    const i = [...picsEl.children].findIndex(c => c.dataset.symbol === word)
+    return [RIGHT_X, ROW_Y[i]]
+  }
+
+  wordsEl.addEventListener('pointerdown', e => {
+    const card = e.target.closest('.mword')
+    if (!card || card.classList.contains('matched')) return
+    wordsEl.querySelectorAll('.mword').forEach(c => c.classList.remove('picked'))
+    card.classList.add('picked')
+    selected = card.dataset.symbol
+    const [x0, y0] = anchorOfWord(selected)
+    drag = { word: selected, x0, y0 }
+    live.setAttribute('x1', x0); live.setAttribute('y1', y0)
+    live.setAttribute('x2', x0); live.setAttribute('y2', y0)
+    live.classList.add('show')
+    try { card.setPointerCapture(e.pointerId) } catch (err) { /* 不給鎖也能拉 */ }
+  })
+  root.addEventListener('pointermove', e => {
+    if (!drag) return
+    const [x, y] = stagePoint(e)
+    live.setAttribute('x2', x); live.setAttribute('y2', y)
+  })
+  function endDrag (e) {
+    if (!drag) return
+    const el = document.elementFromPoint(e.clientX, e.clientY)
+    const pic = el && el.closest('.mpic')
+    live.classList.remove('show')
+    const word = drag.word
+    drag = null
+    if (pic && !pic.classList.contains('matched') && pairFn) {
+      selected = null
+      wordsEl.querySelectorAll('.mword').forEach(c => c.classList.remove('picked'))
+      pairFn(word, pic.dataset.symbol)
+    }
+    // 沒拉到圖：保留選取，讓她點圖也行
+  }
+  root.addEventListener('pointerup', endDrag)
+  root.addEventListener('pointercancel', endDrag)
+  picsEl.addEventListener('pointerdown', e => {
+    const pic = e.target.closest('.mpic')
+    if (!pic || pic.classList.contains('matched') || !selected || drag || !pairFn) return
+    const word = selected
+    selected = null
+    wordsEl.querySelectorAll('.mword').forEach(c => c.classList.remove('picked'))
+    pairFn(word, pic.dataset.symbol)
+  })
+
+  function start (words) {
+    remaining = words.length
+    selected = null
+    drag = null
+    doneG.innerHTML = ''
+    wordsEl.innerHTML = words.map((w, i) => `
+      <div class="mword" data-symbol="${w}" style="top:${ROW_Y[i] - 80}px"><span>${symbolMarkup(w)}</span></div>`).join('')
+    picsEl.innerHTML = shuffleWords(words).map((w, i) => `
+      <div class="mpic" data-symbol="${w}" style="top:${ROW_Y[i] - 65}px"><span>${WORD_ICON[w] || '❓'}</span></div>`).join('')
+  }
+
+  function drawLine (word, pickedWord, cls) {
+    const [x1, y1] = anchorOfWord(word)
+    const [x2, y2] = anchorOfPic(pickedWord)
+    const l = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+    l.setAttribute('x1', x1); l.setAttribute('y1', y1); l.setAttribute('x2', x2); l.setAttribute('y2', y2)
+    l.setAttribute('class', cls)
+    doneG.appendChild(l)
+    return l
+  }
+  function markCorrect (word, pickedWord) {
+    drawLine(word, pickedWord, 'ok')
+    const w = wordsEl.querySelector(`.mword[data-symbol="${word}"]`)
+    const p = picsEl.querySelector(`.mpic[data-symbol="${pickedWord}"]`)
+    if (w) w.classList.add('matched')
+    if (p) p.classList.add('matched')
+    dogWrap.classList.remove('jump')
+    void dogWrap.offsetWidth
+    dogWrap.classList.add('jump')
+    remaining--
+    if (remaining === 0 && doneFn) setTimeout(doneFn, 900)
+  }
+  function markWrong (word, pickedWord) {
+    const l = drawLine(word, pickedWord, 'bad')
+    setTimeout(() => l.remove(), 700)
+    const p = picsEl.querySelector(`.mpic[data-symbol="${pickedWord}"]`)
+    if (p) { p.classList.remove('shake'); void p.offsetWidth; p.classList.add('shake') }
+    dogWrap.classList.remove('tilt')
+    void dogWrap.offsetWidth
+    dogWrap.classList.add('tilt')
+  }
+
+  return {
+    start,
+    onPair (fn) { pairFn = fn },
+    onDone (fn) { doneFn = fn },
+    markCorrect,
+    markWrong,
+    destroy () { root.innerHTML = ''; pairFn = doneFn = null },
+  }
+}
+
+// ===== fillblank.js =====
+// 填空。左邊一張圖，牌子上詞的注音少一個音節（空格），下面幾塊音節，拖對的進空格（點一下也行）。
+// 介面：start(q, { blankIndex, tiles })、lock/unlock、onAnswer(fn(syllable))、fill()、bounce(syllable)、celebrate、sad、destroy。
+
+
+const TILE_SLOTS = { 2: [[480, 660], [760, 660]], 3: [[380, 660], [620, 660], [860, 660]], 4: [[300, 660], [500, 660], [700, 660], [900, 660]] }
+
+function createFillBlank (root, { color = 0 } = {}) {
+  root.innerHTML = homeBgSvg() +
+    '<div class="dog-wrap fill-dog">' + dogSvg(color) + '</div>' +
+    '<div class="fill-pic"><span></span></div>' +
+    '<div class="sign fill-sign"><div class="sign-board"><span class="fill-word"></span></div><div class="sign-post"></div></div>' +
+    '<div class="tiles"></div>'
+  const dogWrap = root.querySelector('.fill-dog')
+  const picEl = root.querySelector('.fill-pic span')
+  const signEl = root.querySelector('.fill-sign')
+  const wordEl = root.querySelector('.fill-word')
+  const tilesEl = root.querySelector('.tiles')
+  let handler = null
+  let locked = true
+  let current = null
+  let blankIndex = 0
+  let drag = null
+
+  function stageScale () { return document.getElementById('stage').getBoundingClientRect().width / 1200 }
+
+  function renderWord (filled = null) {
+    const syls = current.target.split(' ')
+    wordEl.innerHTML = `<span class="word w${syls.length}">${syls.map((s, i) => i === blankIndex
+      ? (filled ? symbolMarkup(filled) : '<span class="blank"></span>')
+      : symbolMarkup(s)).join('')}</span>`
+  }
+
+  tilesEl.addEventListener('pointerdown', e => {
+    const t = e.target.closest('.tile')
+    if (!t || locked) return
+    drag = { t, startX: e.clientX, startY: e.clientY, ox: parseFloat(t.style.left), oy: parseFloat(t.style.top), moved: false }
+    t.classList.add('dragging')
+    try { t.setPointerCapture(e.pointerId) } catch (err) { /* 不給鎖也能拖 */ }
+  })
+  tilesEl.addEventListener('pointermove', e => {
+    if (!drag) return
+    const s = stageScale()
+    const dx = (e.clientX - drag.startX) / s
+    const dy = (e.clientY - drag.startY) / s
+    if (Math.abs(dx) + Math.abs(dy) > 6) drag.moved = true
+    drag.t.style.left = (drag.ox + dx) + 'px'
+    drag.t.style.top = (drag.oy + dy) + 'px'
+  })
+  function endDrag (e) {
+    if (!drag) return
+    const { t, ox, oy, moved } = drag
+    drag = null
+    t.classList.remove('dragging')
+    // 放到空格上（或沒拖動、點一下）都算選這塊
+    const blank = wordEl.querySelector('.blank')
+    let hit = !moved
+    if (moved && blank) {
+      const b = blank.getBoundingClientRect()
+      const pad = 60 * stageScale()
+      hit = e.clientX > b.left - pad && e.clientX < b.right + pad && e.clientY > b.top - pad && e.clientY < b.bottom + pad
+    }
+    if (hit && handler) { handler(t.dataset.syllable, t); return }
+    t.classList.add('returning')
+    t.style.left = ox + 'px'
+    t.style.top = oy + 'px'
+    setTimeout(() => t.classList.remove('returning'), 350)
+  }
+  tilesEl.addEventListener('pointerup', endDrag)
+  tilesEl.addEventListener('pointercancel', endDrag)
+
+  function start (question, { blankIndex: bi, tiles }) {
+    current = question
+    blankIndex = bi
+    locked = true
+    picEl.textContent = WORD_ICON[question.target] || '❓'
+    signEl.classList.remove('glow')
+    renderWord()
+    const slots = TILE_SLOTS[tiles.length] || TILE_SLOTS[3]
+    tilesEl.innerHTML = ''
+    tiles.forEach((syl, i) => {
+      const [x, y] = slots[i]
+      const t = document.createElement('div')
+      t.className = 'tile'
+      t.dataset.syllable = syl
+      t.style.left = (x - 80) + 'px'
+      t.style.top = (y - 80) + 'px'
+      t.innerHTML = `<span>${symbolMarkup(syl)}</span>`
+      tilesEl.appendChild(t)
+    })
+  }
+  function tileOf (syl) { return tilesEl.querySelector(`.tile[data-syllable="${syl}"]`) }
+  function unlock () { locked = false }
+  function lock () { locked = true }
+  // 對了：音節填進空格，那塊磁磚消失
+  function fill (syl) {
+    renderWord(syl)
+    const t = tileOf(syl)
+    if (t) t.classList.add('gone')
+  }
+  // 錯了：彈回原位晃一下
+  function bounce (syl) {
+    const t = tileOf(syl)
+    if (!t) return
+    const i = [...tilesEl.children].indexOf(t)
+    const slots = TILE_SLOTS[tilesEl.children.length] || TILE_SLOTS[3]
+    t.classList.add('returning')
+    t.style.left = (slots[i][0] - 80) + 'px'
+    t.style.top = (slots[i][1] - 80) + 'px'
+    setTimeout(() => { t.classList.remove('returning', 'shake'); void t.offsetWidth; t.classList.add('shake') }, 300)
+  }
+  function celebrate () {
+    return new Promise(resolve => {
+      signEl.classList.add('glow')
+      dogWrap.classList.remove('jump')
+      void dogWrap.offsetWidth
+      dogWrap.classList.add('jump')
+      setTimeout(resolve, 700)
+    })
+  }
+  function sad () {
+    dogWrap.classList.remove('tilt')
+    void dogWrap.offsetWidth
+    dogWrap.classList.add('tilt')
+  }
+  function onAnswer (fn) { handler = fn }
+  function destroy () { root.innerHTML = ''; handler = null }
+
+  return { start, unlock, lock, fill, bounce, celebrate, sad, onAnswer, destroy }
+}
+
 // ===== ui.js =====
 // 選人、首頁、結算、大人面板、舞台縮放。
 
@@ -2716,6 +3167,12 @@ function renderHome (root, { profile, speech = true }) {
       </button>
       <button class="card" data-game="memory" aria-label="翻牌">
         <div class="card-pic">${cardArt('memory')}</div>
+      </button>
+      <button class="card" data-game="match" aria-label="連連看">
+        <div class="card-pic">${cardArt('match')}</div>
+      </button>
+      <button class="card" data-game="fill" aria-label="填空">
+        <div class="card-pic">${cardArt('fill')}</div>
       </button>
       <button class="card" data-game="write" aria-label="寫給狗狗看">
         <div class="card-pic">${cardArt('write')}</div>
@@ -3130,7 +3587,8 @@ function renderCheck (root, { audio, settings, onSettings, onClose }) {
 const SETTINGS_KEY = 'zhuyin-rescue-settings'
 const MEMORY_PAIRS = 5
 // 每個玩法練哪一軌：聽（釣魚、打地鼠、翻牌）、讀（唸給狗狗聽）、寫（寫給狗狗看）
-const TRACK_OF = { fishing: 'listen', whack: 'listen', memory: 'listen', speak: 'read', write: 'write' }
+const TRACK_OF = { fishing: 'listen', whack: 'listen', memory: 'listen', speak: 'read', write: 'write', match: 'read', fill: 'read' }
+const MATCH_PAIRS = 4
 // 唸給狗狗聽的狀態訊息，寫給旁邊的大人看
 const MIC_MSG = {
   silent: '沒聽到聲音，靠近一點再唸一次',
@@ -3251,6 +3709,8 @@ function main () {
     showScreen('game')
     if (which === 'memory') return runMemory()
     if (which === 'speak') return runSpeak()
+    if (which === 'match') return runMatch()
+    if (which === 'fill') return runFill()
     runQuestions(which)
   }
 
@@ -3302,9 +3762,9 @@ function main () {
     else if (which === 'write') game = createWrite(playArea, { color: profile.color })
     else game = createFishing(playArea, { color: profile.color })
     replayBtn.classList.remove('hidden')
-    // 寫字只出單一符號；低階級描寫、高階級聽寫
+    // 寫字只出單一符號；聽的玩法不出詞
     const v = currentView()
-    round = which === 'write' ? buildRound(singleSymbolState(v), Math.random) : buildRound(v, Math.random)
+    round = which === 'write' ? buildRound(singleSymbolState(v), Math.random) : buildRound(noWordsState(v), Math.random)
     index = 0
     starTotal = round.length
     setStars()
@@ -3337,7 +3797,7 @@ function main () {
   }
 
   replayBtn.addEventListener('pointerdown', () => {
-    if (kind === 'memory' || kind === 'speak' || !round[index]) return
+    if (kind === 'memory' || kind === 'speak' || kind === 'match' || kind === 'fill' || !round[index]) return
     if (busy) return
     audio.say(round[index].target)
   })
@@ -3477,11 +3937,97 @@ function main () {
     busy = false
   }
 
+  // ---- 連連看（讀）：4 個詞配 4 張圖，記在讀那軌 ----
+  function runMatch () {
+    game = createMatchLine(playArea, { color: profile.color })
+    replayBtn.classList.add('hidden')
+    const words = pickSymbols(wordsOnlyState(currentView()), Math.random, MATCH_PAIRS)
+    starTotal = words.length
+    setStars()
+    const firstTry = {}
+    for (const w of words) firstTry[w] = true
+    busy = false
+    game.onPair(async (word, picked) => {
+      if (busy) return
+      if (word === picked) {
+        busy = true
+        if (firstTry[word]) commit({ target: word, ok: true, picked: word, ms: 0, drill: null })
+        earned.push(firstTry[word])
+        setStars()
+        audio.ding()
+        game.markCorrect(word, picked)
+        await audio.say(word) // 對答案：唸一次這個詞
+        busy = false
+        return
+      }
+      if (firstTry[word]) { commit({ target: word, ok: false, picked, ms: 0, drill: null }); firstTry[word] = false }
+      audio.wrong()
+      game.markWrong(word, picked)
+    })
+    game.onDone(finishRound)
+    game.start(words)
+  }
+
+  // ---- 填空（讀）：詞少一個音節，拖對的音節進去 ----
+  function runFill () {
+    game = createFillBlank(playArea, { color: profile.color })
+    replayBtn.classList.add('hidden')
+    const v = wordsOnlyState(currentView())
+    round = buildRound(v, Math.random)
+    index = 0
+    starTotal = round.length
+    setStars()
+    const pool = activePool(v)
+    const allSyllables = [...new Set(pool.flatMap(w => w.split(' ')))]
+    let correct = null
+    const askFill = () => {
+      const q = round[index]
+      const syls = q.target.split(' ')
+      const bi = Math.floor(Math.random() * syls.length)
+      correct = syls[bi]
+      const others = allSyllables.filter(s => s !== correct && !syls.includes(s))
+      const tiles = [correct]
+      while (tiles.length < 3 && others.length) tiles.push(others.splice(Math.floor(Math.random() * others.length), 1)[0])
+      tiles.sort(() => Math.random() - 0.5)
+      firstAttempt = true
+      busy = true
+      game.start(q, { blankIndex: bi, tiles })
+      setTimeout(() => { if (game) { game.unlock(); busy = false } }, 350)
+    }
+    game.onAnswer(async syl => {
+      if (busy) return
+      const q = round[index]
+      const myGame = game
+      if (syl === correct) {
+        busy = true
+        game.lock()
+        if (firstAttempt) commit({ target: q.target, ok: true, picked: q.target, ms: 0, drill: q.drill })
+        earned.push(firstAttempt)
+        setStars()
+        audio.ding()
+        game.fill(syl)
+        await game.celebrate()
+        if (game !== myGame) return
+        await audio.say(q.target) // 對答案
+        if (game !== myGame) return
+        index++
+        if (index >= round.length) return finishRound()
+        askFill()
+        return
+      }
+      if (firstAttempt) { commit({ target: q.target, ok: false, picked: null, ms: 0, drill: q.drill }); firstAttempt = false }
+      audio.wrong()
+      game.bounce(syl)
+      game.sad()
+    })
+    askFill()
+  }
+
   // ---- 翻牌：配對，不記進度 ----
   function runMemory () {
     game = createMemory(playArea)
     replayBtn.classList.add('hidden')
-    const symbols = pickSymbols(trackView(state, 'listen'), Math.random, MEMORY_PAIRS)
+    const symbols = pickSymbols(noWordsState(trackView(state, 'listen')), Math.random, MEMORY_PAIRS)
     starTotal = symbols.length
     setStars()
     game.onFlip(sym => { audio.flip(); audio.say(sym) })

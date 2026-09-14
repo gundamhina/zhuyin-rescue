@@ -256,6 +256,35 @@ export function cardArt (kind) {
   <polygon points="188,372 200,395 210,380" fill="#2B3A4A" transform="rotate(-30 213 335)"/>
 </svg>`
   }
+  if (kind === 'match') {
+    return `<img class="art-slot" src="img/card-match.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="400" fill="#DCEBF2"/>
+  <rect x="30" y="70" width="100" height="70" rx="14" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <rect x="30" y="230" width="100" height="70" rx="14" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <text x="80" y="118" text-anchor="middle" font-size="40" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄒㄍ</text>
+  <text x="80" y="278" text-anchor="middle" font-size="40" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄒㄇ</text>
+  <line x1="130" y1="105" x2="200" y2="265" stroke="#6B9E6B" stroke-width="8" stroke-linecap="round"/>
+  <line x1="130" y1="265" x2="200" y2="105" stroke="#6B9E6B" stroke-width="8" stroke-linecap="round"/>
+  <text x="240" y="130" text-anchor="middle" font-size="60">\u{1F431}</text>
+  <text x="240" y="290" text-anchor="middle" font-size="60">\u{1F436}</text>
+</svg>`
+  }
+  if (kind === 'fill') {
+    return `<img class="art-slot" src="img/card-fill.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="400" fill="#F3E4C2"/>
+  <text x="70" y="150" text-anchor="middle" font-size="80">\u{1F34E}</text>
+  <rect x="130" y="60" width="140" height="130" rx="18" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <text x="165" y="140" text-anchor="middle" font-size="44" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄆ</text>
+  <rect x="200" y="90" width="50" height="70" rx="10" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="10 8"/>
+  <rect x="60" y="260" width="70" height="70" rx="14" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <rect x="170" y="260" width="70" height="70" rx="14" fill="#FFF3B0" stroke="#E0955B" stroke-width="6"/>
+  <text x="95" y="310" text-anchor="middle" font-size="40" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄍ</text>
+  <text x="205" y="310" text-anchor="middle" font-size="40" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄨ</text>
+  <path d="M215 250 q10 -40 10 -70" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="6 6"/>
+</svg>`
+  }
   if (kind === 'speak') {
     return `<img class="art-slot" src="img/card-speak.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">

@@ -64,12 +64,10 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .who-avatar .dog { width: 74px; height: 86px; margin-bottom: -6px; }
 .who-avatar .rod { display: none; }
 .who-name { font-size: 34px; font-weight: 900; color: #2B3A4A; }
-.cards { position: absolute; left: 0; right: 0; top: 210px; display: flex; justify-content: center; align-items: flex-end; gap: 22px; }
-.card { position: relative; width: 208px; height: 278px; border-radius: 30px; background: #fff; border: 8px solid #fff; overflow: hidden; box-shadow: 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,0.22); transition: transform .12s, box-shadow .12s; }
-.card:nth-child(1) { transform: rotate(-3deg); }
-.card:nth-child(2) { transform: rotate(-1.5deg); }
-.card:nth-child(4) { transform: rotate(1.5deg); }
-.card:nth-child(5) { transform: rotate(3deg); }
+.cards { position: absolute; left: 0; right: 0; top: 130px; display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 22px 24px; padding: 0 60px; }
+.card { position: relative; width: 200px; height: 268px; border-radius: 28px; background: #fff; border: 8px solid #fff; overflow: hidden; box-shadow: 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,0.22); transition: transform .12s, box-shadow .12s; }
+.card:nth-child(odd) { transform: rotate(-1.5deg); }
+.card:nth-child(even) { transform: rotate(1.5deg); }
 .card:active { transform: translateY(10px) scale(0.98); box-shadow: 0 4px 0 #A9BFCF; }
 .card.locked .card-pic { filter: grayscale(0.9) brightness(0.9); opacity: 0.55; }
 .card-pic { width: 100%; height: 100%; border-radius: 30px; overflow: hidden; }
@@ -293,3 +291,46 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .word.w3 .compound { font-size: 0.62em; }
 .word .compound.n1 i { font-size: 0.58em; }
 .compound .tone.light { position: static; font-size: 0.5em; line-height: 0.5; }
+
+/* ---- 連連看 ---- */
+.match-dog { left: 460px; top: 560px; width: 180px; height: 208px; }
+.match-dog .dog { width: 180px; height: 208px; }
+.match-dog .dog-slot .art-slot { width: 180px; height: 208px; }
+.lines { position: absolute; left: 0; top: 0; pointer-events: none; }
+.lines line { stroke-width: 10; stroke-linecap: round; }
+.lines .live { stroke: #4A6FA5; opacity: 0; }
+.lines .live.show { opacity: 0.8; }
+.lines .ok { stroke: #6B9E6B; }
+.lines .bad { stroke: #C8553D; }
+.match-words, .match-pics { position: absolute; top: 0; }
+.mword { position: absolute; left: 30px; width: 300px; height: 160px; border-radius: 24px; background: #FFFDF7; border: 8px solid #B08A63; box-shadow: 0 8px 0 #8E6D4C; display: flex; align-items: center; justify-content: center; cursor: grab; touch-action: none; }
+.mword span { font-size: 100px; font-weight: 900; color: #2B3A4A; line-height: 1; pointer-events: none; }
+/* 連連看的卡片夠高，音節不必縮進單一符號的高度，讓字大一點 */
+.mword .word.w3 .compound { font-size: 0.8em; }
+.mword .compound.n3 i { font-size: 0.5em; }
+.mword .compound .tone.light { font-size: 0.4em; line-height: 0.6; }
+.mword.picked { box-shadow: 0 0 0 10px rgba(74,111,165,0.5), 0 8px 0 #8E6D4C; }
+.mword.matched { opacity: 0.55; border-color: #6B9E6B; box-shadow: 0 8px 0 #4E7A4E; cursor: default; }
+.mpic { position: absolute; left: 760px; width: 130px; height: 130px; border-radius: 24px; background: #FFFDF7; border: 8px solid #F6F3E6; box-shadow: 0 8px 0 #A9BFCF; display: flex; align-items: center; justify-content: center; }
+.mpic span { font-size: 80px; line-height: 1; pointer-events: none; }
+.mpic.matched { opacity: 0.55; border-color: #6B9E6B; }
+.mpic.shake { animation: shake .45s ease-in-out; }
+
+/* ---- 填空 ---- */
+.fill-dog { left: 10px; top: 440px; width: 220px; height: 254px; }
+.fill-dog .dog { width: 220px; height: 254px; }
+.fill-dog .dog-slot .art-slot { width: 220px; height: 254px; }
+.fill-pic { position: absolute; left: 120px; top: 120px; width: 240px; height: 240px; border-radius: 40px; background: #FFFDF7; border: 8px solid #F6F3E6; box-shadow: 0 10px 0 #A9BFCF; display: flex; align-items: center; justify-content: center; }
+.fill-pic span { font-size: 150px; line-height: 1; }
+.fill-sign { left: 420px; top: 90px; width: 700px; }
+.fill-sign .sign-board { width: 700px; height: 300px; }
+.fill-sign .sign-board span.fill-word { font-size: 150px; }
+.fill-sign .sign-post { height: 40px; }
+.blank { display: inline-block; width: 0.75em; height: 1.05em; border: 6px dashed #E0955B; border-radius: 14px; vertical-align: middle; background: rgba(224,149,91,0.08); }
+.tiles { position: absolute; inset: 0; pointer-events: none; }
+.tile { position: absolute; width: 160px; height: 160px; border-radius: 28px; background: #FFF3B0; border: 8px solid #F6F3E6; box-shadow: 0 10px 0 #D9AA1B; display: flex; align-items: center; justify-content: center; pointer-events: auto; touch-action: none; cursor: grab; }
+.tile span { font-size: 100px; font-weight: 900; color: #2B3A4A; line-height: 1; pointer-events: none; }
+.tile.dragging { z-index: 6; box-shadow: 0 16px 20px rgba(0,0,0,0.25); transform: scale(1.06); cursor: grabbing; }
+.tile.returning { transition: left .3s ease-out, top .3s ease-out; }
+.tile.shake { animation: shake .45s ease-in-out; }
+.tile.gone { opacity: 0; transition: opacity .3s; pointer-events: none; }
