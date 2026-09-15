@@ -388,8 +388,8 @@ svg.syl text { font-weight: 900; fill: currentColor; text-anchor: middle; domina
 .bones-pill.big .bone-ic svg { width: 72px; height: 36px; }
 .bone-float { position: absolute; left: 50%; top: -10px; transform: translateX(-50%); color: #E0955B; font-size: 40px; font-weight: 900; text-shadow: 0 2px 0 #fff; animation: boneFloat 1.2s ease-out forwards; }
 @keyframes boneFloat { 0% { opacity: 0; transform: translate(-50%, 10px) scale(0.6); } 20% { opacity: 1; transform: translate(-50%, -10px) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -70px) scale(1); } }
-.shop-btn { position: absolute; left: 26px; top: 122px; display: flex; align-items: center; gap: 10px; background: #FFF3B0; border-radius: 40px; padding: 8px 24px 8px 14px; box-shadow: 0 6px 0 #D9AA1B; font-size: 30px; font-weight: 900; color: #2B3A4A; }
-.shop-btn:active { transform: translateY(4px); box-shadow: none; }
+.shop-btn { position: absolute; left: 50%; top: 20px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; background: #FFF3B0; border-radius: 40px; padding: 8px 24px 8px 14px; box-shadow: 0 6px 0 #D9AA1B; font-size: 30px; font-weight: 900; color: #2B3A4A; }
+.shop-btn:active { transform: translate(-50%, 4px); box-shadow: none; }
 .shop-btn .bone-ic svg { width: 52px; height: 26px; }
 .shop-btn .shop-word { font-size: 22px; color: #8E6D4C; }
 .result-bones { position: absolute; left: 0; right: 0; top: 250px; text-align: center; font-size: 56px; font-weight: 900; color: #2B3A4A; opacity: 0; transform: scale(0.6); transition: opacity .4s, transform .4s cubic-bezier(.3,1.5,.5,1); }
@@ -397,7 +397,6 @@ svg.syl text { font-weight: 900; fill: currentColor; text-anchor: middle; domina
 .result-bones .bone-ic svg { width: 90px; height: 45px; }
 .result-bones small { font-size: 28px; color: #5A6B85; font-weight: 700; }
 #stage.portrait .result-bones { top: 300px; }
-#stage.portrait .shop-btn { top: 122px; }
 
 /* ---- 狗狗配件：疊在狗狗圖上，跟狗狗同一個 260×300 框 ---- */
 .dog-slot .dog-acc, .has-art > svg.dog-acc { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; visibility: visible; }
