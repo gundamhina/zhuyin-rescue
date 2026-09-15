@@ -11,7 +11,7 @@ import { createWrite } from './write.js'
 import { createMatchLine } from './matchline.js'
 import { createFillBlank } from './fillblank.js'
 import { renderShop } from './shop.js'
-import { setOutfit, boneSvg } from './art.js'
+import { setOutfit, boneSvg, ownedMates } from './art.js'
 import { fitStage, layoutBg, goFullscreenOnPhone, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage } from './ui.js'
 import { renderCheck } from './check.js'
 
@@ -89,7 +89,7 @@ function main () {
   // ---- 首頁 ----
   function goHome () {
     destroyGame()
-    renderHome(homeEl, { profile, speech: speechAvailable(), bones: state.bones })
+    renderHome(homeEl, { profile, speech: speechAvailable(), bones: state.bones, mates: ownedMates(state) })
     homeEl.querySelector('#btn-who').addEventListener('pointerdown', goProfiles)
     homeEl.querySelector('#btn-shop').addEventListener('pointerdown', () => { audio.unlock(); openShop() })
     homeEl.querySelectorAll('[data-game]').forEach(card => {
@@ -101,11 +101,14 @@ function main () {
 
   // ---- 狗狗商店 ----
   const shopEl = document.getElementById('screen-shop')
+  let shopTab = 'acc'
   function openShop () {
     destroyGame()
     renderShop(shopEl, {
       profile,
       state,
+      tab: shopTab,
+      onTab (t) { shopTab = t; openShop() },
       onBuy (item) {
         const next = buyItem(state, item)
         if (next.owned.length === (state.owned || []).length) return
@@ -238,7 +241,7 @@ function main () {
   function finishRound () {
     destroyGame()
     gain(3) // 玩完一局的獎勵
-    renderResult(resultEl, profile.color, { roundBones, bones: state.bones })
+    renderResult(resultEl, profile.color, { roundBones, bones: state.bones, mates: ownedMates(state) })
     resultEl.querySelector('#btn-again').addEventListener('pointerdown', () => startGame(kind))
     resultEl.querySelector('#btn-home').addEventListener('pointerdown', goHome)
     showScreen('result')

@@ -162,7 +162,7 @@ export function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
 }
 
 // 首頁：目前使用者的狗狗、三張玩法卡
-export function renderHome (root, { profile, speech = true, bones = 0 }) {
+export function renderHome (root, { profile, speech = true, bones = 0, mates = [] }) {
   root.innerHTML = `
     ${bgHtml('home')}
     <button class="who" id="btn-who" aria-label="換人">
@@ -193,16 +193,17 @@ export function renderHome (root, { profile, speech = true, bones = 0 }) {
         <div class="card-pic">${cardArt('speak')}</div>
       </button>
     </div>
+    <div class="mates home-mates">${mates.map(c => `<div class="mate">${dogSvg(c, { mate: true })}</div>`).join('')}</div>
     <button class="gear" id="btn-gear" aria-label="大人面板">${GEAR_SVG}</button>`
   mountBgs(root)
 }
 
-export function renderResult (root, color = 0, { roundBones = 0, bones = 0 } = {}) {
+export function renderResult (root, color = 0, { roundBones = 0, bones = 0, mates = [] } = {}) {
   root.innerHTML = `
     ${bgHtml('home')}
     <div class="result-burst"></div>
     <div class="confetti-wrap">${confettiHtml()}</div>
-    <div class="result-dogs">${dogSvg(color)}${dogSvg((color + 1) % 6)}${dogSvg((color + 2) % 6)}</div>
+    <div class="result-dogs ${mates.length >= 3 ? 'many' : ''}">${dogSvg(color)}${mates.map(c => dogSvg(c, { mate: true })).join('')}</div>
     <div class="result-stars">${'<span class="star">★</span>'.repeat(5)}</div>
     <div class="result-bones" id="result-bones"><span class="bone-ic">${boneSvg()}</span> +${roundBones}　<small>共 ${bones}</small></div>
     <div class="result-actions hidden" id="result-actions">

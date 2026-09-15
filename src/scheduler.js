@@ -63,7 +63,10 @@ export function addBones (state, n) {
 export function buyItem (state, item) {
   const s = withWallet(state)
   if (s.owned.includes(item.id) || s.bones < item.price) return s
-  return { ...s, bones: s.bones - item.price, owned: [...s.owned, item.id], worn: { ...s.worn, [item.slot]: item.id } }
+  const next = { ...s, bones: s.bones - item.price, owned: [...s.owned, item.id] }
+  // 配件買了自動戴上；隊員這種沒有部位的，買了就是回家了
+  if (item.slot) next.worn = { ...s.worn, [item.slot]: item.id }
+  return next
 }
 // 戴上（id）或脫掉（null）某個部位的配件；沒買過的不能戴
 export function wearItem (state, slot, id) {

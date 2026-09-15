@@ -91,9 +91,10 @@ function grassTuft (x, y, color) {
 }
 
 // 救援狗。viewBox 260×300，原點在左上。color 是 DOG_COLORS 的索引。
-export function dogSvg (color = 0) {
+export function dogSvg (color = 0, { mate = false } = {}) {
   const c = DOG_COLORS[color % DOG_COLORS.length]
-  return `<span class="dog-slot">${accessoryLayer(color)}<img class="art-slot" src="img/dog-${color % DOG_COLORS.length}.png" width="260" height="300" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+  const band = mate ? `<svg class="dog-acc front" viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg"><path d="M72 150 Q120 178 168 152 Q170 170 164 180 Q120 204 76 174 Z" fill="${c.main}" stroke="${c.dark}" stroke-width="4"/></svg>` : ''
+  return `<span class="dog-slot">${accessoryLayer(color)}${band}<img class="art-slot" src="img/dog-${color % DOG_COLORS.length}.png" width="260" height="300" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg class="dog" viewBox="0 0 260 300" width="260" height="300" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <radialGradient id="fur${color}" cx="0.4" cy="0.35" r="0.75">
@@ -395,11 +396,25 @@ export const ACCESSORIES = [
   { id: 'shades', name: '太陽眼鏡', slot: 'face', price: 15, box: [60, 80, 120, 60],
     svg: `<g><rect x="70" y="94" width="44" height="28" rx="10" fill="#2B3A4A"/><rect x="128" y="94" width="44" height="28" rx="10" fill="#2B3A4A"/><path d="M114 104 Q121 98 128 104" stroke="#2B3A4A" stroke-width="4" fill="none"/><path d="M78 100 L92 100" stroke="rgba(255,255,255,0.6)" stroke-width="3" stroke-linecap="round"/><path d="M136 100 L150 100" stroke="rgba(255,255,255,0.6)" stroke-width="3" stroke-linecap="round"/></g>` },
   { id: 'bowtie', name: '領結', slot: 'neck', price: 8, box: [80, 135, 80, 60],
-    svg: `<g transform="translate(120 164)"><path d="M0 0 L-24 -13 L-22 13 Z M0 0 L24 -13 L22 13 Z" fill="#C8553D"/><circle r="5" fill="#96402D"/></g>` },
+    svg: `<g transform="translate(120 164)"><path d="M0 0 L-24 -13 L-22 13 Z M0 0 L24 -13 L22 13 Z" fill="#34507A"/><circle r="5" fill="#1B2B4B"/></g>` },
   { id: 'scarf', name: '藍圍巾', slot: 'neck', price: 12, box: [50, 135, 130, 90],
     svg: `<g><path d="M72 150 Q120 178 168 152 Q170 168 166 176 Q120 200 74 170 Z" fill="#4A6FA5"/><path d="M78 168 Q64 190 70 216 L92 214 Q90 190 100 178 Z" fill="#34507A"/><path d="M72 208 L92 206" stroke="#E8C86A" stroke-width="4"/></g>` },
   { id: 'necklace', name: '星星項鍊', slot: 'neck', price: 10, box: [75, 140, 90, 60],
     svg: `<g><path d="M84 150 Q120 190 156 150" fill="none" stroke="#E8C86A" stroke-width="3"/><path d="M120 168 l5 10 11 1-8 8 2 11-10-6-10 6 2-11-8-8 11-1z" fill="#E8C86A" stroke="#B99A44" stroke-width="1.5"/></g>` },
+  { id: 'ears', name: '兔耳朵', slot: 'head', price: 18, box: [60, 0, 120, 90],
+    svg: `<g transform="translate(118 58)"><g transform="rotate(-14)"><ellipse cx="-20" cy="-30" rx="11" ry="34" fill="#FFFDF7" stroke="#B08A63" stroke-width="3"/><ellipse cx="-20" cy="-30" rx="5" ry="24" fill="#E39AA8"/></g><g transform="rotate(14)"><ellipse cx="20" cy="-30" rx="11" ry="34" fill="#FFFDF7" stroke="#B08A63" stroke-width="3"/><ellipse cx="20" cy="-30" rx="5" ry="24" fill="#E39AA8"/></g></g>` },
+  { id: 'cowboy', name: '牛仔帽', slot: 'head', price: 28, box: [40, 20, 150, 80],
+    svg: `<g transform="translate(115 62)"><ellipse rx="66" ry="17" fill="#B07242"/><path d="M-34 0 q-3 -34 8 -40 q26 10 52 0 q11 6 8 40 z" fill="#E0955B" stroke="#B07242" stroke-width="3"/><path d="M-34 -6 q34 10 68 0" stroke="#8E6D4C" stroke-width="8" fill="none"/></g>` },
+  { id: 'heartglass', name: '愛心眼鏡', slot: 'face', price: 22, box: [55, 78, 130, 62],
+    svg: `<g fill="#E39AA8" stroke="#C8553D" stroke-width="3"><path d="M92 120 q-20 -14 -20 -24 a10 10 0 0 1 20 -6 a10 10 0 0 1 20 6 q0 10 -20 24z"/><path d="M150 120 q-20 -14 -20 -24 a10 10 0 0 1 20 -6 a10 10 0 0 1 20 6 q0 10 -20 24z"/></g>` },
+  { id: 'medal', name: '金牌', slot: 'neck', price: 30, box: [80, 140, 90, 90],
+    svg: `<g><path d="M104 152 L120 196 L136 152" fill="none" stroke="#C8553D" stroke-width="9"/><circle cx="120" cy="208" r="19" fill="#E8C86A" stroke="#B99A44" stroke-width="3"/><path d="M120 197 l4 8 9 1-7 6 2 9-8-5-8 5 2-9-7-6 9-1z" fill="#B99A44"/></g>` },
+  { id: 'backpack', name: '小背包', slot: 'back', price: 25, box: [-30, 145, 120, 130],
+    svg: `<g><rect x="-24" y="162" width="92" height="100" rx="26" fill="#6B9E6B" stroke="#4E7A4E" stroke-width="4"/><rect x="-10" y="202" width="62" height="36" rx="12" fill="#4E7A4E"/><path d="M-2 162 q22 -24 44 0" fill="none" stroke="#4E7A4E" stroke-width="7"/></g>` },
+  { id: 'cape', name: '英雄披風', slot: 'back', price: 35, box: [-20, 140, 300, 195],
+    svg: `<g><path d="M84 150 q36 24 72 0 l96 172 q-132 42 -264 0z" fill="#C8553D" stroke="#96402D" stroke-width="4"/><path d="M118 158 l-18 156 M146 158 l18 156" stroke="#96402D" stroke-width="3" opacity="0.45" fill="none"/></g>` },
+  { id: 'wings', name: '小翅膀', slot: 'back', price: 55, box: [-30, 85, 320, 160],
+    svg: `<g fill="#EAF2F8" stroke="#8FB3C9" stroke-width="4"><path d="M100 165 q-96 -72 -114 -8 q-14 54 34 64 q46 10 80 -28z"/><path d="M160 165 q96 -72 114 -8 q14 54 -34 64 q-46 10 -80 -28z"/></g>` },
 ]
 
 // 目前這位小孩的狗狗顏色和穿戴；main.js 選人、買東西、換裝時更新。dogSvg 畫到同色的狗才加配件。
@@ -409,10 +424,36 @@ function accessoryLayer (color) {
   if (color !== OUTFIT.color) return ''
   const items = ACCESSORIES.filter(a => OUTFIT.worn[a.slot] === a.id)
   if (!items.length) return ''
-  return `<svg class="dog-acc" viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg">${items.map(a => a.svg).join('')}</svg>`
+  const layer = (cls, list) => list.length
+    ? `<svg class="dog-acc ${cls}" viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg">${list.map(a => a.svg).join('')}</svg>`
+    : ''
+  // 背包、披風、翅膀畫在狗狗後面，其他畫在前面
+  return layer('back', items.filter(a => a.slot === 'back')) + layer('front', items.filter(a => a.slot !== 'back'))
 }
 // 商店卡片用：只裁配件那一塊
 export function accessoryIcon (item) {
   const [x, y, w, h] = item.box
   return `<svg viewBox="${x} ${y} ${w} ${h}" xmlns="http://www.w3.org/2000/svg">${item.svg}</svg>`
+}
+
+
+// ---- 救援隊員：另外五隻狗狗，一隻一隻買回家 ----
+export const DOG_NAMES = ['警察狗', '消防狗', '飛行狗', '回收狗', '工程狗', '鬆餅狗']
+const MATE_PRICES = [60, 80, 110, 140, 180]
+
+// 她自己那隻本來就有，商店賣其他五隻；越後面越貴
+export function teammatesFor (ownColor) {
+  const own = ownColor % DOG_COLORS.length
+  return DOG_COLORS.map((c, i) => i).filter(i => i !== own)
+    .map((i, k) => ({ id: 'mate-' + i, kind: 'mate', color: i, name: DOG_NAMES[i], price: MATE_PRICES[k] }))
+}
+// 已經買回家的隊員（回傳狗狗顏色）
+export function ownedMates (state) {
+  return (state.owned || []).filter(id => id.startsWith('mate-')).map(id => parseInt(id.slice(5), 10))
+}
+
+// 商店分頁的圖示：配件（蝴蝶結）、隊員（狗掌）
+export const TAB_ICONS = {
+  acc: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M11 12 3 7v10zm2 0 8-5v10zm-1-2a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg>',
+  mate: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><ellipse cx="12" cy="16" rx="6" ry="5"/><circle cx="5" cy="10" r="2.6"/><circle cx="9.5" cy="6.5" r="2.6"/><circle cx="14.5" cy="6.5" r="2.6"/><circle cx="19" cy="10" r="2.6"/></svg>',
 }

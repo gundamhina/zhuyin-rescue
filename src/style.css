@@ -126,8 +126,14 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
   background: repeating-conic-gradient(rgba(255,253,247,0.22) 0 8deg, rgba(255,255,255,0) 8deg 20deg); animation: spin 40s linear infinite; }
 .result-dogs { position: absolute; left: 0; right: 0; top: 330px; display: flex; justify-content: center; gap: 30px; }
 .result-dogs .dog { animation: bounce 1s ease-in-out infinite; filter: drop-shadow(0 8px 0 rgba(0,0,0,0.12)); }
-.result-dogs .dog:nth-child(2) { animation-delay: .2s; }
-.result-dogs .dog:nth-child(3) { animation-delay: .4s; }
+.result-dogs .dog-slot:nth-child(2) .dog { animation-delay: .2s; }
+.result-dogs .dog-slot:nth-child(3) .dog { animation-delay: .4s; }
+.result-dogs .dog-slot:nth-child(4) .dog { animation-delay: .6s; }
+.result-dogs .dog-slot:nth-child(5) .dog { animation-delay: .8s; }
+.result-dogs .dog-slot:nth-child(6) .dog { animation-delay: 1s; }
+/* 隊員多了就縮小，六隻也排得下 */
+.result-dogs.many { gap: 14px; }
+.result-dogs.many .dog-slot, .result-dogs.many .dog, .result-dogs.many .art-slot { width: 180px; height: 208px; }
 .result-dogs .rod { display: none; }
 @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-40px); } }
 .result-stars { position: absolute; left: 0; right: 0; top: 110px; display: flex; justify-content: center; gap: 22px; }
@@ -400,20 +406,24 @@ svg.syl text { font-weight: 900; fill: currentColor; text-anchor: middle; domina
 
 /* ---- 狗狗配件：疊在狗狗圖上，跟狗狗同一個 260×300 框 ---- */
 .dog-slot .dog-acc, .has-art > svg.dog-acc { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; visibility: visible; }
+.dog-slot .dog-acc.back { z-index: 0; } /* 背包、披風、翅膀在狗狗後面 */
+.dog-slot .dog-acc { overflow: visible; } /* 披風、翅膀畫到框外才露得出來 */
+.dog-slot .art-slot { z-index: 1; }
+.dog-slot > svg.dog { position: relative; z-index: 1; }
 
 /* ---- 狗狗商店 ---- */
 .shop-close { position: absolute; left: 30px; top: 20px; }
-.shop-dog { left: 40px; top: 190px; width: 360px; height: 415px; }
-.shop-dog .dog, .shop-dog .dog-slot .art-slot { width: 360px; height: 415px; }
-.shop-grid { position: absolute; left: 430px; top: 120px; width: 740px; display: flex; flex-wrap: wrap; gap: 18px; align-content: flex-start; }
-.item-card { width: 170px; height: 180px; border-radius: 22px; background: #FFFDF7; border: 6px solid #fff; box-shadow: 0 8px 0 #A9BFCF; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 8px 12px; }
+.shop-dog { left: 20px; top: 300px; width: 300px; height: 346px; }
+.shop-dog .dog, .shop-dog .dog-slot .art-slot { width: 300px; height: 346px; }
+.shop-grid { position: absolute; left: 360px; top: 112px; width: 820px; display: flex; flex-wrap: wrap; gap: 12px 17px; align-content: flex-start; }
+.item-card { width: 150px; height: 150px; border-radius: 22px; background: #FFFDF7; border: 6px solid #fff; box-shadow: 0 8px 0 #A9BFCF; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 8px 12px; }
 .item-card.owned { border-color: #6B9E6B; }
 .item-card.worn { box-shadow: 0 0 0 8px rgba(232,200,106,0.7), 0 8px 0 #A9BFCF; }
-.item-pic { width: 120px; height: 90px; display: flex; align-items: center; justify-content: center; }
+.item-pic { width: 104px; height: 74px; display: flex; align-items: center; justify-content: center; }
 .item-pic svg { width: 100%; height: 100%; }
 .item-name { font-size: 22px; font-weight: 900; color: #2B3A4A; text-align: center; line-height: 1.1; }
 .item-name small { display: block; font-size: 15px; color: #8E6D4C; font-weight: 700; }
-.item-btn { min-width: 120px; height: 52px; padding: 4px 14px; border-radius: 14px; font-size: 26px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.item-btn { min-width: 110px; height: 46px; padding: 2px 12px; border-radius: 14px; font-size: 26px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .item-btn .bone { width: 40px; height: 20px; }
 .item-btn svg:not(.bone) { width: 34px; height: 34px; }
 .item-btn.buy { background: #FFF3B0; color: #2B3A4A; box-shadow: 0 5px 0 #D9AA1B; }
@@ -426,3 +436,35 @@ svg.syl text { font-weight: 900; fill: currentColor; text-anchor: middle; domina
 #stage.portrait .shop-dog .dog, #stage.portrait .shop-dog .dog-slot .art-slot { width: 240px; height: 277px; }
 #stage.portrait .bones-pill.big { left: auto; right: 20px; transform: none; top: 20px; }
 #stage.portrait .shop-grid { left: 30px; top: 400px; width: 740px; }
+
+/* ---- 救援隊員：買回家的狗狗站在首頁草地上 ---- */
+.mates { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 6px; pointer-events: none; }
+.mate { width: 120px; height: 138px; }
+.mate .dog, .mate .dog-slot .art-slot { width: 120px; height: 138px; }
+.mate .dog { animation: mateBob 3.2s ease-in-out infinite; }
+.mate:nth-child(even) .dog { animation-delay: .8s; }
+.mate:nth-child(3n) .dog { animation-delay: 1.6s; }
+@keyframes mateBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+#stage.portrait .mates { bottom: 40px; }
+#stage.portrait .mate { width: 150px; height: 173px; }
+#stage.portrait .mate .dog, #stage.portrait .mate .dog-slot .art-slot { width: 150px; height: 173px; }
+#stage.portrait .result-dogs.many .dog-slot, #stage.portrait .result-dogs.many .dog, #stage.portrait .result-dogs.many .art-slot { width: 130px; height: 150px; }
+#stage.portrait .result-dogs { flex-wrap: wrap; }
+
+/* ---- 商店分頁 ---- */
+.shop-frame .bones-pill.big { left: auto; right: 30px; transform: none; } /* 商店的骨頭數靠右，讓出分頁的位置 */
+.shop-tabs { position: absolute; left: 360px; top: 20px; display: flex; gap: 12px; }
+.shop-tab { width: 86px; height: 62px; border-radius: 18px; background: rgba(255,253,247,0.8); box-shadow: 0 5px 0 #A9BFCF; font-size: 34px; color: #8E6D4C; display: flex; align-items: center; justify-content: center; }
+.shop-tab.on { background: #FFF3B0; color: #2B3A4A; box-shadow: 0 5px 0 #D9AA1B; }
+.shop-tab:active { transform: translateY(4px); box-shadow: none; }
+.shop-grid.mates-tab .item-card { width: 200px; height: 230px; }
+.mate-pic { width: 150px; height: 173px; }
+.mate-pic .dog, .mate-pic .dog-slot .art-slot { width: 150px; height: 173px; }
+.shop-grid.mates-tab .item-pic { width: 150px; height: 173px; }
+.item-btn.home-ok { background: #6B9E6B; color: #fff; box-shadow: 0 5px 0 #4E7A4E; cursor: default; }
+.shop-team { position: absolute; left: 0; bottom: 0; width: 430px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; pointer-events: none; }
+.shop-team .mate { width: 92px; height: 106px; }
+.shop-team .mate .dog, .shop-team .mate .dog-slot .art-slot { width: 92px; height: 106px; }
+#stage.portrait .shop-tabs { left: 300px; top: 130px; flex-direction: column; }
+#stage.portrait .shop-grid { left: 30px; top: 390px; width: 740px; }
+#stage.portrait .shop-team { width: 800px; bottom: 0; }
