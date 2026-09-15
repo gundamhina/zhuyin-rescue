@@ -367,8 +367,16 @@ export function confettiHtml (count = 44) {
 
 
 // ---- 骨頭（積分）與狗狗配件 ----
+// 骨頭：兩端各兩個圓、中間一根桿。先畫一層粗描邊、再疊一層填色，外框才會連成一圈
 export function boneSvg () {
-  return `<svg class="bone" viewBox="0 0 40 20" width="1.6em" height="0.8em" xmlns="http://www.w3.org/2000/svg"><path d="M8 3a4 4 0 0 1 4 4h16a4 4 0 1 1 4 6 4 4 0 1 1-4 4H12a4 4 0 1 1-4-6 4 4 0 0 1 0-8z" fill="#FFFDF7" stroke="#B08A63" stroke-width="2" stroke-linejoin="round"/></svg>`
+  const shape = '<circle cx="8" cy="6.5" r="5"/><circle cx="8" cy="13.5" r="5"/><circle cx="32" cy="6.5" r="5"/><circle cx="32" cy="13.5" r="5"/><rect x="8" y="7" width="24" height="6" rx="3"/>'
+  return `<svg class="bone" viewBox="0 0 40 20" width="1.6em" height="0.8em" xmlns="http://www.w3.org/2000/svg"><g fill="#B08A63" stroke="#B08A63" stroke-width="3.5" stroke-linejoin="round">${shape}</g><g fill="#FFFDF7">${shape}</g></svg>`
+}
+// 商店按鈕用的圖：打勾（戴上／確定買）、叉叉（脫掉）、購物袋（首頁進商店）
+export const SHOP_ICONS = {
+  check: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>',
+  cross: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7l1.4-1.4 6.3 6.3 6.3-6.3z"/></svg>',
+  bag: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
 }
 
 // 配件畫在狗狗的 260×300 框裡（對準 img/dog-0.png 那隻：帽子頂 y≈30、眼睛 y≈108 在 x 92 與 150、脖子 y≈160）。

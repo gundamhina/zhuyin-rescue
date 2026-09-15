@@ -1,7 +1,7 @@
 // 狗狗商店：用骨頭買配件，買了就戴在她的狗狗身上。
 // renderShop(root, { profile, state, onBuy(item), onWear(slot, id|null), onClose })
 
-import { ACCESSORIES, accessoryIcon, boneSvg, dogSvg, bgHtml } from './art.js'
+import { ACCESSORIES, accessoryIcon, boneSvg, dogSvg, bgHtml, SHOP_ICONS } from './art.js'
 import { mountBgs } from './ui.js'
 
 const SLOT_NAMES = { head: '頭上', face: '臉上', neck: '脖子' }
@@ -14,13 +14,13 @@ export function renderShop (root, { profile, state, onBuy, onWear, onClose }) {
     const on = worn[item.slot] === item.id
     const canBuy = !has && state.bones >= item.price
     let btn
-    if (has && on) btn = `<button class="item-btn off" data-wear="${item.slot}" data-id="">脫掉</button>`
-    else if (has) btn = `<button class="item-btn on" data-wear="${item.slot}" data-id="${item.id}">戴上</button>`
-    else btn = `<button class="item-btn buy ${canBuy ? '' : 'poor'}" data-buy="${item.id}" ${canBuy ? '' : 'disabled'}>${boneSvg()} ${item.price}</button>`
+    // 按鈕全部用圖不用字：叉叉＝脫掉、打勾＝戴上、骨頭加數字＝多少錢（第一下變橘色加打勾＝確定買）
+    if (has && on) btn = `<button class="item-btn off" data-wear="${item.slot}" data-id="" aria-label="脫掉">${SHOP_ICONS.cross}</button>`
+    else if (has) btn = `<button class="item-btn on" data-wear="${item.slot}" data-id="${item.id}" aria-label="戴上">${SHOP_ICONS.check}</button>`
+    else btn = `<button class="item-btn buy ${canBuy ? '' : 'poor'}" data-buy="${item.id}" ${canBuy ? '' : 'disabled'} aria-label="買 ${item.name}">${boneSvg()} ${item.price}</button>`
     return `
-      <div class="item-card ${has ? 'owned' : ''} ${on ? 'worn' : ''}">
+      <div class="item-card ${has ? 'owned' : ''} ${on ? 'worn' : ''}" title="${item.name}（${SLOT_NAMES[item.slot]}）">
         <div class="item-pic">${accessoryIcon(item)}</div>
-        <div class="item-name">${item.name}<small>${SLOT_NAMES[item.slot]}</small></div>
         ${btn}
       </div>`
   }).join('')
@@ -47,7 +47,7 @@ export function renderShop (root, { profile, state, onBuy, onWear, onClose }) {
       if (btn.disabled) return
       if (armed) { clearTimeout(armed); onBuy(item); return }
       btn.classList.add('armed')
-      btn.textContent = '確定買？'
+      btn.innerHTML = `${boneSvg()} ${item.price} ${SHOP_ICONS.check}`
       armed = setTimeout(() => { armed = null; btn.classList.remove('armed'); btn.innerHTML = `${boneSvg()} ${item.price}` }, 4000)
     })
   })

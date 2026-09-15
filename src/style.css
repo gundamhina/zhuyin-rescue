@@ -391,7 +391,7 @@ svg.syl text { font-weight: 900; fill: currentColor; text-anchor: middle; domina
 .shop-btn { position: absolute; left: 50%; top: 20px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; background: #FFF3B0; border-radius: 40px; padding: 8px 24px 8px 14px; box-shadow: 0 6px 0 #D9AA1B; font-size: 30px; font-weight: 900; color: #2B3A4A; }
 .shop-btn:active { transform: translate(-50%, 4px); box-shadow: none; }
 .shop-btn .bone-ic svg { width: 52px; height: 26px; }
-.shop-btn .shop-word { font-size: 22px; color: #8E6D4C; }
+.shop-btn .shop-word { font-size: 36px; color: #8E6D4C; display: flex; margin-left: 4px; }
 .result-bones { position: absolute; left: 0; right: 0; top: 250px; text-align: center; font-size: 56px; font-weight: 900; color: #2B3A4A; opacity: 0; transform: scale(0.6); transition: opacity .4s, transform .4s cubic-bezier(.3,1.5,.5,1); }
 .result-bones.show { opacity: 1; transform: scale(1); }
 .result-bones .bone-ic svg { width: 90px; height: 45px; }
@@ -406,15 +406,16 @@ svg.syl text { font-weight: 900; fill: currentColor; text-anchor: middle; domina
 .shop-dog { left: 40px; top: 190px; width: 360px; height: 415px; }
 .shop-dog .dog, .shop-dog .dog-slot .art-slot { width: 360px; height: 415px; }
 .shop-grid { position: absolute; left: 430px; top: 120px; width: 740px; display: flex; flex-wrap: wrap; gap: 18px; align-content: flex-start; }
-.item-card { width: 170px; height: 210px; border-radius: 22px; background: #FFFDF7; border: 6px solid #fff; box-shadow: 0 8px 0 #A9BFCF; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 8px 12px; }
+.item-card { width: 170px; height: 180px; border-radius: 22px; background: #FFFDF7; border: 6px solid #fff; box-shadow: 0 8px 0 #A9BFCF; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 8px 12px; }
 .item-card.owned { border-color: #6B9E6B; }
 .item-card.worn { box-shadow: 0 0 0 8px rgba(232,200,106,0.7), 0 8px 0 #A9BFCF; }
-.item-pic { width: 110px; height: 80px; display: flex; align-items: center; justify-content: center; }
+.item-pic { width: 120px; height: 90px; display: flex; align-items: center; justify-content: center; }
 .item-pic svg { width: 100%; height: 100%; }
 .item-name { font-size: 22px; font-weight: 900; color: #2B3A4A; text-align: center; line-height: 1.1; }
 .item-name small { display: block; font-size: 15px; color: #8E6D4C; font-weight: 700; }
-.item-btn { min-width: 120px; padding: 6px 14px; border-radius: 14px; font-size: 24px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-.item-btn .bone { width: 36px; height: 18px; }
+.item-btn { min-width: 120px; height: 52px; padding: 4px 14px; border-radius: 14px; font-size: 26px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.item-btn .bone { width: 40px; height: 20px; }
+.item-btn svg:not(.bone) { width: 34px; height: 34px; }
 .item-btn.buy { background: #FFF3B0; color: #2B3A4A; box-shadow: 0 5px 0 #D9AA1B; }
 .item-btn.buy.armed { background: #E0955B; color: #fff; box-shadow: 0 5px 0 #B07242; }
 .item-btn.buy.poor { background: #E8EEF5; color: #8A9DAB; box-shadow: 0 5px 0 #C9D6E4; cursor: default; }

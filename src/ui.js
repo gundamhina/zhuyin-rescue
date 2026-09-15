@@ -2,7 +2,7 @@
 
 import { GROUPS, REP_CHAR, GROUP_NAMES } from './data.js'
 import { stars, activePool, effectiveTier, unlockedCount, lifetimeStats, dailyStats, TIERS, TRACKS, TRACK_NAMES } from './scheduler.js'
-import { dogSvg, confettiHtml, DOG_COLORS, bgHtml, cardArt, boneSvg } from './art.js'
+import { dogSvg, confettiHtml, DOG_COLORS, bgHtml, cardArt, boneSvg, SHOP_ICONS } from './art.js'
 
 
 // 舞台會跟著螢幕比例變形，所以不留邊：
@@ -169,7 +169,7 @@ export function renderHome (root, { profile, speech = true, bones = 0 }) {
       <div class="who-avatar">${dogSvg(profile.color)}</div>
       <div class="who-name">${escapeHtml(profile.name)}</div>
     </button>
-    <button class="shop-btn" id="btn-shop" aria-label="狗狗商店"><span class="bone-ic">${boneSvg()}</span><b>${bones}</b><span class="shop-word">商店</span></button>
+    <button class="shop-btn" id="btn-shop" aria-label="狗狗商店"><span class="bone-ic">${boneSvg()}</span><b>${bones}</b><span class="shop-word">${SHOP_ICONS.bag}</span></button>
     <div class="cards" id="cards">
       <button class="card" data-game="fishing" aria-label="釣魚">
         <div class="card-pic">${cardArt('fishing')}</div>
