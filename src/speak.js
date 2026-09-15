@@ -26,6 +26,8 @@ export function createListener () {
   let waiter = null // { resolve, timer, isMatch, interim }
   let fault = null // 'denied' | 'nomic' | 'network' | null
   let interimFn = null
+  const events = [] // 最近幾個辨識事件，出問題時顯示給大人看
+  function log (name) { events.push(name); if (events.length > 8) events.shift() }
 
   function deliver (status, transcripts = []) {
     if (!waiter) return
@@ -42,7 +44,14 @@ export function createListener () {
     r.continuous = true
     r.interimResults = true
     r.maxAlternatives = 5
+    r.onstart = () => log('start')
+    r.onaudiostart = () => log('audio')
+    r.onsoundstart = () => log('sound')
+    r.onspeechstart = () => log('speech')
+    r.onspeechend = () => log('speechend')
+    r.onnomatch = () => log('nomatch')
     r.onresult = e => {
+      log('result')
       const finals = []
       const interims = []
       for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -57,14 +66,15 @@ export function createListener () {
       if (waiter.isMatch && waiter.isMatch(interims)) deliver('heard', interims)
     }
     r.onerror = e => {
+      log('error:' + e.error)
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { fault = 'denied'; deliver('denied') }
       else if (e.error === 'audio-capture') { fault = 'nomic'; deliver('nomic') }
       else if (e.error === 'network') { fault = 'network'; deliver('network') }
       // no-speech、aborted 這類不算故障，onend 會重開
     }
     // Chrome 一段時間沒聲音會自己結束，活著就重開（不會再問權限）
-    r.onend = () => { r = null; if (active && !fault) setTimeout(spawn, 200) }
-    try { r.start() } catch (err) { r = null }
+    r.onend = () => { log('end'); r = null; if (active && !fault) setTimeout(spawn, 200) }
+    try { r.start() } catch (err) { log('startfail'); r = null }
   }
 
   return {
@@ -76,6 +86,7 @@ export function createListener () {
     },
     fault () { return !R ? 'unavailable' : fault },
     onInterim (fn) { interimFn = fn },
+    debug () { return events.join(' ') || '（沒有任何辨識事件）' },
     next (ms = 5000, isMatch = null) {
       if (!R) return Promise.resolve({ status: 'unavailable', transcripts: [] })
       if (fault) return Promise.resolve({ status: fault, transcripts: [] })

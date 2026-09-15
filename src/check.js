@@ -143,7 +143,7 @@ export function renderCheck (root, { audio, settings, onSettings, onClose }) {
       btn.disabled = false
       btn.textContent = '按一下開始唸'
       const ok = matchesSymbol(recTarget, heard)
-      out.innerHTML = `聽到：${heard.length ? heard.map(h => '「' + h + '」').join(' ') : '（' + ({ silent: '沒聽到聲音', denied: '麥克風被封鎖', network: '辨識服務連不上', unavailable: '沒有語音辨識' }[status] || '沒聽到') + '）'}　→ <b style="color:${ok ? '#268F58' : '#B32B37'}">${ok ? '判對' : '判錯'}</b>`
+      out.innerHTML = `聽到：${heard.length ? heard.map(h => '「' + h + '」').join(' ') : '（' + ({ silent: '沒聽到聲音', denied: '麥克風被封鎖', nomic: '找不到麥克風', network: '辨識服務連不上', unavailable: '沒有語音辨識' }[status] || '沒聽到') + '）'}　→ <b style="color:${ok ? '#268F58' : '#B32B37'}">${ok ? '判對' : '判錯'}</b>　<small>辨識事件：${l.debug()}</small>`
     }
   }
 

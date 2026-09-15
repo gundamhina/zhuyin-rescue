@@ -360,7 +360,7 @@ function main () {
     game.setListening(false)
     // 沒聽到聲音、或麥克風／辨識不能用：不算她唸錯，不播答案
     if (status !== 'heard') {
-      if (status === 'silent') { game.notice(MIC_MSG.silent, false); game.sad() } else { game.notice(MIC_MSG[status] || MIC_MSG.unavailable); game.setMicEnabled(false) }
+      if (status === 'silent') { game.notice(MIC_MSG.silent + '　辨識狀態：' + listener.debug(), false); game.sad() } else { game.notice(MIC_MSG[status] || MIC_MSG.unavailable); game.setMicEnabled(false) }
       busy = false
       return
     }
