@@ -318,7 +318,7 @@ function main () {
   function runSpeak () {
     game = createSpeak(playArea, { color: profile.color })
     replayBtn.classList.add('hidden') // 讀的練習不給聽
-    // 麥克風只問一次：整局開一條連續辨識，不每題重開
+    // 每按一次麥克風開一次辨識；網站在 https 上，Chrome 記得權限不會每次問
     if (listener) listener.stop()
     const myGame = game
     listener = createListener()

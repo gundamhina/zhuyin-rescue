@@ -2512,20 +2512,19 @@ function speechAvailable () {
   return !!(window.SpeechRecognition || window.webkitSpeechRecognition)
 }
 
-// 一條連續的辨識：整局只開一次，瀏覽器就只問一次麥克風。
+// 辨識器：每按一次麥克風開一次辨識（一句話就結束），不用連續模式。
+// 網站在 https 上，Chrome 記得麥克風權限，不會每次都問；連續模式在筆電 Chrome 上實測會自己結束、之後收不到聲音。
 // next(ms, isMatch) 回 { status, transcripts }：
 //   heard 有聽到字、silent 時間到沒聲音、denied 麥克風被擋、nomic 沒有麥克風、network 辨識服務連不上、unavailable 瀏覽器沒這功能
-// 手機 Chrome 在連續模式下，最後定案的結果常常要等很久甚至不給，所以也收「還在猜」的中途結果：
-//   中途結果只要有一個對得上答案（isMatch）就直接算聽到；時間到了還沒定案，就拿最後一次中途結果去判。
-//   中途結果也會經 onInterim 丟出去，畫面上即時顯示聽到什麼，大人才知道麥克風有在動。
+// 也收「還在猜」的中途結果：對得上答案（isMatch）就直接算聽到；時間到還沒定案就拿最後一次中途結果判。
+// 中途結果經 onInterim 丟出去即時顯示。events 記最近幾個辨識事件，沒聽到時顯示給大人看。
 function createListener () {
   const R = window.SpeechRecognition || window.webkitSpeechRecognition
-  let r = null
-  let active = false
+  let r = null // 目前這一次的辨識
   let waiter = null // { resolve, timer, isMatch, interim }
   let fault = null // 'denied' | 'nomic' | 'network' | null
   let interimFn = null
-  const events = [] // 最近幾個辨識事件，出問題時顯示給大人看
+  const events = []
   function log (name) { events.push(name); if (events.length > 8) events.shift() }
 
   function deliver (status, transcripts = []) {
@@ -2534,13 +2533,13 @@ function createListener () {
     const { resolve } = waiter
     waiter = null
     resolve({ status, transcripts })
+    if (r) { try { r.onend = null; r.abort() } catch (err) { /* 已停 */ } r = null }
   }
 
-  function spawn () {
-    if (!R || !active || fault) return
+  function listenOnce () {
     r = new R()
     r.lang = 'zh-TW'
-    r.continuous = true
+    r.continuous = false
     r.interimResults = true
     r.maxAlternatives = 5
     r.onstart = () => log('start')
@@ -2569,33 +2568,33 @@ function createListener () {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { fault = 'denied'; deliver('denied') }
       else if (e.error === 'audio-capture') { fault = 'nomic'; deliver('nomic') }
       else if (e.error === 'network') { fault = 'network'; deliver('network') }
-      // no-speech、aborted 這類不算故障，onend 會重開
+      // no-speech、aborted：等 onend 收尾
     }
-    // Chrome 一段時間沒聲音會自己結束，活著就重開（不會再問權限）
-    r.onend = () => { log('end'); r = null; if (active && !fault) setTimeout(spawn, 200) }
-    try { r.start() } catch (err) { log('startfail'); r = null }
+    // 這一次結束了還沒判：有中途結果就拿它判，沒有就算沒聽到
+    r.onend = () => {
+      log('end')
+      r = null
+      if (!waiter) return
+      if (waiter.interim.length) deliver('heard', waiter.interim); else deliver('silent')
+    }
+    try { r.start() } catch (err) { log('startfail'); r = null; deliver('silent') }
   }
 
   return {
-    start () { if (active) return; active = true; spawn() },
-    stop () {
-      active = false
-      deliver('silent')
-      if (r) { try { r.onend = null; r.stop() } catch (err) { /* 已停 */ } r = null }
-    },
+    start () { /* 不用預先開，按麥克風時才開一次 */ },
+    stop () { deliver('silent') },
     fault () { return !R ? 'unavailable' : fault },
     onInterim (fn) { interimFn = fn },
     debug () { return events.join(' ') || '（沒有任何辨識事件）' },
     next (ms = 5000, isMatch = null) {
       if (!R) return Promise.resolve({ status: 'unavailable', transcripts: [] })
       if (fault) return Promise.resolve({ status: fault, transcripts: [] })
-      if (!r && active) spawn()
       return new Promise(resolve => {
         if (waiter) deliver('silent')
         const w = { resolve, isMatch, interim: [] }
-        // 時間到：有中途結果就拿它判，完全沒聲音才算沒聽到
         w.timer = setTimeout(() => { if (w.interim.length) deliver('heard', w.interim); else deliver('silent') }, ms)
         waiter = w
+        listenOnce()
       })
     },
   }
@@ -4230,7 +4229,7 @@ function main () {
   function runSpeak () {
     game = createSpeak(playArea, { color: profile.color })
     replayBtn.classList.add('hidden') // 讀的練習不給聽
-    // 麥克風只問一次：整局開一條連續辨識，不每題重開
+    // 每按一次麥克風開一次辨識；網站在 https 上，Chrome 記得權限不會每次問
     if (listener) listener.stop()
     const myGame = game
     listener = createListener()
