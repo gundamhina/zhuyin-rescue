@@ -1,6 +1,6 @@
 // 把所有模組接起來：使用者、狀態、出題、三種玩法、畫面切換。
 
-import { buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, activePool, effectiveTier, trackView, applyTrack } from './scheduler.js'
+import { addBones, buyItem, wearItem, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, activePool, effectiveTier, trackView, applyTrack } from './scheduler.js'
 import { createStore } from './store.js'
 import { createAudio } from './audio.js'
 import { createFishing } from './fishing.js'
@@ -10,6 +10,8 @@ import { createSpeak, speechAvailable, createListener, matchesSymbol, requestMic
 import { createWrite } from './write.js'
 import { createMatchLine } from './matchline.js'
 import { createFillBlank } from './fillblank.js'
+import { renderShop } from './shop.js'
+import { setOutfit, boneSvg } from './art.js'
 import { fitStage, layoutBg, goFullscreenOnPhone, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage } from './ui.js'
 import { renderCheck } from './check.js'
 
@@ -80,19 +82,67 @@ function main () {
     if (!profile) return goProfiles()
     store.setCurrent(id)
     state = store.load(id)
+    setOutfit(profile.color, state.worn)
     goHome()
   }
 
   // ---- 首頁 ----
   function goHome () {
     destroyGame()
-    renderHome(homeEl, { profile, speech: speechAvailable() })
+    renderHome(homeEl, { profile, speech: speechAvailable(), bones: state.bones })
     homeEl.querySelector('#btn-who').addEventListener('pointerdown', goProfiles)
+    homeEl.querySelector('#btn-shop').addEventListener('pointerdown', () => { audio.unlock(); openShop() })
     homeEl.querySelectorAll('[data-game]').forEach(card => {
       card.addEventListener('pointerdown', () => { audio.unlock(); startGame(card.dataset.game) })
     })
     homeEl.querySelector('#btn-gear').addEventListener('pointerdown', gearTap)
     showScreen('home')
+  }
+
+  // ---- 狗狗商店 ----
+  const shopEl = document.getElementById('screen-shop')
+  function openShop () {
+    destroyGame()
+    renderShop(shopEl, {
+      profile,
+      state,
+      onBuy (item) {
+        const next = buyItem(state, item)
+        if (next.owned.length === (state.owned || []).length) return
+        state = next
+        store.save(profile.id, state)
+        setOutfit(profile.color, state.worn)
+        audio.cheer()
+        openShop()
+      },
+      onWear (slot, id) {
+        state = wearItem(state, slot, id)
+        store.save(profile.id, state)
+        setOutfit(profile.color, state.worn)
+        audio.ding()
+        openShop()
+      },
+      onClose: goHome,
+    })
+    showScreen('shop')
+  }
+
+  // ---- 骨頭（積分）：答對就有，玩完一局再送 ----
+  const bonesEl = gameEl.querySelector('#bones')
+  bonesEl.querySelector('.bone-ic').innerHTML = boneSvg()
+  let roundBones = 0
+  function showBones () { bonesEl.querySelector('b').textContent = state.bones }
+  function gain (n) {
+    if (!n) return
+    state = addBones(state, n)
+    store.save(profile.id, state)
+    roundBones += n
+    showBones()
+    const f = document.createElement('span')
+    f.className = 'bone-float'
+    f.textContent = '+' + n
+    bonesEl.appendChild(f)
+    setTimeout(() => f.remove(), 1200)
   }
 
   // 齒輪 2 秒內連點三下才開大人面板。每點一下齒輪旁顯示還差幾下，讓大人知道它沒壞。
@@ -149,6 +199,8 @@ function main () {
     destroyGame()
     kind = which
     earned = []
+    roundBones = 0
+    showBones()
     showScreen('game')
     if (which === 'memory') return runMemory()
     if (which === 'speak') return runSpeak()
@@ -185,7 +237,8 @@ function main () {
 
   function finishRound () {
     destroyGame()
-    renderResult(resultEl, profile.color)
+    gain(3) // 玩完一局的獎勵
+    renderResult(resultEl, profile.color, { roundBones, bones: state.bones })
     resultEl.querySelector('#btn-again').addEventListener('pointerdown', () => startGame(kind))
     resultEl.querySelector('#btn-home').addEventListener('pointerdown', goHome)
     showScreen('result')
@@ -280,7 +333,7 @@ function main () {
       clearIdle()
       game.lock()
       if (firstAttempt) commit({ target: q.target, ok: true, picked: symbol, ms, drill: q.drill })
-      earned.push(firstAttempt)
+      earned.push(firstAttempt); gain(firstAttempt ? 2 : 1)
       setStars()
       audio.stop()
       if (kind === 'whack') audio.crunch(); else if (kind === 'write') audio.ding(); else audio.splash()
@@ -367,7 +420,7 @@ function main () {
     game.heard(transcripts[0] || '')
     if (matchesSymbol(q.target, transcripts)) {
       if (firstAttempt) commit({ target: q.target, ok: true, picked: q.target, ms: 0, drill: q.drill })
-      earned.push(firstAttempt)
+      earned.push(firstAttempt); gain(firstAttempt ? 2 : 1)
       setStars()
       audio.ding()
       await game.celebrate()
@@ -413,7 +466,7 @@ function main () {
       if (word === picked) {
         busy = true
         if (firstTry[word]) commit({ target: word, ok: true, picked: word, ms: 0, drill: null })
-        earned.push(firstTry[word])
+        earned.push(firstTry[word]); gain(firstTry[word] ? 2 : 1)
         setStars()
         audio.ding()
         game.markCorrect(word, picked)
@@ -465,7 +518,7 @@ function main () {
         busy = true
         game.lock()
         if (firstAttempt) commit({ target: q.target, ok: true, picked: q.target, ms: 0, drill: q.drill })
-        earned.push(firstAttempt)
+        earned.push(firstAttempt); gain(firstAttempt ? 2 : 1)
         setStars()
         audio.ding()
         game.fill(syl)
@@ -494,7 +547,7 @@ function main () {
     starTotal = symbols.length
     setStars()
     game.onFlip(sym => { audio.flip(); audio.say(sym) })
-    game.onPair(() => { earned.push(true); setStars(); audio.ding() })
+    game.onPair(() => { earned.push(true); gain(1); setStars(); audio.ding() })
     game.onDone(finishRound)
     game.start(symbols)
   }

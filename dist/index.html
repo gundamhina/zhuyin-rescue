@@ -394,6 +394,53 @@ svg.syl text { font-weight: 900; fill: currentColor; text-anchor: middle; domina
 #stage.portrait .fill-dog { left: 20px; top: 110px; width: 180px; height: 208px; }
 #stage.portrait .fill-dog .dog, #stage.portrait .fill-dog .dog-slot .art-slot { width: 180px; height: 208px; }
 
+/* ---- 骨頭（積分） ---- */
+.bone { vertical-align: middle; }
+.bones-pill { position: absolute; left: 50%; top: 22px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 8px 22px 8px 16px; border-radius: 40px; background: rgba(255,253,247,0.92); box-shadow: 0 6px 0 #A9BFCF; font-size: 34px; font-weight: 900; color: #2B3A4A; pointer-events: none; }
+.bones-pill .bone-ic svg { width: 56px; height: 28px; }
+.bones-pill.big { top: 18px; font-size: 44px; padding: 10px 28px 10px 20px; }
+.bones-pill.big .bone-ic svg { width: 72px; height: 36px; }
+.bone-float { position: absolute; left: 50%; top: -10px; transform: translateX(-50%); color: #E0955B; font-size: 40px; font-weight: 900; text-shadow: 0 2px 0 #fff; animation: boneFloat 1.2s ease-out forwards; }
+@keyframes boneFloat { 0% { opacity: 0; transform: translate(-50%, 10px) scale(0.6); } 20% { opacity: 1; transform: translate(-50%, -10px) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -70px) scale(1); } }
+.shop-btn { position: absolute; left: 26px; top: 122px; display: flex; align-items: center; gap: 10px; background: #FFF3B0; border-radius: 40px; padding: 8px 24px 8px 14px; box-shadow: 0 6px 0 #D9AA1B; font-size: 30px; font-weight: 900; color: #2B3A4A; }
+.shop-btn:active { transform: translateY(4px); box-shadow: none; }
+.shop-btn .bone-ic svg { width: 52px; height: 26px; }
+.shop-btn .shop-word { font-size: 22px; color: #8E6D4C; }
+.result-bones { position: absolute; left: 0; right: 0; top: 250px; text-align: center; font-size: 56px; font-weight: 900; color: #2B3A4A; opacity: 0; transform: scale(0.6); transition: opacity .4s, transform .4s cubic-bezier(.3,1.5,.5,1); }
+.result-bones.show { opacity: 1; transform: scale(1); }
+.result-bones .bone-ic svg { width: 90px; height: 45px; }
+.result-bones small { font-size: 28px; color: #5A6B85; font-weight: 700; }
+#stage.portrait .result-bones { top: 300px; }
+#stage.portrait .shop-btn { top: 122px; }
+
+/* ---- 狗狗配件：疊在狗狗圖上，跟狗狗同一個 260×300 框 ---- */
+.dog-slot .dog-acc, .has-art > svg.dog-acc { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; visibility: visible; }
+
+/* ---- 狗狗商店 ---- */
+.shop-close { position: absolute; left: 30px; top: 20px; }
+.shop-dog { left: 40px; top: 190px; width: 360px; height: 415px; }
+.shop-dog .dog, .shop-dog .dog-slot .art-slot { width: 360px; height: 415px; }
+.shop-grid { position: absolute; left: 430px; top: 120px; width: 740px; display: flex; flex-wrap: wrap; gap: 18px; align-content: flex-start; }
+.item-card { width: 170px; height: 210px; border-radius: 22px; background: #FFFDF7; border: 6px solid #fff; box-shadow: 0 8px 0 #A9BFCF; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 8px 12px; }
+.item-card.owned { border-color: #6B9E6B; }
+.item-card.worn { box-shadow: 0 0 0 8px rgba(232,200,106,0.7), 0 8px 0 #A9BFCF; }
+.item-pic { width: 110px; height: 80px; display: flex; align-items: center; justify-content: center; }
+.item-pic svg { width: 100%; height: 100%; }
+.item-name { font-size: 22px; font-weight: 900; color: #2B3A4A; text-align: center; line-height: 1.1; }
+.item-name small { display: block; font-size: 15px; color: #8E6D4C; font-weight: 700; }
+.item-btn { min-width: 120px; padding: 6px 14px; border-radius: 14px; font-size: 24px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.item-btn .bone { width: 36px; height: 18px; }
+.item-btn.buy { background: #FFF3B0; color: #2B3A4A; box-shadow: 0 5px 0 #D9AA1B; }
+.item-btn.buy.armed { background: #E0955B; color: #fff; box-shadow: 0 5px 0 #B07242; }
+.item-btn.buy.poor { background: #E8EEF5; color: #8A9DAB; box-shadow: 0 5px 0 #C9D6E4; cursor: default; }
+.item-btn.on { background: #6B9E6B; color: #fff; box-shadow: 0 5px 0 #4E7A4E; }
+.item-btn.off { background: #E8EEF5; color: #2B3A4A; box-shadow: 0 5px 0 #C9D6E4; }
+.item-btn:active:not(:disabled) { transform: translateY(4px); box-shadow: none; }
+#stage.portrait .shop-dog { left: 20px; top: 110px; width: 240px; height: 277px; }
+#stage.portrait .shop-dog .dog, #stage.portrait .shop-dog .dog-slot .art-slot { width: 240px; height: 277px; }
+#stage.portrait .bones-pill.big { left: auto; right: 20px; transform: none; top: 20px; }
+#stage.portrait .shop-grid { left: 30px; top: 400px; width: 740px; }
+
 </style>
 </head>
 <body>
@@ -412,7 +459,9 @@ svg.syl text { font-weight: 900; fill: currentColor; text-anchor: middle; domina
       </button>
     </div>
     <div class="progress-stars"></div>
+    <div class="bones-pill" id="bones"><span class="bone-ic"></span><b>0</b></div>
   </section>
+  <section class="screen" id="screen-shop"></section>
   <section class="screen" id="screen-result"></section>
   <section class="screen" id="screen-panel"></section>
 </div>
@@ -1116,7 +1165,35 @@ function createState ({ known = [], groups = null } = {}) {
     rangeGroups: null, // 家長指定的練習組別索引；null 或空表示自動解鎖
     unlockedUpTo: null, // 家長手動跳級：至少解鎖到第幾組（1 起算）；null 表示不干預
     tracks: { listen: emptyTrack(), read: emptyTrack(), write: emptyTrack() },
+    ...emptyWallet(),
   }
+}
+
+// 骨頭（積分）與商店：三軌共用。bones 現在有幾根、bonesTotal 累計賺過幾根、owned 買過的配件、worn 每個部位戴著哪一件
+function emptyWallet () {
+  return { bones: 0, bonesTotal: 0, owned: [], worn: {} }
+}
+// 舊存檔沒有這幾個欄位，補上
+function withWallet (state) {
+  return { ...emptyWallet(), ...state, owned: [...(state.owned || [])], worn: { ...(state.worn || {}) } }
+}
+function addBones (state, n) {
+  const s = withWallet(state)
+  return { ...s, bones: Math.max(0, s.bones + n), bonesTotal: s.bonesTotal + Math.max(0, n) }
+}
+// 買配件：骨頭不夠或已經有了就原樣回傳
+function buyItem (state, item) {
+  const s = withWallet(state)
+  if (s.owned.includes(item.id) || s.bones < item.price) return s
+  return { ...s, bones: s.bones - item.price, owned: [...s.owned, item.id], worn: { ...s.worn, [item.slot]: item.id } }
+}
+// 戴上（id）或脫掉（null）某個部位的配件；沒買過的不能戴
+function wearItem (state, slot, id) {
+  const s = withWallet(state)
+  if (id && !s.owned.includes(id)) return s
+  const worn = { ...s.worn }
+  if (id) worn[slot] = id; else delete worn[slot]
+  return { ...s, worn }
 }
 
 // 把一軌攤平成舊格式（外層設定 + 這軌的紀錄），給出題、記錄、面板用。
@@ -1463,7 +1540,7 @@ function createStore (storage) {
   return {
     load (profileId) {
       const s = readJson(storage, PREFIX + profileId, null)
-      return isValidState(s) ? migrate(s) : createState()
+      return isValidState(s) ? withWallet(migrate(s)) : createState()
     },
     save (profileId, state) {
       storage.setItem(PREFIX + profileId, JSON.stringify(state))
@@ -1474,7 +1551,7 @@ function createStore (storage) {
     importJson (text) {
       const s = JSON.parse(text)
       if (!isValidState(s)) throw new Error('不是注音救援隊的存檔')
-      return migrate(s)
+      return withWallet(migrate(s))
     },
 
     loadProfiles,
@@ -1795,7 +1872,7 @@ function grassTuft (x, y, color) {
 // 救援狗。viewBox 260×300，原點在左上。color 是 DOG_COLORS 的索引。
 function dogSvg (color = 0) {
   const c = DOG_COLORS[color % DOG_COLORS.length]
-  return `<span class="dog-slot"><img class="art-slot" src="img/dog-${color % DOG_COLORS.length}.png" width="260" height="300" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+  return `<span class="dog-slot">${accessoryLayer(color)}<img class="art-slot" src="img/dog-${color % DOG_COLORS.length}.png" width="260" height="300" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg class="dog" viewBox="0 0 260 300" width="260" height="300" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <radialGradient id="fur${color}" cx="0.4" cy="0.35" r="0.75">
@@ -2065,6 +2142,50 @@ function confettiHtml (count = 44) {
     html += `<i class="confetti ${shape}" style="left:${left}%;animation-delay:${delay}s;animation-duration:${dur}s;background:${color};transform:rotate(${rot}deg)"></i>`
   }
   return html
+}
+
+
+// ---- 骨頭（積分）與狗狗配件 ----
+function boneSvg () {
+  return `<svg class="bone" viewBox="0 0 40 20" width="1.6em" height="0.8em" xmlns="http://www.w3.org/2000/svg"><path d="M8 3a4 4 0 0 1 4 4h16a4 4 0 1 1 4 6 4 4 0 1 1-4 4H12a4 4 0 1 1-4-6 4 4 0 0 1 0-8z" fill="#FFFDF7" stroke="#B08A63" stroke-width="2" stroke-linejoin="round"/></svg>`
+}
+
+// 配件畫在狗狗的 260×300 框裡（對準 img/dog-0.png 那隻：帽子頂 y≈30、眼睛 y≈108 在 x 92 與 150、脖子 y≈160）。
+// slot：head 頭上、face 臉上、neck 脖子，每個部位只能戴一件。box 是商店卡片裁圖用的範圍 [x, y, w, h]。
+const ACCESSORIES = [
+  { id: 'flower', name: '小花', slot: 'head', price: 6, box: [20, 80, 70, 70],
+    svg: `<g transform="translate(52 112)"><g fill="#E39AA8">${[0, 72, 144, 216, 288].map(a => `<ellipse rx="7" ry="13" cy="-13" transform="rotate(${a})"/>`).join('')}</g><circle r="7" fill="#E8C86A"/></g>` },
+  { id: 'bow', name: '紅蝴蝶結', slot: 'head', price: 8, box: [135, 40, 80, 70],
+    svg: `<g transform="translate(176 74)"><path d="M0 0 L-26 -16 L-24 16 Z M0 0 L26 -16 L24 16 Z" fill="#C8553D"/><path d="M-20 -8 L-8 -2 M20 -8 L8 -2" stroke="#96402D" stroke-width="3" stroke-linecap="round" fill="none"/><circle r="6" fill="#96402D"/></g>` },
+  { id: 'party', name: '派對帽', slot: 'head', price: 12, box: [120, 0, 90, 80],
+    svg: `<g transform="translate(165 10)"><path d="M0 0 L-26 58 L26 58 Z" fill="#4A6FA5"/><path d="M-13 29 L13 29 M-20 44 L20 44" stroke="#E8C86A" stroke-width="5"/><circle r="7" fill="#E39AA8"/></g>` },
+  { id: 'crown', name: '小皇冠', slot: 'head', price: 20, box: [60, 0, 100, 70],
+    svg: `<g transform="translate(110 40)"><path d="M-34 14 L-38 -22 L-19 -4 L0 -30 L19 -4 L38 -22 L34 14 Z" fill="#E8C86A" stroke="#B99A44" stroke-width="3" stroke-linejoin="round"/><circle cx="-19" cy="4" r="4" fill="#C8553D"/><circle cx="0" cy="2" r="4" fill="#4A6FA5"/><circle cx="19" cy="4" r="4" fill="#6B9E6B"/></g>` },
+  { id: 'glasses', name: '圓眼鏡', slot: 'face', price: 10, box: [60, 80, 120, 60],
+    svg: `<g fill="rgba(255,255,255,0.18)" stroke="#8E6D4C" stroke-width="4"><circle cx="92" cy="108" r="19"/><circle cx="150" cy="108" r="19"/><path d="M111 106 Q121 100 131 106" fill="none"/></g>` },
+  { id: 'shades', name: '太陽眼鏡', slot: 'face', price: 15, box: [60, 80, 120, 60],
+    svg: `<g><rect x="70" y="94" width="44" height="28" rx="10" fill="#2B3A4A"/><rect x="128" y="94" width="44" height="28" rx="10" fill="#2B3A4A"/><path d="M114 104 Q121 98 128 104" stroke="#2B3A4A" stroke-width="4" fill="none"/><path d="M78 100 L92 100" stroke="rgba(255,255,255,0.6)" stroke-width="3" stroke-linecap="round"/><path d="M136 100 L150 100" stroke="rgba(255,255,255,0.6)" stroke-width="3" stroke-linecap="round"/></g>` },
+  { id: 'bowtie', name: '領結', slot: 'neck', price: 8, box: [80, 135, 80, 60],
+    svg: `<g transform="translate(120 164)"><path d="M0 0 L-24 -13 L-22 13 Z M0 0 L24 -13 L22 13 Z" fill="#C8553D"/><circle r="5" fill="#96402D"/></g>` },
+  { id: 'scarf', name: '藍圍巾', slot: 'neck', price: 12, box: [50, 135, 130, 90],
+    svg: `<g><path d="M72 150 Q120 178 168 152 Q170 168 166 176 Q120 200 74 170 Z" fill="#4A6FA5"/><path d="M78 168 Q64 190 70 216 L92 214 Q90 190 100 178 Z" fill="#34507A"/><path d="M72 208 L92 206" stroke="#E8C86A" stroke-width="4"/></g>` },
+  { id: 'necklace', name: '星星項鍊', slot: 'neck', price: 10, box: [75, 140, 90, 60],
+    svg: `<g><path d="M84 150 Q120 190 156 150" fill="none" stroke="#E8C86A" stroke-width="3"/><path d="M120 168 l5 10 11 1-8 8 2 11-10-6-10 6 2-11-8-8 11-1z" fill="#E8C86A" stroke="#B99A44" stroke-width="1.5"/></g>` },
+]
+
+// 目前這位小孩的狗狗顏色和穿戴；main.js 選人、買東西、換裝時更新。dogSvg 畫到同色的狗才加配件。
+const OUTFIT = { color: -1, worn: {} }
+function setOutfit (color, worn) { OUTFIT.color = color; OUTFIT.worn = worn || {} }
+function accessoryLayer (color) {
+  if (color !== OUTFIT.color) return ''
+  const items = ACCESSORIES.filter(a => OUTFIT.worn[a.slot] === a.id)
+  if (!items.length) return ''
+  return `<svg class="dog-acc" viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg">${items.map(a => a.svg).join('')}</svg>`
+}
+// 商店卡片用：只裁配件那一塊
+function accessoryIcon (item) {
+  const [x, y, w, h] = item.box
+  return `<svg viewBox="${x} ${y} ${w} ${h}" xmlns="http://www.w3.org/2000/svg">${item.svg}</svg>`
 }
 
 // ===== fishing.js =====
@@ -3489,13 +3610,14 @@ function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
 }
 
 // 首頁：目前使用者的狗狗、三張玩法卡
-function renderHome (root, { profile, speech = true }) {
+function renderHome (root, { profile, speech = true, bones = 0 }) {
   root.innerHTML = `
     ${bgHtml('home')}
     <button class="who" id="btn-who" aria-label="換人">
       <div class="who-avatar">${dogSvg(profile.color)}</div>
       <div class="who-name">${escapeHtml(profile.name)}</div>
     </button>
+    <button class="shop-btn" id="btn-shop" aria-label="狗狗商店"><span class="bone-ic">${boneSvg()}</span><b>${bones}</b><span class="shop-word">商店</span></button>
     <div class="cards" id="cards">
       <button class="card" data-game="fishing" aria-label="釣魚">
         <div class="card-pic">${cardArt('fishing')}</div>
@@ -3523,13 +3645,14 @@ function renderHome (root, { profile, speech = true }) {
   mountBgs(root)
 }
 
-function renderResult (root, color = 0) {
+function renderResult (root, color = 0, { roundBones = 0, bones = 0 } = {}) {
   root.innerHTML = `
     ${bgHtml('home')}
     <div class="result-burst"></div>
     <div class="confetti-wrap">${confettiHtml()}</div>
     <div class="result-dogs">${dogSvg(color)}${dogSvg((color + 1) % 6)}${dogSvg((color + 2) % 6)}</div>
     <div class="result-stars">${'<span class="star">★</span>'.repeat(5)}</div>
+    <div class="result-bones" id="result-bones"><span class="bone-ic">${boneSvg()}</span> +${roundBones}　<small>共 ${bones}</small></div>
     <div class="result-actions hidden" id="result-actions">
       <button class="round-btn" id="btn-again" aria-label="再玩一次">
         <svg viewBox="0 0 24 24" width="64" height="64" fill="#fff"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
@@ -3550,6 +3673,8 @@ function playResult (root, earned) {
     setTimeout(() => starEls[i].classList.add('lit'), 400 + i * 350)
   })
   root.querySelector('#result-actions').classList.add('hidden')
+  const bonesEl = root.querySelector('#result-bones')
+  if (bonesEl) setTimeout(() => bonesEl.classList.add('show'), 400 + earned.length * 350 + 300)
   setTimeout(() => root.querySelector('#result-actions').classList.remove('hidden'), 3000)
 }
 
@@ -3679,6 +3804,13 @@ function renderPanel (root, { profile, profiles, state, track = 'listen', onTrac
         <div>混淆中：${confusions.length ? confusions.map(k => k.replace('|', '／')).join('、') : '沒有'}</div>
       </div>
       ${profile ? statsHtml(state) : ''}
+      ${profile ? `
+      <div class="panel-row">
+        <b>骨頭</b> 現在 <b>${state.bones || 0}</b> 根（累計賺過 ${state.bonesTotal || 0}，買了 ${(state.owned || []).length} 件配件）
+        <button class="mini" id="bones-minus" title="扣 5 根">−5</button>
+        <button class="mini" id="bones-plus" title="送 5 根">＋5</button>
+        <span class="panel-hint-inline">第一次就答對 2 根、重試才對 1 根、玩完一局再送 3 根，翻牌每配對一對 1 根。</span>
+      </div>` : ''}
       <div class="panel-row panel-difficulty">
         <label>難度
           <select id="sel-tier">
@@ -3738,6 +3870,8 @@ function renderPanel (root, { profile, profiles, state, track = 'listen', onTrac
     root.querySelector('#sel-tier').onchange = e => {
       onStateChange({ lockTier: e.target.value === '' ? null : parseInt(e.target.value, 10) })
     }
+    root.querySelector('#bones-minus').onclick = () => onStateChange({ bones: Math.max(0, (state.bones || 0) - 5) })
+    root.querySelector('#bones-plus').onclick = () => onStateChange({ bones: (state.bones || 0) + 5, bonesTotal: (state.bonesTotal || 0) + 5 })
     root.querySelector('#tier-down').onclick = () => onStateChange({ tier: Math.max(0, state.tier - 1), recent: [] })
     root.querySelector('#tier-up').onclick = () => onStateChange({ tier: Math.min(TIERS.length - 1, state.tier + 1), recent: [] })
     root.querySelector('#sel-unlocked').onchange = e => onStateChange({ unlockedUpTo: parseInt(e.target.value, 10) })
@@ -3767,6 +3901,63 @@ function renderPanel (root, { profile, profiles, state, track = 'listen', onTrac
 function panelMessage (root, text) {
   const el = root.querySelector('#panel-msg')
   if (el) el.textContent = text
+}
+
+// ===== shop.js =====
+// 狗狗商店：用骨頭買配件，買了就戴在她的狗狗身上。
+// renderShop(root, { profile, state, onBuy(item), onWear(slot, id|null), onClose })
+
+
+const SLOT_NAMES = { head: '頭上', face: '臉上', neck: '脖子' }
+
+function renderShop (root, { profile, state, onBuy, onWear, onClose }) {
+  const owned = state.owned || []
+  const worn = state.worn || {}
+  const cards = ACCESSORIES.map(item => {
+    const has = owned.includes(item.id)
+    const on = worn[item.slot] === item.id
+    const canBuy = !has && state.bones >= item.price
+    let btn
+    if (has && on) btn = `<button class="item-btn off" data-wear="${item.slot}" data-id="">脫掉</button>`
+    else if (has) btn = `<button class="item-btn on" data-wear="${item.slot}" data-id="${item.id}">戴上</button>`
+    else btn = `<button class="item-btn buy ${canBuy ? '' : 'poor'}" data-buy="${item.id}" ${canBuy ? '' : 'disabled'}>${boneSvg()} ${item.price}</button>`
+    return `
+      <div class="item-card ${has ? 'owned' : ''} ${on ? 'worn' : ''}">
+        <div class="item-pic">${accessoryIcon(item)}</div>
+        <div class="item-name">${item.name}<small>${SLOT_NAMES[item.slot]}</small></div>
+        ${btn}
+      </div>`
+  }).join('')
+
+  root.innerHTML = `
+    ${bgHtml('home')}
+    <div class="frame shop-frame">
+      <button class="round-btn quit shop-close" id="shop-close" aria-label="回首頁">
+        <svg viewBox="0 0 24 24" width="40" height="40" fill="#fff"><path d="M12 3 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
+      </button>
+      <div class="bones-pill big"><span class="bone-ic">${boneSvg()}</span><b>${state.bones}</b></div>
+      <div class="shop-dog dog-wrap">${dogSvg(profile.color)}</div>
+      <div class="shop-grid">${cards}</div>
+      <div class="shop-msg" id="shop-msg"></div>
+    </div>`
+  mountBgs(root)
+
+  root.querySelector('#shop-close').addEventListener('pointerdown', onClose)
+  // 買：第一下變成「再按一下就買」，四秒內再按一下才真的買，小孩不會手滑
+  root.querySelectorAll('[data-buy]').forEach(btn => {
+    const item = ACCESSORIES.find(i => i.id === btn.dataset.buy)
+    let armed = null
+    btn.addEventListener('pointerdown', () => {
+      if (btn.disabled) return
+      if (armed) { clearTimeout(armed); onBuy(item); return }
+      btn.classList.add('armed')
+      btn.textContent = '確定買？'
+      armed = setTimeout(() => { armed = null; btn.classList.remove('armed'); btn.innerHTML = `${boneSvg()} ${item.price}` }, 4000)
+    })
+  })
+  root.querySelectorAll('[data-wear]').forEach(btn => {
+    btn.addEventListener('pointerdown', () => onWear(btn.dataset.wear, btn.dataset.id || null))
+  })
 }
 
 // ===== check.js =====
@@ -3991,19 +4182,67 @@ function main () {
     if (!profile) return goProfiles()
     store.setCurrent(id)
     state = store.load(id)
+    setOutfit(profile.color, state.worn)
     goHome()
   }
 
   // ---- 首頁 ----
   function goHome () {
     destroyGame()
-    renderHome(homeEl, { profile, speech: speechAvailable() })
+    renderHome(homeEl, { profile, speech: speechAvailable(), bones: state.bones })
     homeEl.querySelector('#btn-who').addEventListener('pointerdown', goProfiles)
+    homeEl.querySelector('#btn-shop').addEventListener('pointerdown', () => { audio.unlock(); openShop() })
     homeEl.querySelectorAll('[data-game]').forEach(card => {
       card.addEventListener('pointerdown', () => { audio.unlock(); startGame(card.dataset.game) })
     })
     homeEl.querySelector('#btn-gear').addEventListener('pointerdown', gearTap)
     showScreen('home')
+  }
+
+  // ---- 狗狗商店 ----
+  const shopEl = document.getElementById('screen-shop')
+  function openShop () {
+    destroyGame()
+    renderShop(shopEl, {
+      profile,
+      state,
+      onBuy (item) {
+        const next = buyItem(state, item)
+        if (next.owned.length === (state.owned || []).length) return
+        state = next
+        store.save(profile.id, state)
+        setOutfit(profile.color, state.worn)
+        audio.cheer()
+        openShop()
+      },
+      onWear (slot, id) {
+        state = wearItem(state, slot, id)
+        store.save(profile.id, state)
+        setOutfit(profile.color, state.worn)
+        audio.ding()
+        openShop()
+      },
+      onClose: goHome,
+    })
+    showScreen('shop')
+  }
+
+  // ---- 骨頭（積分）：答對就有，玩完一局再送 ----
+  const bonesEl = gameEl.querySelector('#bones')
+  bonesEl.querySelector('.bone-ic').innerHTML = boneSvg()
+  let roundBones = 0
+  function showBones () { bonesEl.querySelector('b').textContent = state.bones }
+  function gain (n) {
+    if (!n) return
+    state = addBones(state, n)
+    store.save(profile.id, state)
+    roundBones += n
+    showBones()
+    const f = document.createElement('span')
+    f.className = 'bone-float'
+    f.textContent = '+' + n
+    bonesEl.appendChild(f)
+    setTimeout(() => f.remove(), 1200)
   }
 
   // 齒輪 2 秒內連點三下才開大人面板。每點一下齒輪旁顯示還差幾下，讓大人知道它沒壞。
@@ -4060,6 +4299,8 @@ function main () {
     destroyGame()
     kind = which
     earned = []
+    roundBones = 0
+    showBones()
     showScreen('game')
     if (which === 'memory') return runMemory()
     if (which === 'speak') return runSpeak()
@@ -4096,7 +4337,8 @@ function main () {
 
   function finishRound () {
     destroyGame()
-    renderResult(resultEl, profile.color)
+    gain(3) // 玩完一局的獎勵
+    renderResult(resultEl, profile.color, { roundBones, bones: state.bones })
     resultEl.querySelector('#btn-again').addEventListener('pointerdown', () => startGame(kind))
     resultEl.querySelector('#btn-home').addEventListener('pointerdown', goHome)
     showScreen('result')
@@ -4191,7 +4433,7 @@ function main () {
       clearIdle()
       game.lock()
       if (firstAttempt) commit({ target: q.target, ok: true, picked: symbol, ms, drill: q.drill })
-      earned.push(firstAttempt)
+      earned.push(firstAttempt); gain(firstAttempt ? 2 : 1)
       setStars()
       audio.stop()
       if (kind === 'whack') audio.crunch(); else if (kind === 'write') audio.ding(); else audio.splash()
@@ -4278,7 +4520,7 @@ function main () {
     game.heard(transcripts[0] || '')
     if (matchesSymbol(q.target, transcripts)) {
       if (firstAttempt) commit({ target: q.target, ok: true, picked: q.target, ms: 0, drill: q.drill })
-      earned.push(firstAttempt)
+      earned.push(firstAttempt); gain(firstAttempt ? 2 : 1)
       setStars()
       audio.ding()
       await game.celebrate()
@@ -4324,7 +4566,7 @@ function main () {
       if (word === picked) {
         busy = true
         if (firstTry[word]) commit({ target: word, ok: true, picked: word, ms: 0, drill: null })
-        earned.push(firstTry[word])
+        earned.push(firstTry[word]); gain(firstTry[word] ? 2 : 1)
         setStars()
         audio.ding()
         game.markCorrect(word, picked)
@@ -4376,7 +4618,7 @@ function main () {
         busy = true
         game.lock()
         if (firstAttempt) commit({ target: q.target, ok: true, picked: q.target, ms: 0, drill: q.drill })
-        earned.push(firstAttempt)
+        earned.push(firstAttempt); gain(firstAttempt ? 2 : 1)
         setStars()
         audio.ding()
         game.fill(syl)
@@ -4405,7 +4647,7 @@ function main () {
     starTotal = symbols.length
     setStars()
     game.onFlip(sym => { audio.flip(); audio.say(sym) })
-    game.onPair(() => { earned.push(true); setStars(); audio.ding() })
+    game.onPair(() => { earned.push(true); gain(1); setStars(); audio.ding() })
     game.onDone(finishRound)
     game.start(symbols)
   }

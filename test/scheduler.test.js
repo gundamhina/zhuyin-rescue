@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   createState, stars, activePool, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, trackView, applyTrack, effectiveTier, lifetimeStats, dailyStats, TIERS,
+  addBones, buyItem, wearItem, withWallet,
 } from '../src/scheduler.js';
 import { GROUPS, coreOf } from '../src/data.js';
 
@@ -470,3 +471,39 @@ test('讀讀看用的狀態：只留詞的組，家長沒指定就是全部詞',
   const ranged = wordsOnlyState({ ...view(), rangeGroups: [2, wordGroup] });
   assert.deepEqual(activePool(ranged), GROUPS[wordGroup], '有指定就只留指定的詞組');
 });
+
+
+// ---- 骨頭與商店 ----
+test('骨頭：加了會累計，扣不會變負；買配件要夠錢、買了自動戴上；沒買的不能戴', () => {
+  let s = createState()
+  assert.equal(s.bones, 0)
+  s = addBones(s, 5)
+  s = addBones(s, 2)
+  assert.equal(s.bones, 7)
+  assert.equal(s.bonesTotal, 7)
+  const bow = { id: 'bow', slot: 'head', price: 8 }
+  assert.equal(buyItem(s, bow).bones, 7, '不夠錢不能買')
+  assert.deepEqual(buyItem(s, bow).owned, [])
+  s = addBones(s, 1)
+  s = buyItem(s, bow)
+  assert.equal(s.bones, 0)
+  assert.deepEqual(s.owned, ['bow'])
+  assert.equal(s.worn.head, 'bow')
+  s = wearItem(s, 'head', null)
+  assert.equal(s.worn.head, undefined)
+  s = wearItem(s, 'head', 'crown')
+  assert.equal(s.worn.head, undefined, '沒買過的不能戴')
+  s = wearItem(s, 'head', 'bow')
+  assert.equal(s.worn.head, 'bow')
+  assert.equal(addBones(s, -99).bones, 0)
+})
+
+test('舊的 version 2 存檔沒有骨頭欄位，載入時補上，清除練習紀錄不會動到骨頭', () => {
+  const old = createState()
+  delete old.bones; delete old.owned; delete old.worn; delete old.bonesTotal
+  const s = withWallet(old)
+  assert.equal(s.bones, 0)
+  assert.deepEqual(s.owned, [])
+  const rich = addBones(s, 12)
+  assert.equal(resetProgress(rich).bones, 12)
+})

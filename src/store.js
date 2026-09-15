@@ -1,6 +1,6 @@
 // 進度存取：多位使用者、每人一份進度、匯出匯入。storage 用參數傳進來，測試時換成假的。
 
-import { createState, emptyTrack } from './scheduler.js'
+import { createState, withWallet, emptyTrack } from './scheduler.js'
 
 const PREFIX = 'zhuyin-rescue:'
 const PROFILES_KEY = 'zhuyin-rescue-profiles'
@@ -47,7 +47,7 @@ export function createStore (storage) {
   return {
     load (profileId) {
       const s = readJson(storage, PREFIX + profileId, null)
-      return isValidState(s) ? migrate(s) : createState()
+      return isValidState(s) ? withWallet(migrate(s)) : createState()
     },
     save (profileId, state) {
       storage.setItem(PREFIX + profileId, JSON.stringify(state))
@@ -58,7 +58,7 @@ export function createStore (storage) {
     importJson (text) {
       const s = JSON.parse(text)
       if (!isValidState(s)) throw new Error('不是注音救援隊的存檔')
-      return migrate(s)
+      return withWallet(migrate(s))
     },
 
     loadProfiles,

@@ -93,7 +93,7 @@ function grassTuft (x, y, color) {
 // 救援狗。viewBox 260×300，原點在左上。color 是 DOG_COLORS 的索引。
 export function dogSvg (color = 0) {
   const c = DOG_COLORS[color % DOG_COLORS.length]
-  return `<span class="dog-slot"><img class="art-slot" src="img/dog-${color % DOG_COLORS.length}.png" width="260" height="300" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+  return `<span class="dog-slot">${accessoryLayer(color)}<img class="art-slot" src="img/dog-${color % DOG_COLORS.length}.png" width="260" height="300" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg class="dog" viewBox="0 0 260 300" width="260" height="300" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <radialGradient id="fur${color}" cx="0.4" cy="0.35" r="0.75">
@@ -363,4 +363,48 @@ export function confettiHtml (count = 44) {
     html += `<i class="confetti ${shape}" style="left:${left}%;animation-delay:${delay}s;animation-duration:${dur}s;background:${color};transform:rotate(${rot}deg)"></i>`
   }
   return html
+}
+
+
+// ---- 骨頭（積分）與狗狗配件 ----
+export function boneSvg () {
+  return `<svg class="bone" viewBox="0 0 40 20" width="1.6em" height="0.8em" xmlns="http://www.w3.org/2000/svg"><path d="M8 3a4 4 0 0 1 4 4h16a4 4 0 1 1 4 6 4 4 0 1 1-4 4H12a4 4 0 1 1-4-6 4 4 0 0 1 0-8z" fill="#FFFDF7" stroke="#B08A63" stroke-width="2" stroke-linejoin="round"/></svg>`
+}
+
+// 配件畫在狗狗的 260×300 框裡（對準 img/dog-0.png 那隻：帽子頂 y≈30、眼睛 y≈108 在 x 92 與 150、脖子 y≈160）。
+// slot：head 頭上、face 臉上、neck 脖子，每個部位只能戴一件。box 是商店卡片裁圖用的範圍 [x, y, w, h]。
+export const ACCESSORIES = [
+  { id: 'flower', name: '小花', slot: 'head', price: 6, box: [20, 80, 70, 70],
+    svg: `<g transform="translate(52 112)"><g fill="#E39AA8">${[0, 72, 144, 216, 288].map(a => `<ellipse rx="7" ry="13" cy="-13" transform="rotate(${a})"/>`).join('')}</g><circle r="7" fill="#E8C86A"/></g>` },
+  { id: 'bow', name: '紅蝴蝶結', slot: 'head', price: 8, box: [135, 40, 80, 70],
+    svg: `<g transform="translate(176 74)"><path d="M0 0 L-26 -16 L-24 16 Z M0 0 L26 -16 L24 16 Z" fill="#C8553D"/><path d="M-20 -8 L-8 -2 M20 -8 L8 -2" stroke="#96402D" stroke-width="3" stroke-linecap="round" fill="none"/><circle r="6" fill="#96402D"/></g>` },
+  { id: 'party', name: '派對帽', slot: 'head', price: 12, box: [120, 0, 90, 80],
+    svg: `<g transform="translate(165 10)"><path d="M0 0 L-26 58 L26 58 Z" fill="#4A6FA5"/><path d="M-13 29 L13 29 M-20 44 L20 44" stroke="#E8C86A" stroke-width="5"/><circle r="7" fill="#E39AA8"/></g>` },
+  { id: 'crown', name: '小皇冠', slot: 'head', price: 20, box: [60, 0, 100, 70],
+    svg: `<g transform="translate(110 40)"><path d="M-34 14 L-38 -22 L-19 -4 L0 -30 L19 -4 L38 -22 L34 14 Z" fill="#E8C86A" stroke="#B99A44" stroke-width="3" stroke-linejoin="round"/><circle cx="-19" cy="4" r="4" fill="#C8553D"/><circle cx="0" cy="2" r="4" fill="#4A6FA5"/><circle cx="19" cy="4" r="4" fill="#6B9E6B"/></g>` },
+  { id: 'glasses', name: '圓眼鏡', slot: 'face', price: 10, box: [60, 80, 120, 60],
+    svg: `<g fill="rgba(255,255,255,0.18)" stroke="#8E6D4C" stroke-width="4"><circle cx="92" cy="108" r="19"/><circle cx="150" cy="108" r="19"/><path d="M111 106 Q121 100 131 106" fill="none"/></g>` },
+  { id: 'shades', name: '太陽眼鏡', slot: 'face', price: 15, box: [60, 80, 120, 60],
+    svg: `<g><rect x="70" y="94" width="44" height="28" rx="10" fill="#2B3A4A"/><rect x="128" y="94" width="44" height="28" rx="10" fill="#2B3A4A"/><path d="M114 104 Q121 98 128 104" stroke="#2B3A4A" stroke-width="4" fill="none"/><path d="M78 100 L92 100" stroke="rgba(255,255,255,0.6)" stroke-width="3" stroke-linecap="round"/><path d="M136 100 L150 100" stroke="rgba(255,255,255,0.6)" stroke-width="3" stroke-linecap="round"/></g>` },
+  { id: 'bowtie', name: '領結', slot: 'neck', price: 8, box: [80, 135, 80, 60],
+    svg: `<g transform="translate(120 164)"><path d="M0 0 L-24 -13 L-22 13 Z M0 0 L24 -13 L22 13 Z" fill="#C8553D"/><circle r="5" fill="#96402D"/></g>` },
+  { id: 'scarf', name: '藍圍巾', slot: 'neck', price: 12, box: [50, 135, 130, 90],
+    svg: `<g><path d="M72 150 Q120 178 168 152 Q170 168 166 176 Q120 200 74 170 Z" fill="#4A6FA5"/><path d="M78 168 Q64 190 70 216 L92 214 Q90 190 100 178 Z" fill="#34507A"/><path d="M72 208 L92 206" stroke="#E8C86A" stroke-width="4"/></g>` },
+  { id: 'necklace', name: '星星項鍊', slot: 'neck', price: 10, box: [75, 140, 90, 60],
+    svg: `<g><path d="M84 150 Q120 190 156 150" fill="none" stroke="#E8C86A" stroke-width="3"/><path d="M120 168 l5 10 11 1-8 8 2 11-10-6-10 6 2-11-8-8 11-1z" fill="#E8C86A" stroke="#B99A44" stroke-width="1.5"/></g>` },
+]
+
+// 目前這位小孩的狗狗顏色和穿戴；main.js 選人、買東西、換裝時更新。dogSvg 畫到同色的狗才加配件。
+const OUTFIT = { color: -1, worn: {} }
+export function setOutfit (color, worn) { OUTFIT.color = color; OUTFIT.worn = worn || {} }
+function accessoryLayer (color) {
+  if (color !== OUTFIT.color) return ''
+  const items = ACCESSORIES.filter(a => OUTFIT.worn[a.slot] === a.id)
+  if (!items.length) return ''
+  return `<svg class="dog-acc" viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg">${items.map(a => a.svg).join('')}</svg>`
+}
+// 商店卡片用：只裁配件那一塊
+export function accessoryIcon (item) {
+  const [x, y, w, h] = item.box
+  return `<svg viewBox="${x} ${y} ${w} ${h}" xmlns="http://www.w3.org/2000/svg">${item.svg}</svg>`
 }

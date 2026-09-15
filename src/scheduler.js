@@ -43,7 +43,35 @@ export function createState ({ known = [], groups = null } = {}) {
     rangeGroups: null, // 家長指定的練習組別索引；null 或空表示自動解鎖
     unlockedUpTo: null, // 家長手動跳級：至少解鎖到第幾組（1 起算）；null 表示不干預
     tracks: { listen: emptyTrack(), read: emptyTrack(), write: emptyTrack() },
+    ...emptyWallet(),
   }
+}
+
+// 骨頭（積分）與商店：三軌共用。bones 現在有幾根、bonesTotal 累計賺過幾根、owned 買過的配件、worn 每個部位戴著哪一件
+export function emptyWallet () {
+  return { bones: 0, bonesTotal: 0, owned: [], worn: {} }
+}
+// 舊存檔沒有這幾個欄位，補上
+export function withWallet (state) {
+  return { ...emptyWallet(), ...state, owned: [...(state.owned || [])], worn: { ...(state.worn || {}) } }
+}
+export function addBones (state, n) {
+  const s = withWallet(state)
+  return { ...s, bones: Math.max(0, s.bones + n), bonesTotal: s.bonesTotal + Math.max(0, n) }
+}
+// 買配件：骨頭不夠或已經有了就原樣回傳
+export function buyItem (state, item) {
+  const s = withWallet(state)
+  if (s.owned.includes(item.id) || s.bones < item.price) return s
+  return { ...s, bones: s.bones - item.price, owned: [...s.owned, item.id], worn: { ...s.worn, [item.slot]: item.id } }
+}
+// 戴上（id）或脫掉（null）某個部位的配件；沒買過的不能戴
+export function wearItem (state, slot, id) {
+  const s = withWallet(state)
+  if (id && !s.owned.includes(id)) return s
+  const worn = { ...s.worn }
+  if (id) worn[slot] = id; else delete worn[slot]
+  return { ...s, worn }
 }
 
 // 把一軌攤平成舊格式（外層設定 + 這軌的紀錄），給出題、記錄、面板用。

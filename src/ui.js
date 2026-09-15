@@ -2,7 +2,7 @@
 
 import { GROUPS, REP_CHAR, GROUP_NAMES } from './data.js'
 import { stars, activePool, effectiveTier, unlockedCount, lifetimeStats, dailyStats, TIERS, TRACKS, TRACK_NAMES } from './scheduler.js'
-import { dogSvg, confettiHtml, DOG_COLORS, bgHtml, cardArt } from './art.js'
+import { dogSvg, confettiHtml, DOG_COLORS, bgHtml, cardArt, boneSvg } from './art.js'
 
 
 // 舞台會跟著螢幕比例變形，所以不留邊：
@@ -162,13 +162,14 @@ export function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
 }
 
 // 首頁：目前使用者的狗狗、三張玩法卡
-export function renderHome (root, { profile, speech = true }) {
+export function renderHome (root, { profile, speech = true, bones = 0 }) {
   root.innerHTML = `
     ${bgHtml('home')}
     <button class="who" id="btn-who" aria-label="換人">
       <div class="who-avatar">${dogSvg(profile.color)}</div>
       <div class="who-name">${escapeHtml(profile.name)}</div>
     </button>
+    <button class="shop-btn" id="btn-shop" aria-label="狗狗商店"><span class="bone-ic">${boneSvg()}</span><b>${bones}</b><span class="shop-word">商店</span></button>
     <div class="cards" id="cards">
       <button class="card" data-game="fishing" aria-label="釣魚">
         <div class="card-pic">${cardArt('fishing')}</div>
@@ -196,13 +197,14 @@ export function renderHome (root, { profile, speech = true }) {
   mountBgs(root)
 }
 
-export function renderResult (root, color = 0) {
+export function renderResult (root, color = 0, { roundBones = 0, bones = 0 } = {}) {
   root.innerHTML = `
     ${bgHtml('home')}
     <div class="result-burst"></div>
     <div class="confetti-wrap">${confettiHtml()}</div>
     <div class="result-dogs">${dogSvg(color)}${dogSvg((color + 1) % 6)}${dogSvg((color + 2) % 6)}</div>
     <div class="result-stars">${'<span class="star">★</span>'.repeat(5)}</div>
+    <div class="result-bones" id="result-bones"><span class="bone-ic">${boneSvg()}</span> +${roundBones}　<small>共 ${bones}</small></div>
     <div class="result-actions hidden" id="result-actions">
       <button class="round-btn" id="btn-again" aria-label="再玩一次">
         <svg viewBox="0 0 24 24" width="64" height="64" fill="#fff"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
@@ -223,6 +225,8 @@ export function playResult (root, earned) {
     setTimeout(() => starEls[i].classList.add('lit'), 400 + i * 350)
   })
   root.querySelector('#result-actions').classList.add('hidden')
+  const bonesEl = root.querySelector('#result-bones')
+  if (bonesEl) setTimeout(() => bonesEl.classList.add('show'), 400 + earned.length * 350 + 300)
   setTimeout(() => root.querySelector('#result-actions').classList.remove('hidden'), 3000)
 }
 
@@ -352,6 +356,13 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
         <div>混淆中：${confusions.length ? confusions.map(k => k.replace('|', '／')).join('、') : '沒有'}</div>
       </div>
       ${profile ? statsHtml(state) : ''}
+      ${profile ? `
+      <div class="panel-row">
+        <b>骨頭</b> 現在 <b>${state.bones || 0}</b> 根（累計賺過 ${state.bonesTotal || 0}，買了 ${(state.owned || []).length} 件配件）
+        <button class="mini" id="bones-minus" title="扣 5 根">−5</button>
+        <button class="mini" id="bones-plus" title="送 5 根">＋5</button>
+        <span class="panel-hint-inline">第一次就答對 2 根、重試才對 1 根、玩完一局再送 3 根，翻牌每配對一對 1 根。</span>
+      </div>` : ''}
       <div class="panel-row panel-difficulty">
         <label>難度
           <select id="sel-tier">
@@ -411,6 +422,8 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
     root.querySelector('#sel-tier').onchange = e => {
       onStateChange({ lockTier: e.target.value === '' ? null : parseInt(e.target.value, 10) })
     }
+    root.querySelector('#bones-minus').onclick = () => onStateChange({ bones: Math.max(0, (state.bones || 0) - 5) })
+    root.querySelector('#bones-plus').onclick = () => onStateChange({ bones: (state.bones || 0) + 5, bonesTotal: (state.bonesTotal || 0) + 5 })
     root.querySelector('#tier-down').onclick = () => onStateChange({ tier: Math.max(0, state.tier - 1), recent: [] })
     root.querySelector('#tier-up').onclick = () => onStateChange({ tier: Math.min(TIERS.length - 1, state.tier + 1), recent: [] })
     root.querySelector('#sel-unlocked').onchange = e => onStateChange({ unlockedUpTo: parseInt(e.target.value, 10) })
