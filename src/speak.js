@@ -14,14 +14,18 @@ export function speechAvailable () {
 }
 
 // 一條連續的辨識：整局只開一次，瀏覽器就只問一次麥克風。
-// next(ms) 回 { status, transcripts }：
-//   heard 有聽到字、silent 時間到沒聲音、denied 麥克風被擋、network 辨識服務連不上、unavailable 瀏覽器沒這功能
+// next(ms, isMatch) 回 { status, transcripts }：
+//   heard 有聽到字、silent 時間到沒聲音、denied 麥克風被擋、nomic 沒有麥克風、network 辨識服務連不上、unavailable 瀏覽器沒這功能
+// 手機 Chrome 在連續模式下，最後定案的結果常常要等很久甚至不給，所以也收「還在猜」的中途結果：
+//   中途結果只要有一個對得上答案（isMatch）就直接算聽到；時間到了還沒定案，就拿最後一次中途結果去判。
+//   中途結果也會經 onInterim 丟出去，畫面上即時顯示聽到什麼，大人才知道麥克風有在動。
 export function createListener () {
   const R = window.SpeechRecognition || window.webkitSpeechRecognition
   let r = null
   let active = false
-  let waiter = null // { resolve, timer }
-  let fault = null // 'denied' | 'network' | null
+  let waiter = null // { resolve, timer, isMatch, interim }
+  let fault = null // 'denied' | 'nomic' | 'network' | null
+  let interimFn = null
 
   function deliver (status, transcripts = []) {
     if (!waiter) return
@@ -36,17 +40,25 @@ export function createListener () {
     r = new R()
     r.lang = 'zh-TW'
     r.continuous = true
-    r.interimResults = false
+    r.interimResults = true
     r.maxAlternatives = 5
     r.onresult = e => {
-      const alts = []
+      const finals = []
+      const interims = []
       for (let i = e.resultIndex; i < e.results.length; i++) {
-        for (const alt of e.results[i]) alts.push(alt.transcript)
+        const res = e.results[i]
+        for (const alt of res) (res.isFinal ? finals : interims).push(alt.transcript)
       }
-      if (alts.length) deliver('heard', alts)
+      if (finals.length) { deliver('heard', finals.concat(interims)); return }
+      if (!interims.length) return
+      if (interimFn) interimFn(interims[0])
+      if (!waiter) return
+      waiter.interim = interims
+      if (waiter.isMatch && waiter.isMatch(interims)) deliver('heard', interims)
     }
     r.onerror = e => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { fault = 'denied'; deliver('denied') }
+      else if (e.error === 'audio-capture') { fault = 'nomic'; deliver('nomic') }
       else if (e.error === 'network') { fault = 'network'; deliver('network') }
       // no-speech、aborted 這類不算故障，onend 會重開
     }
@@ -63,13 +75,17 @@ export function createListener () {
       if (r) { try { r.onend = null; r.stop() } catch (err) { /* 已停 */ } r = null }
     },
     fault () { return !R ? 'unavailable' : fault },
-    next (ms = 5000) {
+    onInterim (fn) { interimFn = fn },
+    next (ms = 5000, isMatch = null) {
       if (!R) return Promise.resolve({ status: 'unavailable', transcripts: [] })
       if (fault) return Promise.resolve({ status: fault, transcripts: [] })
       if (!r && active) spawn()
       return new Promise(resolve => {
         if (waiter) deliver('silent')
-        waiter = { resolve, timer: setTimeout(() => deliver('silent'), ms) }
+        const w = { resolve, isMatch, interim: [] }
+        // 時間到：有中途結果就拿它判，完全沒聲音才算沒聽到
+        w.timer = setTimeout(() => { if (w.interim.length) deliver('heard', w.interim); else deliver('silent') }, ms)
+        waiter = w
       })
     },
   }

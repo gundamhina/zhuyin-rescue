@@ -22,6 +22,8 @@ const MATCH_PAIRS = 4
 const MIC_MSG = {
   silent: '沒聽到聲音，靠近一點再唸一次',
   denied: '麥克風被封鎖了：按網址列左邊的鎖頭或圖示，把麥克風改成「允許」，再重新整理',
+  nomic: '找不到麥克風，或麥克風被別的程式占用',
+  listening: '我在聽…',
   network: '語音辨識要連網才能用，請確認網路',
   unavailable: '這個瀏覽器沒有語音辨識，請用 Chrome',
 }
@@ -318,10 +320,11 @@ function main () {
     replayBtn.classList.add('hidden') // 讀的練習不給聽
     // 麥克風只問一次：整局開一條連續辨識，不每題重開
     if (listener) listener.stop()
+    const myGame = game
     listener = createListener()
+    listener.onInterim(text => { if (game === myGame && text) game.heard(text) }) // 邊聽邊顯示聽到什麼
     listener.start()
     // 先主動要一次權限，被擋就直接告訴大人，不用等她按
-    const myGame = game
     requestMic().then(result => {
       if (game !== myGame) return
       if (result === 'denied') { game.notice(MIC_MSG.denied); game.setMicEnabled(false) }
@@ -351,7 +354,8 @@ function main () {
     busy = true
     audio.stop()
     game.setListening(true)
-    const { status, transcripts } = await listener.next(5000)
+    game.notice(MIC_MSG.listening, false)
+    const { status, transcripts } = await listener.next(5000, alts => matchesSymbol(q.target, alts))
     if (game !== myGame) return
     game.setListening(false)
     // 沒聽到聲音、或麥克風／辨識不能用：不算她唸錯，不播答案
