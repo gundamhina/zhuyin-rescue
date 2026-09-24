@@ -48,15 +48,16 @@ export function wordPicMarkup (word) {
 // 背景層：整個舞台大小，裡面一層天空填色、一層 1200×800 的場景圖（ui.js 的 layoutBg 會依舞台大小縮放定位）。
 // kind：'home' 草原、'scene' 碼頭（碼頭在左下角，橫的時候靠左對齊）。inner 放要跟場景一起縮放的東西（釣魚的狗狗）。
 // kind：'home' 草原、'scene' 碼頭，以及各遊戲自己的背景插槽 'garden'（打地鼠）、'room'（樹屋教室：翻牌、連連看、填空、寫字、唸）、'shop'（商店）。
-// 插槽的圖（img/bg-<kind>.png）還沒放就退回草原 home.png，草原也沒有才用向量圖。
+// 插槽的圖（img/bg-<kind>.jpg）還沒放就退回草原 home.jpg，草原也沒有才用向量圖。
+// 背景和卡片不用透明，存 JPG：水彩畫壓成 JPG 看不出差別，檔案小七倍，手機打開快很多。
 const BG_SLOTS = ['garden', 'room', 'shop']
 export function bgHtml (kind, inner = '') {
   let art
   if (kind === 'scene') art = sceneSvg()
   else if (BG_SLOTS.includes(kind)) {
     art = homeBgSvg().replace(
-      /src="img\/home\.png"([^>]*)onerror="this\.remove\(\)"/,
-      `src="img/bg-${kind}.png"$1onerror="if (!this.dataset.fallback) { this.dataset.fallback = 1; this.src = 'img/home.png' } else this.remove()"`)
+      /src="img\/home\.jpg"([^>]*)onerror="this\.remove\(\)"/,
+      `src="img/bg-${kind}.jpg"$1onerror="if (!this.dataset.fallback) { this.dataset.fallback = 1; this.src = 'img/home.jpg' } else this.remove()"`)
   } else art = homeBgSvg()
   return `<div class="bg" data-fit="${kind === 'scene' ? 'left' : 'center'}"><div class="bg-fill ${BG_SLOTS.includes(kind) ? 'home' : kind}"></div><div class="bg-art">${art}${inner}</div></div>`
 }
@@ -154,7 +155,7 @@ export function dogSvg (color = 0, { mate = false } = {}) {
 
 // 遊戲背景：水彩天、積雲、層疊山丘、青綠海、褪色碼頭。1200×800。
 export function sceneSvg () {
-  return `<img class="art-slot" src="img/scene.png" width="1200" height="800" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+  return `<img class="art-slot" src="img/scene.jpg" width="1200" height="800" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg class="scene" viewBox="0 0 1200 800" width="1200" height="800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
   <defs>
     ${PAPER_FILTER}
@@ -228,7 +229,7 @@ export function sceneSvg () {
 
 // 首頁／選人／結算的背景：水彩天、積雲、草原。1200×800。
 export function homeBgSvg () {
-  return `<img class="art-slot" src="img/home.png" width="1200" height="800" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+  return `<img class="art-slot" src="img/home.jpg" width="1200" height="800" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg class="scene" viewBox="0 0 1200 800" width="1200" height="800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
   <defs>
     ${PAPER_FILTER}
@@ -259,7 +260,7 @@ export function homeBgSvg () {
 // 三張玩法卡的插圖。300×400。
 export function cardArt (kind) {
   if (kind === 'fishing') {
-    return `<img class="art-slot" src="img/card-fishing.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+    return `<img class="art-slot" src="img/card-fishing.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <defs><linearGradient id="csky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6F9FD0"/><stop offset="1" stop-color="#DCEBF2"/></linearGradient></defs>
   <rect width="300" height="400" fill="url(#csky)"/>
@@ -279,7 +280,7 @@ export function cardArt (kind) {
 </svg>`
   }
   if (kind === 'whack') {
-    return `<img class="art-slot" src="img/card-whack.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+    return `<img class="art-slot" src="img/card-whack.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <defs><linearGradient id="wsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6F9FD0"/><stop offset="1" stop-color="#DCEBF2"/></linearGradient></defs>
   <rect width="300" height="400" fill="url(#wsky)"/>
@@ -294,7 +295,7 @@ export function cardArt (kind) {
 </svg>`
   }
   if (kind === 'write') {
-    return `<img class="art-slot" src="img/card-write.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+    return `<img class="art-slot" src="img/card-write.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#EAF1EC"/>
   <rect x="40" y="60" width="220" height="220" rx="24" fill="#FFFDF7" stroke="#B08A63" stroke-width="8"/>
@@ -305,7 +306,7 @@ export function cardArt (kind) {
 </svg>`
   }
   if (kind === 'match') {
-    return `<img class="art-slot" src="img/card-match.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+    return `<img class="art-slot" src="img/card-match.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#DCEBF2"/>
   <rect x="30" y="70" width="100" height="70" rx="14" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
@@ -319,7 +320,7 @@ export function cardArt (kind) {
 </svg>`
   }
   if (kind === 'fill') {
-    return `<img class="art-slot" src="img/card-fill.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+    return `<img class="art-slot" src="img/card-fill.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#F3E4C2"/>
   <text x="70" y="150" text-anchor="middle" font-size="80">\u{1F34E}</text>
@@ -334,7 +335,7 @@ export function cardArt (kind) {
 </svg>`
   }
   if (kind === 'speak') {
-    return `<img class="art-slot" src="img/card-speak.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+    return `<img class="art-slot" src="img/card-speak.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#F3E4C2"/>
   <path d="M0 300 h300 v100 H0z" fill="#8DBB74"/>
@@ -351,7 +352,7 @@ export function cardArt (kind) {
   <rect x="224" y="330" width="12" height="30" fill="#4A6FA5"/>
 </svg>`
   }
-  return `<img class="art-slot" src="img/card-memory.png" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+  return `<img class="art-slot" src="img/card-memory.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#BFD8B0"/>
   <g>

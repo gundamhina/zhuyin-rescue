@@ -169,12 +169,12 @@ def all_items():
                       'ref': 'img/dog-0.png', 'prompt': DOG_EDIT.format(change=change)})
     for f, name, desc in CARDS:
         items.append({'group': 'cards', 'file': f, 'title': name, 'kind': 'card',
-                      'ref': 'img/home.png', 'prompt': desc + ', ' + CARD_TAIL})
+                      'ref': 'img/home.jpg', 'prompt': desc + ', ' + CARD_TAIL})
     for f, used, desc in BGS:
         items.append({'group': 'bgs', 'file': f, 'title': used, 'kind': 'bg',
-                      'ref': 'img/home.png', 'prompt': desc + ', ' + BG_TAIL})
+                      'ref': 'img/home.jpg', 'prompt': desc + ', ' + BG_TAIL})
     for sh in word_sheets():
         items.append({'group': 'words', 'file': sh['name'], 'title': '、'.join(sh['words']), 'kind': 'sheet',
-                      'ref': 'img/home.png', 'prompt': sheet_prompt(sh),
+                      'ref': 'img/home.jpg', 'prompt': sheet_prompt(sh),
                       'words': sh['words'], 'rows': sh['rows'], 'cols': sh['cols']})
     return items

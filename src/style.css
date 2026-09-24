@@ -211,7 +211,7 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .holes { position: absolute; inset: 0; }
 .hole { position: absolute; width: 220px; height: 200px; overflow: hidden; clip-path: inset(-60px 0 0 0); }
 .hole-back { position: absolute; left: 20px; top: 110px; width: 180px; height: 70px; border-radius: 50%; background: #3E2A1A; box-shadow: inset 0 10px 14px rgba(0,0,0,0.5); }
-.hole-front { position: absolute; left: 10px; top: 150px; width: 200px; height: 50px; border-radius: 50%; background: #6E9C58; pointer-events: none; }
+.hole-front { position: absolute; left: 10px; top: 150px; width: 200px; height: 50px; border-radius: 50%; background: radial-gradient(ellipse at 50% 20%, #D2AB78, #A67B4E 70%, #8C6440); box-shadow: 0 4px 0 rgba(90,60,30,.25); pointer-events: none; } /* 洞口一圈土堆，跟菜園背景的土色一致 */
 .mole { position: absolute; left: 40px; top: 145px; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFFDF7, #F6E7C8 60%, #E2C89A); box-shadow: 0 6px 0 rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; transform: translateY(160px) scale(0.9); transition: transform .28s cubic-bezier(.3,1.4,.5,1); cursor: pointer; }
 .mole.up { transform: translateY(-140px) scale(1); }
 .mole span { font-size: 92px; font-weight: 900; color: #2B3A4A; line-height: 1; pointer-events: none; }

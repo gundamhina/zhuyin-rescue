@@ -2,7 +2,7 @@
 // 做法：依相依順序串接各模組，拿掉 import 行和 export 關鍵字，全部放進同一個 script 範圍。
 // 前提：各模組頂層名稱不能撞。
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, existsSync, rmSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -59,6 +59,8 @@ if (existsSync(audioDir)) {
 // 圖片檔：img/ 底下的 png、jpg、webp 一起複製到 dist/img/
 const imgDir = join(root, 'img')
 if (existsSync(imgDir)) {
+  // 先清掉 dist/img，img/ 裡刪掉或改名的圖（例如 PNG 換成 JPG）才不會留在打包裡
+  rmSync(join(root, 'dist', 'img'), { recursive: true, force: true })
   mkdirSync(join(root, 'dist', 'img'), { recursive: true })
   const files = readdirSync(imgDir).filter(f => /\.(png|jpg|jpeg|webp)$/i.test(f))
   for (const f of files) copyFileSync(join(imgDir, f), join(root, 'dist', 'img', f))

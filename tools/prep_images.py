@@ -6,8 +6,8 @@
   3. npm run build
 
 檔名開頭決定怎麼處理（規格在 tools/art_list.py）：
-  scene、home、bg-*   背景：裁成橫的 3:2，縮到 1536×1024 → img/<名字>.png
-  card-*              卡片：裁成直的 3:4，縮到 600×800 → img/<名字>.png
+  scene、home、bg-*   背景：裁成橫的 3:2，縮到 1536×1024 → img/<名字>.jpg
+  card-*              卡片：裁成直的 3:4，縮到 600×800 → img/<名字>.jpg
   dog-*               狗：去掉藍底（或白底、假透明格子），放進 13:15 透明畫布 → img/<名字>.png（520×600）
   words-N             詞的九宮格：自動切開、去白底，一個詞一張 → img/words/<國字>.png（384×384）
   word-<國字>         單一個詞的圖 → img/words/<國字>.png
@@ -98,18 +98,33 @@ def cut_out(im, tight=False):
         return im
     rgb = im.convert('RGB')
     bgmask, keyed, bg = background_mask(rgb, tight)
-    alpha = Image.eval(bgmask, lambda v: 255 - v).filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(0.9))
-    rgba = Image.merge('RGBA', (*rgb.split(), alpha))
     if keyed:
-        # 去掉邊緣殘留的背景色（藍底去完，毛的邊緣會帶一圈藍）
-        arr = np.asarray(rgba).astype(np.int16)
-        ch = int(np.argmax(bg))
-        others = [c for c in range(3) if c != ch]
-        edge = arr[..., 3] < 250
-        cap = np.maximum(arr[..., others[0]], arr[..., others[1]])
-        arr[..., ch] = np.where(edge, np.minimum(arr[..., ch], cap), arr[..., ch])
-        rgba = Image.fromarray(arr.clip(0, 255).astype(np.uint8), 'RGBA')
-    return rgba
+        return soft_key(rgb, bgmask, bg)
+    alpha = Image.eval(bgmask, lambda v: 255 - v).filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(0.9))
+    return Image.merge('RGBA', (*rgb.split(), alpha))
+
+
+def soft_key(rgb, bgmask, bg):
+    """彩色底（藍底）的柔邊去背。
+    只在連到邊的背景區（再往外擴一點）裡動手，狗狗身上封閉的小塊藍色不會被挖空。
+    每個像素看「比背景色少了多少藍」決定透明度：純藍全透明，釣線這種細線跟藍底混色的半透明，
+    再把藍底的成分扣掉，還原線本來的顏色，才不會一圈藍邊。"""
+    a = np.asarray(rgb).astype(np.float32)
+    bgc = np.asarray(bg, np.float32)
+    ch = int(np.argmax(bgc))
+    others = [c for c in range(3) if c != ch]
+    key = a[..., ch] - np.maximum(a[..., others[0]], a[..., others[1]])  # 多藍
+    key_bg = bgc[ch] - max(bgc[others[0]], bgc[others[1]])
+    alpha = np.clip((key_bg - key) / (key_bg * 0.72), 0, 1)
+    # 背景區往外擴幾格，邊緣的混色像素才算得到；區外一律不透明
+    region = np.asarray(bgmask.filter(ImageFilter.MaxFilter(7))) > 64
+    alpha = np.where(region, alpha, 1.0)
+    # 還原前景色：C = a·F + (1−a)·B → F = (C − (1−a)·B) / a
+    safe = np.maximum(alpha, 0.05)[..., None]
+    fg = (a - (1 - alpha[..., None]) * bgc) / safe
+    fg = np.where(alpha[..., None] > 0.02, fg, a)
+    out = np.dstack([fg.clip(0, 255), (alpha * 255)]).astype(np.uint8)
+    return Image.fromarray(out, 'RGBA')
 
 
 def fit_square(rgba, size, pad=0.08):
@@ -186,17 +201,25 @@ def prep_word(src, word):
     return out
 
 
+def save_jpg(im, stem):
+    im.save(os.path.join(IMG, stem + '.jpg'), 'JPEG', quality=86, optimize=True, progressive=True)
+    old = os.path.join(IMG, stem + '.png')  # 舊版存的 PNG，換成 JPG 後拿掉，免得兩份都被打包
+    if os.path.exists(old):
+        os.remove(old)
+
+
 def process(src, stem):
     """照檔名開頭處理一張圖，回傳一行說明；認不得的檔名回傳 None。"""
     items = {it['file']: it for it in art_list.all_items()}
+    # 背景和卡片不用透明，存 JPG（檔案小七倍左右）
     if stem in ('scene', 'home') or stem.startswith('bg-'):
         spec = art_list.SPECS['bg']
-        crop_to(Image.open(src).convert('RGB'), spec['ratio'], spec['size']).save(os.path.join(IMG, stem + '.png'), optimize=True)
-        return f'背景 → img/{stem}.png'
+        save_jpg(crop_to(Image.open(src).convert('RGB'), spec['ratio'], spec['size']), stem)
+        return f'背景 → img/{stem}.jpg'
     if stem.startswith('card-'):
         spec = art_list.SPECS['card']
-        crop_to(Image.open(src).convert('RGB'), spec['ratio'], spec['size']).save(os.path.join(IMG, stem + '.png'), optimize=True)
-        return f'卡片 → img/{stem}.png'
+        save_jpg(crop_to(Image.open(src).convert('RGB'), spec['ratio'], spec['size']), stem)
+        return f'卡片 → img/{stem}.jpg'
     if stem.startswith('dog-'):
         prep_dog(src, os.path.join(IMG, stem + '.png'))
         return f'狗狗 → img/{stem}.png'
