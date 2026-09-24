@@ -4,6 +4,7 @@ import {
   createState, stars, activePool, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, trackView, applyTrack, effectiveTier, lifetimeStats, dailyStats, TIERS,
   addBones, buyItem, wearItem, withWallet,
   dayKey, dailyView, recordRound, claimDaily, dailyBonus, DAILY_GOAL, markSeen, recommendTrack,
+  questionReward, roundBonus, comboBonus,
 } from '../src/scheduler.js';
 import { GROUPS, coreOf } from '../src/data.js';
 
@@ -579,4 +580,51 @@ test('今天推薦：推今天練最少的那一軌，都一樣就照日子輪',
   const fresh = createState()
   const days = ['2026-09-24', '2026-09-25', '2026-09-26'].map(d => recommendTrack(fresh, d))
   assert.equal(new Set(days).size, 3, '三軌都沒練的時候，每天輪一軌')
+})
+
+
+// ---- 骨頭照題目難度給：簡單的題目給少一點 ----
+test('答對給幾根骨頭：階級越高越多；還不熟的符號多給、已經很熟的少給；最少一根', () => {
+  // 階級存在每一軌裡，所以直接做出「聽」這一軌的畫面再改階級
+  const at = tier => ({ ...trackView(createState(), 'listen'), tier })
+  const withStars = (tier, symbol, ok, n) => {
+    let v = at(tier)
+    for (let i = 0; i < n; i++) v = recordAnswer(v, { target: symbol, ok, picked: symbol, ms: 1000 })
+    return v
+  }
+  // 最低階、已經很熟（十題都對，5 顆星）：最簡單，只給 1 根
+  assert.equal(questionReward(withStars(0, 'ㄚ', true, 10), 'ㄚ', true), 1)
+  // 最低階、第一次看到（0 顆星）：2 根
+  assert.equal(questionReward(at(0), 'ㄚ', true), 2)
+  // 最高階、還不熟：4 根
+  assert.equal(questionReward(withStars(5, 'ㄅ', false, 10), 'ㄅ', true), 4)
+  // 最高階、很熟：2 根
+  assert.equal(questionReward(withStars(5, 'ㄅ', true, 10), 'ㄅ', true), 2)
+  // 中間階級、普通熟（3 顆星）：2 根
+  const mid = withStars(2, 'ㄇ', true, 6)
+  let v = mid
+  for (let i = 0; i < 4; i++) v = recordAnswer(v, { target: 'ㄇ', ok: false, picked: 'ㄈ', ms: 1000 })
+  assert.equal(questionReward(v, 'ㄇ', true), 2)
+  // 家長鎖階以鎖的為準
+  assert.equal(questionReward({ ...at(0), lockTier: 5 }, 'ㄚ', true), 4)
+})
+
+test('錯了才答對：低階不給，高一點的階級給 1 根', () => {
+  assert.equal(questionReward({ ...trackView(createState(), 'listen'), tier: 0 }, 'ㄚ', false), 0)
+  assert.equal(questionReward({ ...trackView(createState(), 'listen'), tier: 1 }, 'ㄚ', false), 0)
+  assert.equal(questionReward({ ...trackView(createState(), 'listen'), tier: 2 }, 'ㄚ', false), 1)
+  assert.equal(questionReward({ ...trackView(createState(), 'listen'), tier: 5 }, 'ㄚ', false), 1)
+})
+
+test('玩完一局的骨頭也照階級：低階 1 根、中階 2 根、高階 3 根', () => {
+  const v = t => ({ ...trackView(createState(), 'listen'), tier: t })
+  assert.deepEqual([0, 1, 2, 3, 4, 5].map(t => roundBonus(v(t))), [1, 1, 2, 2, 3, 3])
+})
+
+test('連對獎勵照階級：連 3 題多 1～3 根、連 5 題多 2～4 根，其他題數沒有', () => {
+  const v = t => ({ ...trackView(createState(), 'listen'), tier: t })
+  assert.deepEqual([0, 2, 5].map(t => comboBonus(v(t), 3)), [1, 2, 3])
+  assert.deepEqual([0, 2, 5].map(t => comboBonus(v(t), 5)), [2, 3, 4])
+  assert.equal(comboBonus(v(5), 2), 0)
+  assert.equal(comboBonus(v(5), 4), 0)
 })

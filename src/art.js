@@ -399,37 +399,37 @@ export const SHOP_ICONS = {
 // 配件畫在狗狗的 260×300 框裡（對準 img/dog-0.png 那隻：帽子頂 y≈30、眼睛 y≈108 在 x 92 與 150、脖子 y≈160）。
 // slot：head 頭上、face 臉上、neck 脖子，每個部位只能戴一件。box 是商店卡片裁圖用的範圍 [x, y, w, h]。
 export const ACCESSORIES = [
-  { id: 'flower', name: '小花', slot: 'head', price: 60, box: [20, 80, 70, 70],
+  { id: 'flower', name: '小花', slot: 'head', price: 180, box: [20, 80, 70, 70],
     svg: `<g transform="translate(52 112)"><g fill="#E39AA8">${[0, 72, 144, 216, 288].map(a => `<ellipse rx="7" ry="13" cy="-13" transform="rotate(${a})"/>`).join('')}</g><circle r="7" fill="#E8C86A"/></g>` },
-  { id: 'bow', name: '紅蝴蝶結', slot: 'head', price: 80, box: [135, 40, 80, 70],
+  { id: 'bow', name: '紅蝴蝶結', slot: 'head', price: 240, box: [135, 40, 80, 70],
     svg: `<g transform="translate(176 74)"><path d="M0 0 L-26 -16 L-24 16 Z M0 0 L26 -16 L24 16 Z" fill="#C8553D"/><path d="M-20 -8 L-8 -2 M20 -8 L8 -2" stroke="#96402D" stroke-width="3" stroke-linecap="round" fill="none"/><circle r="6" fill="#96402D"/></g>` },
-  { id: 'party', name: '派對帽', slot: 'head', price: 120, box: [120, 0, 90, 80],
+  { id: 'party', name: '派對帽', slot: 'head', price: 360, box: [120, 0, 90, 80],
     svg: `<g transform="translate(165 10)"><path d="M0 0 L-26 58 L26 58 Z" fill="#4A6FA5"/><path d="M-13 29 L13 29 M-20 44 L20 44" stroke="#E8C86A" stroke-width="5"/><circle r="7" fill="#E39AA8"/></g>` },
-  { id: 'crown', name: '小皇冠', slot: 'head', price: 200, box: [60, 0, 100, 70],
+  { id: 'crown', name: '小皇冠', slot: 'head', price: 600, box: [60, 0, 100, 70],
     svg: `<g transform="translate(110 40)"><path d="M-34 14 L-38 -22 L-19 -4 L0 -30 L19 -4 L38 -22 L34 14 Z" fill="#E8C86A" stroke="#B99A44" stroke-width="3" stroke-linejoin="round"/><circle cx="-19" cy="4" r="4" fill="#C8553D"/><circle cx="0" cy="2" r="4" fill="#4A6FA5"/><circle cx="19" cy="4" r="4" fill="#6B9E6B"/></g>` },
-  { id: 'glasses', name: '圓眼鏡', slot: 'face', price: 100, box: [60, 80, 120, 60],
+  { id: 'glasses', name: '圓眼鏡', slot: 'face', price: 300, box: [60, 80, 120, 60],
     svg: `<g fill="rgba(255,255,255,0.18)" stroke="#8E6D4C" stroke-width="4"><circle cx="92" cy="108" r="19"/><circle cx="150" cy="108" r="19"/><path d="M111 106 Q121 100 131 106" fill="none"/></g>` },
-  { id: 'shades', name: '太陽眼鏡', slot: 'face', price: 150, box: [60, 80, 120, 60],
+  { id: 'shades', name: '太陽眼鏡', slot: 'face', price: 450, box: [60, 80, 120, 60],
     svg: `<g><rect x="70" y="94" width="44" height="28" rx="10" fill="#2B3A4A"/><rect x="128" y="94" width="44" height="28" rx="10" fill="#2B3A4A"/><path d="M114 104 Q121 98 128 104" stroke="#2B3A4A" stroke-width="4" fill="none"/><path d="M78 100 L92 100" stroke="rgba(255,255,255,0.6)" stroke-width="3" stroke-linecap="round"/><path d="M136 100 L150 100" stroke="rgba(255,255,255,0.6)" stroke-width="3" stroke-linecap="round"/></g>` },
-  { id: 'bowtie', name: '領結', slot: 'neck', price: 80, box: [80, 135, 80, 60],
+  { id: 'bowtie', name: '領結', slot: 'neck', price: 240, box: [80, 135, 80, 60],
     svg: `<g transform="translate(120 164)"><path d="M0 0 L-24 -13 L-22 13 Z M0 0 L24 -13 L22 13 Z" fill="#34507A"/><circle r="5" fill="#1B2B4B"/></g>` },
-  { id: 'scarf', name: '藍圍巾', slot: 'neck', price: 120, box: [50, 135, 130, 90],
+  { id: 'scarf', name: '藍圍巾', slot: 'neck', price: 360, box: [50, 135, 130, 90],
     svg: `<g><path d="M72 150 Q120 178 168 152 Q170 168 166 176 Q120 200 74 170 Z" fill="#4A6FA5"/><path d="M78 168 Q64 190 70 216 L92 214 Q90 190 100 178 Z" fill="#34507A"/><path d="M72 208 L92 206" stroke="#E8C86A" stroke-width="4"/></g>` },
-  { id: 'necklace', name: '星星項鍊', slot: 'neck', price: 100, box: [75, 140, 90, 60],
+  { id: 'necklace', name: '星星項鍊', slot: 'neck', price: 300, box: [75, 140, 90, 60],
     svg: `<g><path d="M84 150 Q120 190 156 150" fill="none" stroke="#E8C86A" stroke-width="3"/><path d="M120 168 l5 10 11 1-8 8 2 11-10-6-10 6 2-11-8-8 11-1z" fill="#E8C86A" stroke="#B99A44" stroke-width="1.5"/></g>` },
-  { id: 'ears', name: '兔耳朵', slot: 'head', price: 180, box: [60, 0, 120, 90],
+  { id: 'ears', name: '兔耳朵', slot: 'head', price: 540, box: [60, 0, 120, 90],
     svg: `<g transform="translate(118 58)"><g transform="rotate(-14)"><ellipse cx="-20" cy="-30" rx="11" ry="34" fill="#FFFDF7" stroke="#B08A63" stroke-width="3"/><ellipse cx="-20" cy="-30" rx="5" ry="24" fill="#E39AA8"/></g><g transform="rotate(14)"><ellipse cx="20" cy="-30" rx="11" ry="34" fill="#FFFDF7" stroke="#B08A63" stroke-width="3"/><ellipse cx="20" cy="-30" rx="5" ry="24" fill="#E39AA8"/></g></g>` },
-  { id: 'cowboy', name: '牛仔帽', slot: 'head', price: 280, box: [40, 20, 150, 80],
+  { id: 'cowboy', name: '牛仔帽', slot: 'head', price: 840, box: [40, 20, 150, 80],
     svg: `<g transform="translate(115 62)"><ellipse rx="66" ry="17" fill="#B07242"/><path d="M-34 0 q-3 -34 8 -40 q26 10 52 0 q11 6 8 40 z" fill="#E0955B" stroke="#B07242" stroke-width="3"/><path d="M-34 -6 q34 10 68 0" stroke="#8E6D4C" stroke-width="8" fill="none"/></g>` },
-  { id: 'heartglass', name: '愛心眼鏡', slot: 'face', price: 220, box: [55, 78, 130, 62],
+  { id: 'heartglass', name: '愛心眼鏡', slot: 'face', price: 660, box: [55, 78, 130, 62],
     svg: `<g fill="#E39AA8" stroke="#C8553D" stroke-width="3"><path d="M92 120 q-20 -14 -20 -24 a10 10 0 0 1 20 -6 a10 10 0 0 1 20 6 q0 10 -20 24z"/><path d="M150 120 q-20 -14 -20 -24 a10 10 0 0 1 20 -6 a10 10 0 0 1 20 6 q0 10 -20 24z"/></g>` },
-  { id: 'medal', name: '金牌', slot: 'neck', price: 300, box: [80, 140, 90, 90],
+  { id: 'medal', name: '金牌', slot: 'neck', price: 900, box: [80, 140, 90, 90],
     svg: `<g><path d="M104 152 L120 196 L136 152" fill="none" stroke="#C8553D" stroke-width="9"/><circle cx="120" cy="208" r="19" fill="#E8C86A" stroke="#B99A44" stroke-width="3"/><path d="M120 197 l4 8 9 1-7 6 2 9-8-5-8 5 2-9-7-6 9-1z" fill="#B99A44"/></g>` },
-  { id: 'backpack', name: '小背包', slot: 'back', price: 250, box: [-30, 145, 120, 130],
+  { id: 'backpack', name: '小背包', slot: 'back', price: 750, box: [-30, 145, 120, 130],
     svg: `<g><rect x="-24" y="162" width="92" height="100" rx="26" fill="#6B9E6B" stroke="#4E7A4E" stroke-width="4"/><rect x="-10" y="202" width="62" height="36" rx="12" fill="#4E7A4E"/><path d="M-2 162 q22 -24 44 0" fill="none" stroke="#4E7A4E" stroke-width="7"/></g>` },
-  { id: 'cape', name: '英雄披風', slot: 'back', price: 350, box: [-20, 140, 300, 195],
+  { id: 'cape', name: '英雄披風', slot: 'back', price: 1050, box: [-20, 140, 300, 195],
     svg: `<g><path d="M84 150 q36 24 72 0 l96 172 q-132 42 -264 0z" fill="#C8553D" stroke="#96402D" stroke-width="4"/><path d="M118 158 l-18 156 M146 158 l18 156" stroke="#96402D" stroke-width="3" opacity="0.45" fill="none"/></g>` },
-  { id: 'wings', name: '小翅膀', slot: 'back', price: 550, box: [-30, 85, 320, 160],
+  { id: 'wings', name: '小翅膀', slot: 'back', price: 1650, box: [-30, 85, 320, 160],
     svg: `<g fill="#EAF2F8" stroke="#8FB3C9" stroke-width="4"><path d="M100 165 q-96 -72 -114 -8 q-14 54 34 64 q46 10 80 -28z"/><path d="M160 165 q96 -72 114 -8 q14 54 -34 64 q-46 10 -80 -28z"/></g>` },
 ]
 
@@ -455,7 +455,7 @@ export function accessoryIcon (item) {
 
 // ---- 救援隊員：另外五隻狗狗，一隻一隻買回家 ----
 export const DOG_NAMES = ['警察狗', '消防狗', '飛行狗', '回收狗', '工程狗', '鬆餅狗']
-const MATE_PRICES = [600, 800, 1100, 1400, 1800]
+const MATE_PRICES = [1800, 2400, 3300, 4200, 5400]
 
 // 她自己那隻本來就有，商店賣其他五隻；越後面越貴
 export function teammatesFor (ownColor) {

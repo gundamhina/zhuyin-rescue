@@ -64,7 +64,7 @@ export function renderShop (root, { profile, state, tab = 'acc', onTab, onBuy, o
       if (btn.disabled) return
       if (armed) { clearTimeout(armed); onBuy(item); return }
       btn.classList.add('armed')
-      btn.innerHTML = `${boneSvg()} ${item.price} ${SHOP_ICONS.check}`
+      btn.innerHTML = `${SHOP_ICONS.check} ${item.price}` // 骨頭圖示先拿掉，四位數價格加打勾才塞得進卡片
       armed = setTimeout(() => { armed = null; btn.classList.remove('armed'); btn.innerHTML = `${boneSvg()} ${item.price}` }, 4000)
     })
   })

@@ -403,9 +403,9 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
       ${profile ? `
       <div class="panel-row">
         <b>骨頭</b> 現在 <b>${state.bones || 0}</b> 根（累計賺過 ${state.bonesTotal || 0}，買了 ${(state.owned || []).length} 件配件）
-        <button class="mini" id="bones-minus" title="扣 50 根">−50</button>
-        <button class="mini" id="bones-plus" title="送 50 根">＋50</button>
-        <span class="panel-hint-inline">第一次就答對 2 根、重試才對 1 根、玩完一局再送 3 根。翻牌是純遊玩：配對一對 1 根、沒有過關獎勵，星星和難度都不算它。</span>
+        <button class="mini" id="bones-minus" title="扣 100 根">−100</button>
+        <button class="mini" id="bones-plus" title="送 100 根">＋100</button>
+        <span class="panel-hint-inline">照題目難度給：第一次就答對，階級 1–2 給 1 根、3–4 給 2 根、5–6 給 3 根；還不熟的符號多 1 根、已經很熟的（4 顆星以上）少 1 根，最少 1 根。錯了才答對：低階不給、其他 1 根。連 3 題、連 5 題另外多 1～4 根，玩完一局再送 1～3 根，也都照階級。翻牌是純遊玩：配對一對 1 根、沒有過關獎勵。</span>
       </div>` : ''}
       <div class="panel-row panel-difficulty">
         <label>難度
@@ -466,8 +466,8 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
     root.querySelector('#sel-tier').onchange = e => {
       onStateChange({ lockTier: e.target.value === '' ? null : parseInt(e.target.value, 10) })
     }
-    root.querySelector('#bones-minus').onclick = () => onStateChange({ bones: Math.max(0, (state.bones || 0) - 50) })
-    root.querySelector('#bones-plus').onclick = () => onStateChange({ bones: (state.bones || 0) + 50, bonesTotal: (state.bonesTotal || 0) + 50 })
+    root.querySelector('#bones-minus').onclick = () => onStateChange({ bones: Math.max(0, (state.bones || 0) - 100) })
+    root.querySelector('#bones-plus').onclick = () => onStateChange({ bones: (state.bones || 0) + 100, bonesTotal: (state.bonesTotal || 0) + 100 })
     root.querySelector('#tier-down').onclick = () => onStateChange({ tier: Math.max(0, state.tier - 1), recent: [] })
     root.querySelector('#tier-up').onclick = () => onStateChange({ tier: Math.min(TIERS.length - 1, state.tier + 1), recent: [] })
     root.querySelector('#sel-unlocked').onchange = e => onStateChange({ unlockedUpTo: parseInt(e.target.value, 10) })

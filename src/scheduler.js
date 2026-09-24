@@ -440,3 +440,31 @@ export function recommendTrack (state, today) {
   const tied = TRACKS.filter((t, i) => counts[i] === min)
   return tied[dayNo % tied.length]
 }
+
+// ---- 骨頭照題目難度給：太簡單的題目給少一點 ----
+// 第一次就答對：階級 0–1 給 1 根、2–3 給 2 根、4–5 給 3 根；
+// 這個符號還不熟（0–1 顆星，包含第一次看到）多 1 根，已經很熟（4–5 顆星）少 1 根，最少 1 根。
+// 錯了才答對：低階（0–1）不給，其他給 1 根。state 要傳這一軌的畫面（trackView），而且要在記錄這題之前算。
+const TIER_BONES = [1, 1, 2, 2, 3, 3]
+export function questionReward (state, target, first) {
+  const tier = effectiveTier(state)
+  if (!first) return tier >= 2 ? 1 : 0
+  const s = stars(state, target)
+  let n = TIER_BONES[tier]
+  if (s <= 1) n += 1
+  if (s >= 4) n -= 1
+  return Math.max(1, n)
+}
+
+// 玩完一局的骨頭也照階級：低階 1 根、中階 2 根、高階 3 根
+export function roundBonus (state) {
+  return TIER_BONES[effectiveTier(state)]
+}
+
+// 連對獎勵也照階級：連 3 題多「一局獎勵」那麼多，連 5 題再多一根
+export function comboBonus (state, combo) {
+  const base = TIER_BONES[effectiveTier(state)]
+  if (combo === 3) return base
+  if (combo === 5) return base + 1
+  return 0
+}

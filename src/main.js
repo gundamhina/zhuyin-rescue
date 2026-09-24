@@ -1,6 +1,6 @@
 // 把所有模組接起來：使用者、狀態、出題、三種玩法、畫面切換。
 
-import { addBones, buyItem, wearItem, recordRound, claimDaily, dailyView, DAILY_GOAL, markSeen, recommendTrack, dayKey, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, activePool, effectiveTier, trackView, applyTrack } from './scheduler.js'
+import { addBones, buyItem, wearItem, recordRound, claimDaily, dailyView, DAILY_GOAL, markSeen, recommendTrack, dayKey, questionReward, roundBonus, comboBonus, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, activePool, effectiveTier, trackView, applyTrack } from './scheduler.js'
 import { createStore } from './store.js'
 import { createAudio } from './audio.js'
 import { createFishing } from './fishing.js'
@@ -230,7 +230,7 @@ function main () {
     })
   }
 
-  // ---- 連對：第一次就答對一題接一題，火焰上的數字往上加；連 3 題多 2 根、連 5 題再多 3 根 ----
+  // ---- 連對：第一次就答對一題接一題，火焰上的數字往上加；連 3 題、連 5 題有額外骨頭（照階級，comboBonus） ----
   const comboEl = gameEl.querySelector('#combo')
   comboEl.querySelector('.flame').innerHTML = UX_ICONS.flame
   let combo = 0
@@ -245,17 +245,18 @@ function main () {
     comboEl.classList.add('pop')
   }
   // 答對：星星、骨頭、特效、震動、連對。el 是答對的那個東西（找不到就不放特效）
-  function rewardCorrect (first, el) {
+  // bones 是這題值幾根，照難度算（questionReward），要在記錄這題之前算好
+  function rewardCorrect (first, el, bones) {
     earned.push(first)
     setStars()
-    gain(first ? 2 : 1, el)
+    gain(bones, el)
     if (el) burstAt(el)
     buzz(25)
     if (!first) return
     setCombo(combo + 1)
     if (combo >= 2) audio.combo(combo)
-    if (combo === 3) setTimeout(() => gain(2, comboEl), 450)
-    if (combo === 5) setTimeout(() => gain(3, comboEl), 450)
+    const extra = comboBonus(currentView(), combo) // 連 3 題、連 5 題的獎勵，照階級
+    if (extra) setTimeout(() => gain(extra, comboEl), 450)
   }
   function rewardWrong () {
     setCombo(0)
@@ -385,7 +386,7 @@ function main () {
     // 翻牌是純遊玩：沒有玩完的骨頭，也不算今天的腳印
     let daily = null
     if (kind !== 'memory') {
-      gain(3)
+      gain(roundBonus(currentView()))
       state = recordRound(state, today())
       store.save(profile.id, state)
       daily = { ...dailyView(state, today()), goal: DAILY_GOAL }
@@ -490,8 +491,9 @@ function main () {
       busy = true
       clearIdle()
       game.lock()
+      const bones = questionReward(currentView(), q.target, firstAttempt)
       if (firstAttempt) commit({ target: q.target, ok: true, picked: symbol, ms, drill: q.drill })
-      rewardCorrect(firstAttempt, el || playArea.querySelector('.pad-wrap'))
+      rewardCorrect(firstAttempt, el || playArea.querySelector('.pad-wrap'), bones)
       audio.stop()
       if (kind === 'whack') audio.crunch(); else if (kind === 'write') audio.ding(); else audio.splash()
       await game.celebrate(symbol)
@@ -577,8 +579,9 @@ function main () {
     }
     game.heard(transcripts[0] || '')
     if (matchesSymbol(q.target, transcripts)) {
+      const bones = questionReward(currentView(), q.target, firstAttempt)
       if (firstAttempt) commit({ target: q.target, ok: true, picked: q.target, ms: 0, drill: q.drill })
-      rewardCorrect(firstAttempt, playArea.querySelector('.sign'))
+      rewardCorrect(firstAttempt, playArea.querySelector('.sign'), bones)
       audio.ding()
       await game.celebrate()
       if (game !== myGame) return
@@ -623,8 +626,9 @@ function main () {
       if (busy) return
       if (word === picked) {
         busy = true
+        const bones = questionReward(currentView(), word, firstTry[word])
         if (firstTry[word]) commit({ target: word, ok: true, picked: word, ms: 0, drill: null })
-        rewardCorrect(firstTry[word], playArea.querySelector(`.mpic[data-symbol="${picked}"]`))
+        rewardCorrect(firstTry[word], playArea.querySelector(`.mpic[data-symbol="${picked}"]`), bones)
         audio.ding()
         game.markCorrect(word, picked)
         await audio.say(word) // 對答案：唸一次這個詞
@@ -675,8 +679,9 @@ function main () {
       if (syl === correct) {
         busy = true
         game.lock()
+        const bones = questionReward(currentView(), q.target, firstAttempt)
         if (firstAttempt) commit({ target: q.target, ok: true, picked: q.target, ms: 0, drill: q.drill })
-        rewardCorrect(firstAttempt, playArea.querySelector('.fill-sign'))
+        rewardCorrect(firstAttempt, playArea.querySelector('.fill-sign'), bones)
         audio.ding()
         game.fill(syl)
         await game.celebrate()
