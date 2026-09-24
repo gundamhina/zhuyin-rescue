@@ -124,7 +124,7 @@ export function matchesSymbol (symbol, transcripts) {
 }
 
 export function createSpeak (root, { color = 0 } = {}) {
-  root.innerHTML = bgHtml('home') + '<div class="frame">' +
+  root.innerHTML = bgHtml('room') + '<div class="frame">' +
     '<div class="dog-wrap speak-dog">' + dogSvg(color) + '</div>' +
     '<div class="sign"><div class="sign-board"><span></span></div><div class="sign-post"></div></div>' +
     '<div class="heard"></div>' +

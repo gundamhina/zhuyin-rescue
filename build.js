@@ -16,7 +16,11 @@ function strip (src, name) {
     .replace(/^export\s+(const|let|function|async function)\s/gm, '$1 ')
 }
 
-const js = ORDER.map(f => strip(readFileSync(join(root, 'src', f), 'utf8'), f)).join('\n')
+// 哪幾隻狗的圖還只是 dog-0 的複本：那幾隻當隊員時要畫隊色領巾才分得出來，換上真的圖就自動不畫
+const dogPath = i => join(root, 'img', `dog-${i}.png`)
+const dog0 = existsSync(dogPath(0)) ? readFileSync(dogPath(0)) : null
+const dogCopies = [1, 2, 3, 4, 5].filter(i => dog0 && existsSync(dogPath(i)) && readFileSync(dogPath(i)).equals(dog0))
+const js = `const DOG_COPIES = ${JSON.stringify(dogCopies)}\n` + ORDER.map(f => strip(readFileSync(join(root, 'src', f), 'utf8'), f)).join('\n')
 // 各模組最外層的名稱不能撞：合成同一個範圍後，同名的 function 會靜靜地互相蓋掉，new Function 抓不到
 const seen = {}
 for (const f of ORDER) {

@@ -1,0 +1,252 @@
+<meta charset="utf-8">
+<title>救援隊生圖清單</title>
+<meta name="description" content="注音救援隊還缺的 24 張手繪圖：照優先順序排好，提示詞一鍵複製，做完蓋腳印。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --sky: #EDF3F5;
+    --paper: #FCFDFB;
+    --wash: #F2F6F4;
+    --ink: #22303C;
+    --muted: #5C6C78;
+    --line: #D3DFE5;
+    --meadow: #4E8A56;
+    --meadow-ink: #FFFFFF;
+    --wood: #8B6746;
+    --sun: #E0B347;
+    --g-dogs: #C8553D;
+    --g-cards: #4A6FA5;
+    --g-bgs: #6B9E6B;
+    --g-words: #E0955B;
+    --display: "LXGW WenKai TC", "Kaiti TC", "DFKai-SB", "BiauKai", serif;
+    --body: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --sky: #111A21; --paper: #1A252E; --wash: #1F2C35; --ink: #E4ECF0; --muted: #9DB0BC; --line: #2B3945;
+      --meadow: #85BE8B; --meadow-ink: #10201A; --wood: #D3AA80; --sun: #E8C667;
+      --g-dogs: #E07A63; --g-cards: #7C9ED3; --g-bgs: #8DC08D; --g-words: #EDAE7C;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --sky: #111A21; --paper: #1A252E; --wash: #1F2C35; --ink: #E4ECF0; --muted: #9DB0BC; --line: #2B3945;
+    --meadow: #85BE8B; --meadow-ink: #10201A; --wood: #D3AA80; --sun: #E8C667;
+    --g-dogs: #E07A63; --g-cards: #7C9ED3; --g-bgs: #8DC08D; --g-words: #EDAE7C;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--sky); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.65; padding-inline: 16px; }
+  .wrap { max-width: 780px; margin: 0 auto; padding-block: 40px 72px; }
+
+  header h1 { font-family: var(--display); font-weight: 700; font-size: clamp(30px, 6vw, 42px); line-height: 1.2; margin: 0 0 6px; text-wrap: balance; }
+  .lede { color: var(--muted); margin: 0 0 22px; max-width: 60ch; }
+
+  /* 進度：一格是一張圖，顏色是它屬於哪一組 */
+  .album { display: grid; grid-template-columns: repeat(24, 1fr); gap: 4px; margin-bottom: 8px; }
+  .album span { height: 14px; border-radius: 4px; background: var(--line); transition: background .25s; }
+  .album span.done { background: var(--g); }
+  .album-count { display: flex; justify-content: space-between; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+  .album-count b { color: var(--ink); }
+
+  .steps { margin: 30px 0 8px; padding: 18px 22px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; }
+  .steps h2 { font-family: var(--display); font-size: 20px; margin: 0 0 8px; }
+  .steps ol { margin: 0; padding-left: 1.3em; }
+  .steps li { margin: 4px 0; }
+  code { font-family: var(--mono); font-size: .88em; color: var(--wood); background: var(--wash); padding: 1px 6px; border-radius: 5px; }
+
+  section.group { margin-top: 44px; }
+  .group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--g); padding-bottom: 8px; }
+  .group-head .prio { font-family: var(--display); font-size: 15px; color: var(--g); letter-spacing: .08em; white-space: nowrap; }
+  .group-head h2 { font-family: var(--display); font-weight: 700; font-size: 26px; margin: 0; flex: 1; }
+  .group-head .count { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .group-intro { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: start; margin: 14px 0 6px; }
+  .group-intro p { margin: 0; color: var(--muted); max-width: 58ch; }
+  .group-intro p strong { color: var(--ink); font-weight: 500; }
+  .ref { text-align: center; font-size: 12px; color: var(--muted); }
+  .ref img { display: block; width: 116px; height: 86px; object-fit: contain; border-radius: 10px; background: var(--wash); border: 1px solid var(--line); margin-bottom: 4px; }
+  .ref img.photo { object-fit: cover; }
+
+  ul.items { list-style: none; margin: 0; padding: 0; }
+  li.item { display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+  li.item:last-child { border-bottom: 0; }
+
+  /* 做完蓋一個腳印 */
+  .stamp { width: 40px; height: 40px; border-radius: 50%; border: 2px dashed var(--line); background: transparent; color: transparent; display: grid; place-items: center; cursor: pointer; padding: 0; transition: background .2s, border-color .2s, color .2s; }
+  .stamp svg { width: 24px; height: 24px; }
+  .stamp:hover { border-color: var(--sun); color: color-mix(in srgb, var(--sun) 55%, transparent); }
+  .stamp[aria-pressed="true"] { background: var(--sun); border: 2px solid var(--sun); color: var(--paper); }
+  .stamp:focus-visible, .copy:focus-visible { outline: 3px solid var(--meadow); outline-offset: 2px; }
+
+  .item-top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+  .file { font-family: var(--mono); font-weight: 500; font-size: 15px; color: var(--wood); }
+  .title { font-weight: 700; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .spec { font-size: 13px; color: var(--muted); }
+  li.item.is-done .title, li.item.is-done .file { opacity: .55; }
+
+  .words { display: inline-grid; gap: 3px; margin: 10px 0 2px; }
+  .words span { font-size: 14px; padding: 2px 10px; background: var(--wash); border-radius: 6px; text-align: center; white-space: nowrap; }
+
+  .prompt { position: relative; margin-top: 10px; background: var(--wash); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px 12px 14px; }
+  .prompt p { margin: 0 0 10px; font-family: var(--mono); font-size: 13px; line-height: 1.6; color: var(--ink); overflow-wrap: anywhere; user-select: all; }
+  .copy { font-family: var(--body); font-size: 14px; font-weight: 500; border: 0; border-radius: 999px; padding: 6px 16px; background: var(--meadow); color: var(--meadow-ink); cursor: pointer; }
+  .copy.copied { background: var(--sun); color: #2B2410; }
+
+  footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+  footer p { margin: 6px 0; max-width: 65ch; }
+
+  @media (max-width: 560px) {
+    .wrap { padding-block: 28px 56px; }
+    .album { grid-template-columns: repeat(12, 1fr); }
+    .group-intro { grid-template-columns: 1fr; }
+    .ref { text-align: left; display: flex; align-items: center; gap: 10px; }
+    .ref img { margin: 0; }
+    li.item { grid-template-columns: 1fr; gap: 10px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>救援隊生圖清單</h1>
+    <p class="lede">注音救援隊還缺的手繪圖，照優先順序排好。一條提示詞生一張圖，複製進 Gemini，生好了就在左邊蓋個腳印。</p>
+    <div class="album" id="album" aria-hidden="true"></div>
+    <div class="album-count"><span>一格是一張圖</span><span>已完成 <b id="done-n">0</b> / <span id="total-n">0</span></span></div>
+  </header>
+
+  <div class="steps">
+    <h2>生好之後</h2>
+    <ol>
+      <li>照清單上的檔名改名，例如 <code>dog-1.jpg</code>、<code>card-fishing.png</code>、<code>words-3.jpg</code>。</li>
+      <li>丟進專案的 <code>img/raw/</code> 資料夾。</li>
+      <li>跟 Claude 說一聲，或自己跑 <code>python tools/prep_images.py</code> 再 <code>npm run build</code>。裁切、去背、切九宮格都會自動做。</li>
+    </ol>
+  </div>
+
+  <main id="groups"></main>
+
+  <footer>
+    <p>Gemini 不一定照比例出圖，處理工具會從中間裁，所以重要的東西放中間就好。生出來有亂碼文字的圖，重生一次比較好。</p>
+    <p>勾選狀態只存在這個瀏覽器裡。</p>
+  </footer>
+</div>
+
+<script>
+  const DATA = /*__DATA__*/null
+  const KEY = 'zhuyin-art-pack-done'
+  const PAW = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><ellipse cx="12" cy="16" rx="5.6" ry="4.6"/><circle cx="5.4" cy="10" r="2.5"/><circle cx="9.5" cy="6.3" r="2.5"/><circle cx="14.5" cy="6.3" r="2.5"/><circle cx="18.6" cy="10" r="2.5"/></svg>'
+  const PRIO = ['第一', '第二', '第三', '第四']
+
+  function loadDone () { try { return new Set(JSON.parse(localStorage.getItem(KEY) || '[]')) } catch (e) { return new Set() } }
+  function saveDone (set) { try { localStorage.setItem(KEY, JSON.stringify([...set])) } catch (e) { /* 存不了就算了 */ } }
+  const done = loadDone()
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+
+  function render () {
+    const album = document.getElementById('album')
+    album.innerHTML = DATA.items.map(it => `<span data-file="${it.file}" style="--g: var(--g-${it.group})"></span>`).join('')
+    document.getElementById('total-n').textContent = DATA.items.length
+
+    document.getElementById('groups').innerHTML = DATA.groups.map((g, gi) => {
+      const items = DATA.items.filter(it => it.group === g.id)
+      const ref = items[0].ref
+      const refImg = DATA.refs[ref]
+      return `
+      <section class="group" style="--g: var(--g-${g.id})" aria-labelledby="h-${g.id}">
+        <div class="group-head">
+          <span class="prio">${PRIO[gi]}優先</span>
+          <h2 id="h-${g.id}">${esc(g.name)}</h2>
+          <span class="count" data-count="${g.id}"></span>
+        </div>
+        <div class="group-intro">
+          <p>${esc(g.why)}<br><strong>${esc(g.how)}</strong></p>
+          ${refImg ? `<div class="ref"><img class="${ref.includes('home') ? 'photo' : ''}" src="${refImg}" alt="參考圖 ${esc(ref)}"><code>${esc(ref)}</code></div>` : ''}
+        </div>
+        <ul class="items">
+          ${items.map(it => `
+          <li class="item" data-file="${it.file}">
+            <button class="stamp" type="button" id="stamp-${it.file}" aria-pressed="false" aria-label="${esc(it.file)} 生好了">${PAW}</button>
+            <div>
+              <div class="item-top">
+                ${it.color ? `<span class="dot" style="background:${it.color}"></span>` : ''}
+                <span class="file">${esc(it.file)}</span>
+                <span class="title">${esc(it.title.length > 16 ? (it.kind === 'sheet' ? '九個詞' : it.title) : it.title)}</span>
+                <span class="spec">${esc(it.spec)}</span>
+              </div>
+              ${it.words ? `<div class="words" style="grid-template-columns: repeat(${it.cols}, auto)">${it.words.map(w => `<span>${esc(w)}</span>`).join('')}</div>` : ''}
+              <div class="prompt">
+                <p id="prompt-${it.file}">${esc(it.prompt)}</p>
+                <button class="copy" type="button" data-copy="${it.file}">複製提示詞</button>
+              </div>
+            </div>
+          </li>`).join('')}
+        </ul>
+      </section>`
+    }).join('')
+    refresh()
+  }
+
+  function refresh () {
+    document.querySelectorAll('li.item').forEach(li => {
+      const on = done.has(li.dataset.file)
+      li.classList.toggle('is-done', on)
+      li.querySelector('.stamp').setAttribute('aria-pressed', on ? 'true' : 'false')
+    })
+    document.querySelectorAll('#album span').forEach(s => s.classList.toggle('done', done.has(s.dataset.file)))
+    document.getElementById('done-n').textContent = DATA.items.filter(it => done.has(it.file)).length
+    DATA.groups.forEach(g => {
+      const items = DATA.items.filter(it => it.group === g.id)
+      document.querySelector(`[data-count="${g.id}"]`).textContent = `${items.filter(it => done.has(it.file)).length} / ${items.length}`
+    })
+  }
+
+  // 複製：先試 clipboard API，不給用就退回選取後 execCommand
+  async function copyText (text) {
+    try { await navigator.clipboard.writeText(text); return true } catch (e) { /* 退回舊方法 */ }
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.setAttribute('readonly', '')
+    ta.style.position = 'fixed'
+    ta.style.opacity = '0'
+    document.body.appendChild(ta)
+    ta.select()
+    let ok = false
+    try { ok = document.execCommand('copy') } catch (e) { ok = false }
+    ta.remove()
+    return ok
+  }
+
+  document.addEventListener('click', async e => {
+    const stamp = e.target.closest('.stamp')
+    if (stamp) {
+      const file = stamp.closest('li').dataset.file
+      done.has(file) ? done.delete(file) : done.add(file)
+      saveDone(done)
+      refresh()
+      return
+    }
+    const btn = e.target.closest('.copy')
+    if (btn) {
+      const it = DATA.items.find(x => x.file === btn.dataset.copy)
+      const ok = await copyText(it.prompt)
+      btn.textContent = ok ? '已複製' : '請直接選取上面的文字'
+      btn.classList.toggle('copied', ok)
+      if (!ok) {
+        const sel = window.getSelection()
+        const range = document.createRange()
+        range.selectNodeContents(document.getElementById('prompt-' + it.file))
+        sel.removeAllRanges()
+        sel.addRange(range)
+      }
+      clearTimeout(btn._t)
+      btn._t = setTimeout(() => { btn.textContent = '複製提示詞'; btn.classList.remove('copied') }, 1800)
+    }
+  })
+
+  render()
+</script>

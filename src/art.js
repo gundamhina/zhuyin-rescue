@@ -47,9 +47,18 @@ export function wordPicMarkup (word) {
 
 // 背景層：整個舞台大小，裡面一層天空填色、一層 1200×800 的場景圖（ui.js 的 layoutBg 會依舞台大小縮放定位）。
 // kind：'home' 草原、'scene' 碼頭（碼頭在左下角，橫的時候靠左對齊）。inner 放要跟場景一起縮放的東西（釣魚的狗狗）。
+// kind：'home' 草原、'scene' 碼頭，以及各遊戲自己的背景插槽 'garden'（打地鼠）、'room'（樹屋教室：翻牌、連連看、填空、寫字、唸）、'shop'（商店）。
+// 插槽的圖（img/bg-<kind>.png）還沒放就退回草原 home.png，草原也沒有才用向量圖。
+const BG_SLOTS = ['garden', 'room', 'shop']
 export function bgHtml (kind, inner = '') {
-  const art = kind === 'scene' ? sceneSvg() : homeBgSvg()
-  return `<div class="bg" data-fit="${kind === 'scene' ? 'left' : 'center'}"><div class="bg-fill ${kind}"></div><div class="bg-art">${art}${inner}</div></div>`
+  let art
+  if (kind === 'scene') art = sceneSvg()
+  else if (BG_SLOTS.includes(kind)) {
+    art = homeBgSvg().replace(
+      /src="img\/home\.png"([^>]*)onerror="this\.remove\(\)"/,
+      `src="img/bg-${kind}.png"$1onerror="if (!this.dataset.fallback) { this.dataset.fallback = 1; this.src = 'img/home.png' } else this.remove()"`)
+  } else art = homeBgSvg()
+  return `<div class="bg" data-fit="${kind === 'scene' ? 'left' : 'center'}"><div class="bg-fill ${BG_SLOTS.includes(kind) ? 'home' : kind}"></div><div class="bg-art">${art}${inner}</div></div>`
 }
 
 // 六隻救援狗的配色：帽子／背心顏色，深色版做陰影
@@ -91,9 +100,15 @@ function grassTuft (x, y, color) {
 }
 
 // 救援狗。viewBox 260×300，原點在左上。color 是 DOG_COLORS 的索引。
+// 這隻狗的圖是不是還只是 dog-0 的複本。build.js 比對檔案後寫進 DOG_COPIES；單獨載入模組時當作都是複本
+function dogIsCopy (color) {
+  // eslint-disable-next-line no-undef
+  return typeof DOG_COPIES === 'undefined' || DOG_COPIES.includes(color % DOG_COLORS.length)
+}
+
 export function dogSvg (color = 0, { mate = false } = {}) {
   const c = DOG_COLORS[color % DOG_COLORS.length]
-  const band = mate ? `<svg class="dog-acc front" viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg"><path d="M72 150 Q120 178 168 152 Q170 170 164 180 Q120 204 76 174 Z" fill="${c.main}" stroke="${c.dark}" stroke-width="4"/></svg>` : ''
+  const band = mate && dogIsCopy(color) ? `<svg class="dog-acc front" viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg"><path d="M72 150 Q120 178 168 152 Q170 170 164 180 Q120 204 76 174 Z" fill="${c.main}" stroke="${c.dark}" stroke-width="4"/></svg>` : ''
   return `<span class="dog-slot">${accessoryLayer(color)}${band}<img class="art-slot" src="img/dog-${color % DOG_COLORS.length}.png" width="260" height="300" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg class="dog" viewBox="0 0 260 300" width="260" height="300" xmlns="http://www.w3.org/2000/svg">
   <defs>

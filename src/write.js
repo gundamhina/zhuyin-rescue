@@ -48,7 +48,7 @@ function inkBitmap (strokes) {
 }
 
 export function createWrite (root, { color = 0 } = {}) {
-  root.innerHTML = bgHtml('home') + '<div class="frame">' +
+  root.innerHTML = bgHtml('room') + '<div class="frame">' +
     '<div class="dog-wrap write-dog">' + dogSvg(color) + '</div>' +
     `<div class="pad-wrap">
        <div class="pad-template"><span></span></div>

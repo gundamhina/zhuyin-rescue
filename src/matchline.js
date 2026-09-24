@@ -24,7 +24,7 @@ function shuffleWords (arr) {
 }
 
 export function createMatchLine (root, { color = 0 } = {}) {
-  root.innerHTML = bgHtml('home') + '<div class="frame">' +
+  root.innerHTML = bgHtml('room') + '<div class="frame">' +
     '<div class="dog-wrap match-dog">' + dogSvg(color) + '</div>' +
     '<svg class="lines" xmlns="http://www.w3.org/2000/svg"><g class="done"></g><line class="live" x1="0" y1="0" x2="0" y2="0"/></svg>' +
     '<div class="match-words"></div><div class="match-pics"></div></div>'

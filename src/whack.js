@@ -29,7 +29,7 @@ function shuffleList (arr) {
 }
 
 export function createWhack (root, { color = 0 } = {}) {
-  root.innerHTML = bgHtml('home') + '<div class="frame">' +
+  root.innerHTML = bgHtml('garden') + '<div class="frame">' +
     '<div class="dog-wrap whack-dog">' + dogSvg(color) + '</div>' +
     '<div class="holes">' + HOLES.map(() => `
       <div class="hole">

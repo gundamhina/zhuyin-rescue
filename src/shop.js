@@ -40,7 +40,7 @@ export function renderShop (root, { profile, state, tab = 'acc', onTab, onBuy, o
   const tabBtn = (id, label) => `<button class="shop-tab ${tab === id ? 'on' : ''}" data-tab="${id}" aria-label="${label}">${TAB_ICONS[id]}</button>`
 
   root.innerHTML = `
-    ${bgHtml('home')}
+    ${bgHtml('shop')}
     <div class="frame shop-frame">
       <button class="round-btn quit shop-close" id="shop-close" aria-label="回首頁">
         <svg viewBox="0 0 24 24" width="40" height="40" fill="#fff"><path d="M12 3 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>

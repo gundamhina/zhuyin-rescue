@@ -640,9 +640,44 @@ svg.syl text { font-weight: 900; fill: currentColor; text-anchor: middle; domina
 @keyframes tutSpeakWave { 0%, 40% { opacity: 0; } 46%, 74% { opacity: 1; } 80%, 100% { opacity: 0; } }
 .tut-speak-s { animation-name: tutSparkC; }
 
+/* ================= 美術：紙張質感 ================= */
+/* 很淡的紙紋，疊在白色面板上，跟手繪背景比較搭 */
+:root {
+  --paper-white: #FFFAF0;
+  --paper-tex: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .35  0 0 0 0 .22  0 0 0 .09 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+.card, .profile-card, .who, .item-card, .tut-card, .result-daily, .daily, .bones-pill, .mcard-front, .mword, .sign-board, .pad-wrap {
+  background-color: var(--paper-white);
+  background-image: var(--paper-tex);
+}
+.card, .profile-card:not(.add), .item-card, .mpic, .fill-pic { border-color: var(--paper-white); }
+.shop-btn, .tile { background-image: var(--paper-tex); }
+.mpic, .fill-pic { background-image: var(--paper-tex), linear-gradient(#FFFDF7, #F1ECDC); }
+.profile-card.add { background-image: none; }
+
+/* 向量卡片（還沒放手繪卡片圖的時候）：邊緣稍微抖動，像手畫；放了圖之後向量圖本來就藏起來 */
+.card-pic > svg { filter: url(#watercolor); will-change: transform; }
+
+/* 圓按鈕、商店按鈕：上半部一層亮光，像上了釉的玩具 */
+.round-btn, .item-btn.buy, .item-btn.on, .tut-go, .mic-btn, .pad-ok, .pad-undo, .shop-tab.on {
+  background-image: linear-gradient(rgba(255,255,255,.32), rgba(255,255,255,0) 58%);
+}
+.round-btn.quit { background-image: none; }
+
+/* 首頁卡片：手繪卡片圖放進來後，卡片框改成像照片那樣的暖白邊 */
+.card-pic.has-art { border-radius: 22px; }
+
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="watercolor" x="-3%" y="-3%" width="106%" height="106%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
 <div id="install-hint" hidden>手機請用 Chrome 開，再從選單「加到主畫面」，就會是全螢幕。點這裡關掉。</div>
 <div id="stage">
   <section class="screen" id="screen-profiles"></section>
@@ -671,6 +706,7 @@ svg.syl text { font-weight: 900; fill: currentColor; text-anchor: middle; domina
   <section class="screen" id="screen-panel"></section>
 </div>
 <script>
+const DOG_COPIES = [1,2,3,4,5]
 // ===== syllables.js =====
 // 由 tools/gen_syllables.py 產生，不要手改。常用拼讀字：兩拼、三拼，帶調號（一聲不標）。
 
@@ -2186,9 +2222,18 @@ function wordPicMarkup (word) {
 
 // 背景層：整個舞台大小，裡面一層天空填色、一層 1200×800 的場景圖（ui.js 的 layoutBg 會依舞台大小縮放定位）。
 // kind：'home' 草原、'scene' 碼頭（碼頭在左下角，橫的時候靠左對齊）。inner 放要跟場景一起縮放的東西（釣魚的狗狗）。
+// kind：'home' 草原、'scene' 碼頭，以及各遊戲自己的背景插槽 'garden'（打地鼠）、'room'（樹屋教室：翻牌、連連看、填空、寫字、唸）、'shop'（商店）。
+// 插槽的圖（img/bg-<kind>.png）還沒放就退回草原 home.png，草原也沒有才用向量圖。
+const BG_SLOTS = ['garden', 'room', 'shop']
 function bgHtml (kind, inner = '') {
-  const art = kind === 'scene' ? sceneSvg() : homeBgSvg()
-  return `<div class="bg" data-fit="${kind === 'scene' ? 'left' : 'center'}"><div class="bg-fill ${kind}"></div><div class="bg-art">${art}${inner}</div></div>`
+  let art
+  if (kind === 'scene') art = sceneSvg()
+  else if (BG_SLOTS.includes(kind)) {
+    art = homeBgSvg().replace(
+      /src="img\/home\.png"([^>]*)onerror="this\.remove\(\)"/,
+      `src="img/bg-${kind}.png"$1onerror="if (!this.dataset.fallback) { this.dataset.fallback = 1; this.src = 'img/home.png' } else this.remove()"`)
+  } else art = homeBgSvg()
+  return `<div class="bg" data-fit="${kind === 'scene' ? 'left' : 'center'}"><div class="bg-fill ${BG_SLOTS.includes(kind) ? 'home' : kind}"></div><div class="bg-art">${art}${inner}</div></div>`
 }
 
 // 六隻救援狗的配色：帽子／背心顏色，深色版做陰影
@@ -2230,9 +2275,15 @@ function grassTuft (x, y, color) {
 }
 
 // 救援狗。viewBox 260×300，原點在左上。color 是 DOG_COLORS 的索引。
+// 這隻狗的圖是不是還只是 dog-0 的複本。build.js 比對檔案後寫進 DOG_COPIES；單獨載入模組時當作都是複本
+function dogIsCopy (color) {
+  // eslint-disable-next-line no-undef
+  return typeof DOG_COPIES === 'undefined' || DOG_COPIES.includes(color % DOG_COLORS.length)
+}
+
 function dogSvg (color = 0, { mate = false } = {}) {
   const c = DOG_COLORS[color % DOG_COLORS.length]
-  const band = mate ? `<svg class="dog-acc front" viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg"><path d="M72 150 Q120 178 168 152 Q170 170 164 180 Q120 204 76 174 Z" fill="${c.main}" stroke="${c.dark}" stroke-width="4"/></svg>` : ''
+  const band = mate && dogIsCopy(color) ? `<svg class="dog-acc front" viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg"><path d="M72 150 Q120 178 168 152 Q170 170 164 180 Q120 204 76 174 Z" fill="${c.main}" stroke="${c.dark}" stroke-width="4"/></svg>` : ''
   return `<span class="dog-slot">${accessoryLayer(color)}${band}<img class="art-slot" src="img/dog-${color % DOG_COLORS.length}.png" width="260" height="300" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg class="dog" viewBox="0 0 260 300" width="260" height="300" xmlns="http://www.w3.org/2000/svg">
   <defs>
@@ -2779,7 +2830,7 @@ function shuffleList (arr) {
 }
 
 function createWhack (root, { color = 0 } = {}) {
-  root.innerHTML = bgHtml('home') + '<div class="frame">' +
+  root.innerHTML = bgHtml('garden') + '<div class="frame">' +
     '<div class="dog-wrap whack-dog">' + dogSvg(color) + '</div>' +
     '<div class="holes">' + HOLES.map(() => `
       <div class="hole">
@@ -2967,7 +3018,7 @@ const PAW = `<svg viewBox="0 0 100 100" width="90" height="90" xmlns="http://www
   <ellipse cx="50" cy="66" rx="24" ry="20"/><circle cx="24" cy="44" r="10"/><circle cx="42" cy="30" r="10"/><circle cx="60" cy="30" r="10"/><circle cx="77" cy="44" r="10"/></svg>`
 
 function createMemory (root) {
-  root.innerHTML = bgHtml('home') + '<div class="frame"><div class="cards-grid"></div></div>'
+  root.innerHTML = bgHtml('room') + '<div class="frame"><div class="cards-grid"></div></div>'
   mountBgs(root)
   const grid = root.querySelector('.cards-grid')
   let onFlipFn = null
@@ -3164,7 +3215,7 @@ function matchesSymbol (symbol, transcripts) {
 }
 
 function createSpeak (root, { color = 0 } = {}) {
-  root.innerHTML = bgHtml('home') + '<div class="frame">' +
+  root.innerHTML = bgHtml('room') + '<div class="frame">' +
     '<div class="dog-wrap speak-dog">' + dogSvg(color) + '</div>' +
     '<div class="sign"><div class="sign-board"><span></span></div><div class="sign-post"></div></div>' +
     '<div class="heard"></div>' +
@@ -3383,7 +3434,7 @@ function inkBitmap (strokes) {
 }
 
 function createWrite (root, { color = 0 } = {}) {
-  root.innerHTML = bgHtml('home') + '<div class="frame">' +
+  root.innerHTML = bgHtml('room') + '<div class="frame">' +
     '<div class="dog-wrap write-dog">' + dogSvg(color) + '</div>' +
     `<div class="pad-wrap">
        <div class="pad-template"><span></span></div>
@@ -3558,7 +3609,7 @@ function shuffleWords (arr) {
 }
 
 function createMatchLine (root, { color = 0 } = {}) {
-  root.innerHTML = bgHtml('home') + '<div class="frame">' +
+  root.innerHTML = bgHtml('room') + '<div class="frame">' +
     '<div class="dog-wrap match-dog">' + dogSvg(color) + '</div>' +
     '<svg class="lines" xmlns="http://www.w3.org/2000/svg"><g class="done"></g><line class="live" x1="0" y1="0" x2="0" y2="0"/></svg>' +
     '<div class="match-words"></div><div class="match-pics"></div></div>'
@@ -3720,7 +3771,7 @@ function tileSlots (n) {
 }
 
 function createFillBlank (root, { color = 0 } = {}) {
-  root.innerHTML = bgHtml('home') + '<div class="frame">' +
+  root.innerHTML = bgHtml('room') + '<div class="frame">' +
     '<div class="dog-wrap fill-dog">' + dogSvg(color) + '</div>' +
     '<div class="fill-pic"></div>' +
     '<div class="sign fill-sign"><div class="sign-board"><span class="fill-word"></span></div><div class="sign-post"></div></div>' +
@@ -4631,7 +4682,7 @@ function renderShop (root, { profile, state, tab = 'acc', onTab, onBuy, onWear, 
   const tabBtn = (id, label) => `<button class="shop-tab ${tab === id ? 'on' : ''}" data-tab="${id}" aria-label="${label}">${TAB_ICONS[id]}</button>`
 
   root.innerHTML = `
-    ${bgHtml('home')}
+    ${bgHtml('shop')}
     <div class="frame shop-frame">
       <button class="round-btn quit shop-close" id="shop-close" aria-label="回首頁">
         <svg viewBox="0 0 24 24" width="40" height="40" fill="#fff"><path d="M12 3 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
@@ -5134,7 +5185,7 @@ function main () {
     show('game')
     // 第一次玩這個遊戲：先看小手示範，按播放鍵才開始
     if (hasTutorial(which) && !(state.seen && state.seen[which])) {
-      playArea.innerHTML = bgHtml(which === 'fishing' ? 'scene' : 'home')
+      playArea.innerHTML = bgHtml({ fishing: 'scene', whack: 'garden' }[which] || 'room')
       mountBgs(playArea)
       showTutorial(gameEl, which, () => {
         state = markSeen(state, which)

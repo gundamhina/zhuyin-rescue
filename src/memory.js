@@ -43,7 +43,7 @@ const PAW = `<svg viewBox="0 0 100 100" width="90" height="90" xmlns="http://www
   <ellipse cx="50" cy="66" rx="24" ry="20"/><circle cx="24" cy="44" r="10"/><circle cx="42" cy="30" r="10"/><circle cx="60" cy="30" r="10"/><circle cx="77" cy="44" r="10"/></svg>`
 
 export function createMemory (root) {
-  root.innerHTML = bgHtml('home') + '<div class="frame"><div class="cards-grid"></div></div>'
+  root.innerHTML = bgHtml('room') + '<div class="frame"><div class="cards-grid"></div></div>'
   mountBgs(root)
   const grid = root.querySelector('.cards-grid')
   let onFlipFn = null

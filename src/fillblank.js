@@ -16,7 +16,7 @@ function tileSlots (n) {
 }
 
 export function createFillBlank (root, { color = 0 } = {}) {
-  root.innerHTML = bgHtml('home') + '<div class="frame">' +
+  root.innerHTML = bgHtml('room') + '<div class="frame">' +
     '<div class="dog-wrap fill-dog">' + dogSvg(color) + '</div>' +
     '<div class="fill-pic"></div>' +
     '<div class="sign fill-sign"><div class="sign-board"><span class="fill-word"></span></div><div class="sign-post"></div></div>' +

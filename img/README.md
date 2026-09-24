@@ -1,148 +1,265 @@
 # 圖片插槽
 
-把 PNG 放進這個資料夾，檔名照下面對，遊戲就會用圖片蓋掉向量圖。沒放的維持向量版。放好後跑 `npm run build`。
+把 PNG 放進這個資料夾，檔名照下面對，遊戲就會用圖片蓋掉向量圖。沒放的維持原樣。
 
-生圖工具吐出來的原檔（JPG、尺寸不對、假透明格子背景）先丟進 `raw/`，再用 `tools/prep_images.py` 轉成插槽檔，用法寫在那個檔案開頭。已處理：`scene.png`、`home.png`、`dog-0.png`。`dog-1`～`dog-5` 目前是 `dog-0` 的複本佔位，之後有各自的圖再蓋掉。
+這份檔案由 `tools/make_art_pack.py` 從 `tools/art_list.py` 產生，要改提示詞請改 `art_list.py` 再重跑。
 
-| 檔名 | 尺寸 | 用途 | 背景 |
-|---|---|---|---|
-| `scene.png` | 1200×800 | 釣魚遊戲背景（天空、遠山、海、左下角要留木碼頭，碼頭面約在 y=524–566、x=0–410） | 不透明 |
-| `home.png` | 1200×800 | 首頁、選人、結算的背景（天空、雲、草原，下方 1/4 是草地） | 不透明 |
-| `dog-0.png` … `dog-5.png` | 260×300 | 六隻救援狗，坐姿、面向前、右手拿釣竿往右上舉。0 藍警帽、1 紅消防帽、2 粉飛行護目鏡、3 綠回收工具、4 橘工程帽、5 黃鬆餅圍裙 | 透明 |
-| `card-fishing.png` | 300×400 | 首頁釣魚卡插圖 | 不透明 |
-| `card-feeding.png` | 300×400 | 首頁餵狗狗卡插圖 | 不透明 |
-| `card-memory.png` | 300×400 | 首頁翻牌卡插圖 | 不透明 |
+## 已經有的
 
-## 生圖提示詞（英文，貼進 Midjourney / DALL·E / Stable Diffusion）
+| 檔名 | 用途 |
+|---|---|
+| `scene.png` | 釣魚遊戲背景（左下角木碼頭，狗狗坐在上面） |
+| `home.png` | 選人、首頁、結算的背景；也是其他背景還沒生之前的備用 |
+| `dog-0.png` | 警察狗（藍警帽）。其他五隻的參考圖 |
+| `icon-*.png` | 手機桌面圖示，`tools/make_icons.py` 從 dog-0 做出來 |
 
-風格基底，每張都加：
+## 怎麼把生好的圖放進來
 
-```
-hand-painted anime background in the style of a 1990s Japanese animated film, soft watercolor gouache textures, warm natural light, lush greens, cumulus clouds with shaded undersides, gentle pastel sky, no text, no characters, children's picture book mood
-```
+1. 生好的圖照下面的檔名改名（副檔名 jpg、png 都可以），丟進 `img/raw/`。
+2. 在專案根目錄跑 `python tools/prep_images.py`，它會照檔名自動裁切、縮放、去背、切九宮格。
+3. `npm run build`。
 
-scene.png：
+## 用 Gemini 生圖的訣竅
 
-```
-[風格基底], a small weathered wooden fishing pier on the lower left reaching into a calm teal sea, rolling green hills with bushes in the distance, a small red buoy and a blue bucket on the pier, late morning, wide 3:2 composition, the sea occupies the lower right two thirds --ar 3:2
-```
+- **狗狗要用改圖**：上傳 `img/dog-0.png`，貼提示詞，請它「改這張圖」。只改毛色和裝備，姿勢和畫風才會一樣。
+- **狗狗用藍底**：鬆餅狗是白毛，白底一去背會連毛一起不見，所以提示詞裡指定純藍底。
+- **卡片、背景、詞的圖**：上傳 `img/home.png`，加一句「用這張圖的畫風」，整套才會統一。
+- **比例**：Gemini 不一定照比例出圖，沒關係，處理工具會從中間裁；重要的東西放中間就好。
+- **有字就重生**：生圖常冒出亂碼文字，有字的圖會很突兀。
 
-home.png：
-
-```
-[風格基底], a wide summer meadow with wildflowers in the foreground, distant soft hills, big fluffy clouds, the lower quarter is grass, the upper three quarters are open sky, wide 3:2 composition --ar 3:2
-```
-
-dog-N.png（把顏色和裝備換掉，六張）：
+風格基底（每條提示詞都已經加上）：
 
 ```
-a cute cartoon puppy sitting and facing the viewer, brown fur with cream muzzle, floppy ears, big round eyes, wearing a [blue police cap and blue vest], holding a wooden fishing rod raised to the upper right, hand-painted anime style like a 1990s Japanese animated film, soft shading, full body, centered, transparent background, no text --ar 13:15
+hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
 ```
 
-六隻的裝備：
-1. `dog-0` blue police cap and blue vest
-2. `dog-1` red firefighter helmet and red vest
-3. `dog-2` pink aviator goggles on head and pink vest
-4. `dog-3` green cap and green recycling vest with tools
-5. `dog-4` orange construction hard hat and orange vest
-6. `dog-5` yellow chef hat and yellow apron
+## 五隻救援隊員
 
-card-*.png：
+現在五隻隊員是同一張圖的複本，只靠領巾分辨。最明顯、最值得先做。上傳 img/dog-0.png，請 Gemini「改這張圖」，五隻才會像同一個畫家畫的。
+
+### `dog-1`　消防狗
+
+520×600，透明背景。參考圖：`img/dog-0.png`。
 
 ```
-[風格基底], [a wooden pier with a fishing rod and a floating bubble on teal water / a happy puppy in front of a red food bowl with a bone-shaped biscuit / four colorful playing cards face down on green grass], vertical 3:4 composition, simple, big shapes --ar 3:4
+Edit the attached picture. Keep exactly the same puppy, the same sitting pose, the same fishing rod, the same proportions and the same painting style. Only change this: make the fur golden orange, and replace the blue police cap and vest with a red firefighter helmet and a red vest with a yellow stripe. Put the puppy on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
+```
+
+### `dog-2`　飛行狗
+
+520×600，透明背景。參考圖：`img/dog-0.png`。
+
+```
+Edit the attached picture. Keep exactly the same puppy, the same sitting pose, the same fishing rod, the same proportions and the same painting style. Only change this: make the fur light grey, and replace the blue police cap and vest with pink aviator goggles pushed up on the head and a pink pilot vest. Put the puppy on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
+```
+
+### `dog-3`　回收狗
+
+520×600，透明背景。參考圖：`img/dog-0.png`。
+
+```
+Edit the attached picture. Keep exactly the same puppy, the same sitting pose, the same fishing rod, the same proportions and the same painting style. Only change this: make the fur dark chocolate brown, and replace the blue police cap and vest with a green cap and a green vest with a small leaf badge and a tool pocket. Put the puppy on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
+```
+
+### `dog-4`　工程狗
+
+520×600，透明背景。參考圖：`img/dog-0.png`。
+
+```
+Edit the attached picture. Keep exactly the same puppy, the same sitting pose, the same fishing rod, the same proportions and the same painting style. Only change this: make the fur cream white with one brown ear, and replace the blue police cap and vest with an orange construction hard hat and an orange safety vest. Put the puppy on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
+```
+
+### `dog-5`　鬆餅狗
+
+520×600，透明背景。參考圖：`img/dog-0.png`。
+
+```
+Edit the attached picture. Keep exactly the same puppy, the same sitting pose, the same fishing rod, the same proportions and the same painting style. Only change this: make the fur fluffy white, and replace the blue police cap and vest with a tall yellow chef hat and a yellow apron. Put the puppy on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
+```
+
+## 首頁七張卡片
+
+首頁一打開就看到，現在是向量畫的卡片。上傳 img/home.png 當畫風參考，說「用這張圖的畫風」。
+
+### `card-fishing`　釣魚
+
+600×800，直的 3:4。參考圖：`img/home.png`。
+
+```
+a small wooden pier over calm teal water on a sunny day, a fishing line dangling into the water where one big round shiny soap bubble floats, fluffy clouds, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
+```
+
+### `card-whack`　打地鼠
+
+600×800，直的 3:4。參考圖：`img/home.png`。
+
+```
+a sunny vegetable garden with three round dark soil holes in soft grass, one round cream-colored ball peeking out of the middle hole, carrot leaves and small flowers around, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
+```
+
+### `card-memory`　翻牌
+
+600×800，直的 3:4。參考圖：`img/home.png`。
+
+```
+four playing cards lying on a checked picnic blanket in the grass, two face down with a paw print on the back, two face up with plain white faces, a few daisies, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
+```
+
+### `card-match`　連連看
+
+600×800，直的 3:4。參考圖：`img/home.png`。
+
+```
+a small cork board with two picture cards pinned on it, one of a cat and one of an apple, joined by a red yarn string, soft light, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
+```
+
+### `card-fill`　填空
+
+600×800，直的 3:4。參考圖：`img/home.png`。
+
+```
+a wooden jigsaw puzzle board with one piece missing and that puzzle piece floating just above the gap with a soft glow, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
+```
+
+### `card-write`　寫給狗狗看
+
+600×800，直的 3:4。參考圖：`img/home.png`。
+
+```
+a small slate chalkboard on a wooden easel next to a fat yellow pencil and crayons, on a sunny windowsill, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
+```
+
+### `card-speak`　唸給狗狗聽
+
+600×800，直的 3:4。參考圖：`img/home.png`。
+
+```
+an old-fashioned round microphone on a little stand in a flower meadow, soft sound ripples and small musical notes floating out of it, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
+```
+
+## 三張遊戲背景
+
+現在除了釣魚，每個遊戲都借用首頁的草原。上傳 img/home.png 當畫風參考。手機直拿只看得到中間，所以中間要安靜。
+
+### `bg-garden`　打地鼠
+
+1536×1024，橫的 3:2。參考圖：`img/home.png`。
+
+```
+a wide sunny vegetable garden meadow with a low wooden fence, sunflowers and bean poles at the far left and right, soft grass and brown earth across the lower half, distant hills and big clouds, wide 3:2 landscape format, the middle of the picture is open and calm with little detail because game pieces are placed on top, the nicer details stay near the left and right edges, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
+```
+
+### `bg-room`　翻牌、連連看、填空、寫字、唸
+
+1536×1024，橫的 3:2。參考圖：`img/home.png`。
+
+```
+the cozy inside of a wooden treehouse classroom, sunlight through a round window with green leaves, bookshelves and potted plants at the left and right, a soft woven rug on the floor, warm and low contrast, wide 3:2 landscape format, the middle of the picture is open and calm with little detail because game pieces are placed on top, the nicer details stay near the left and right edges, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
+```
+
+### `bg-shop`　狗狗商店
+
+1536×1024，橫的 3:2。參考圖：`img/home.png`。
+
+```
+a small cozy pet accessory shop, wooden shelves with colorful hats, scarves, bows and toys along the left and right walls, little bunting flags, warm afternoon light, wide 3:2 landscape format, the middle of the picture is open and calm with little detail because game pieces are placed on top, the nicer details stay near the left and right edges, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
+```
+
+## 74 個詞的圖
+
+連連看和填空的圖，現在是表情符號。一次生九張，處理工具會自動切開。上傳 img/home.png 當畫風參考。生出來請確認九個東西的順序跟下面列的一樣。
+
+### `words-1`　爸爸、媽媽、哥哥、姐姐、弟弟、妹妹、爺爺、奶奶、阿姨
+
+切成每張 384×384，透明背景。參考圖：`img/home.png`。
+
+三行三列，由左到右、由上到下：爸爸、媽媽、哥哥、姐姐、弟弟、妹妹、爺爺、奶奶、阿姨。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: dad; mom; older brother. Row 2, left to right: older sister; little brother; little sister. Row 3, left to right: grandpa; grandma; auntie.
+```
+
+### `words-2`　叔叔、小狗、小貓、小鳥、小魚、老虎、獅子、大象、兔子
+
+切成每張 384×384，透明背景。參考圖：`img/home.png`。
+
+三行三列，由左到右、由上到下：叔叔、小狗、小貓、小鳥、小魚、老虎、獅子、大象、兔子。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: uncle; puppy; kitten. Row 2, left to right: little bird; little fish; tiger. Row 3, left to right: lion; elephant; rabbit.
+```
+
+### `words-3`　猴子、熊貓、青蛙、蝴蝶、蘋果、香蕉、西瓜、麵包、牛奶
+
+切成每張 384×384，透明背景。參考圖：`img/home.png`。
+
+三行三列，由左到右、由上到下：猴子、熊貓、青蛙、蝴蝶、蘋果、香蕉、西瓜、麵包、牛奶。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: monkey; panda; frog. Row 2, left to right: butterfly; apple; banana. Row 3, left to right: watermelon; bread loaf; glass of milk.
+```
+
+### `words-4`　雞蛋、餅乾、糖果、蛋糕、米飯、水果、草莓、眼睛、鼻子
+
+切成每張 384×384，透明背景。參考圖：`img/home.png`。
+
+三行三列，由左到右、由上到下：雞蛋、餅乾、糖果、蛋糕、米飯、水果、草莓、眼睛、鼻子。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: egg; cookie; wrapped candy. Row 2, left to right: slice of cake; bowl of rice; bowl of mixed fruit. Row 3, left to right: strawberry; a pair of eyes; nose.
+```
+
+### `words-5`　耳朵、嘴巴、頭髮、牙齒、手指、腳丫、紅色、黃色、藍色
+
+切成每張 384×384，透明背景。參考圖：`img/home.png`。
+
+三行三列，由左到右、由上到下：耳朵、嘴巴、頭髮、牙齒、手指、腳丫、紅色、黃色、藍色。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: ear; smiling mouth; hair on a head, back view. Row 2, left to right: tooth; hand pointing one finger; bare foot. Row 3, left to right: red paint blob; yellow paint blob; blue paint blob.
+```
+
+### `words-6`　綠色、白色、黑色、粉紅、紫色、吃飯、睡覺、洗澡、刷牙
+
+切成每張 384×384，透明背景。參考圖：`img/home.png`。
+
+三行三列，由左到右、由上到下：綠色、白色、黑色、粉紅、紫色、吃飯、睡覺、洗澡、刷牙。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: green paint blob; white paint blob on light grey; black paint blob. Row 2, left to right: pink paint blob; purple paint blob; child eating rice with a spoon. Row 3, left to right: child sleeping in bed; child in a bathtub with bubbles; child brushing teeth.
+```
+
+### `words-7`　上學、玩具、書包、學校、老師、朋友、太陽、月亮、下雨
+
+切成每張 384×384，透明背景。參考圖：`img/home.png`。
+
+三行三列，由左到右、由上到下：上學、玩具、書包、學校、老師、朋友、太陽、月亮、下雨。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: child with backpack walking to school; pile of toys; school backpack. Row 2, left to right: school building; teacher at a blackboard; two children holding hands. Row 3, left to right: sun; crescent moon; rain cloud with raindrops.
+```
+
+### `words-8`　星星、冰淇淋、巧克力、幼兒園、腳踏車、洗衣機、電視機、小白兔、大野狼
+
+切成每張 384×384，透明背景。參考圖：`img/home.png`。
+
+三行三列，由左到右、由上到下：星星、冰淇淋、巧克力、幼兒園、腳踏車、洗衣機、電視機、小白兔、大野狼。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: star; ice cream cone; chocolate bar. Row 2, left to right: kindergarten building with playground; bicycle; washing machine. Row 3, left to right: television; white rabbit; grey wolf.
+```
+
+### `words-9`　小汽車、溜滑梯
+
+切成每張 384×384，透明背景。參考圖：`img/home.png`。
+
+一列，由左到右、由上到下：小汽車、溜滑梯。切開後存成 `img/words/<國字>.png`。
+
+```
+A single row of 2 separate small illustrations side by side, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Left to right: small car; playground slide.
 ```
 
 ## 注意
 
-- 狗狗一定要透明背景 PNG，不然會有一塊方形底色。
-- 生出來的圖如果有文字或水印，裁掉再放。
+- 生出來的圖如果有文字或水印，重生或裁掉再放。
 - 這些圖只在自己家裡用，不對外發布。
-
-
-## 詞的圖：`img/words/`
-
-連連看和填空用。檔名是詞的國字，例如 `img/words/牙齒.png`，256×256、透明背景。沒放的詞退回表情符號。
-
-風格提示詞（每張都加）：
-
-```
-a single simple object icon for a children's picture book, hand-painted watercolor gouache look like a 1990s Japanese animated film, soft edges, warm light, centered, plain transparent background, no text, no border --ar 1:1
-```
-
-| 檔名 | 畫什麼 |
-|---|---|
-| `爸爸.png` | dad |
-| `媽媽.png` | mom |
-| `哥哥.png` | older brother |
-| `姐姐.png` | older sister |
-| `弟弟.png` | little brother |
-| `妹妹.png` | little sister |
-| `爺爺.png` | grandpa |
-| `奶奶.png` | grandma |
-| `阿姨.png` | auntie |
-| `叔叔.png` | uncle |
-| `小狗.png` | puppy |
-| `小貓.png` | kitten |
-| `小鳥.png` | little bird |
-| `小魚.png` | little fish |
-| `老虎.png` | tiger |
-| `獅子.png` | lion |
-| `大象.png` | elephant |
-| `兔子.png` | rabbit |
-| `猴子.png` | monkey |
-| `熊貓.png` | panda |
-| `青蛙.png` | frog |
-| `蝴蝶.png` | butterfly |
-| `蘋果.png` | apple |
-| `香蕉.png` | banana |
-| `西瓜.png` | watermelon |
-| `麵包.png` | bread loaf |
-| `牛奶.png` | glass of milk |
-| `雞蛋.png` | egg |
-| `餅乾.png` | cookie |
-| `糖果.png` | wrapped candy |
-| `蛋糕.png` | slice of cake |
-| `米飯.png` | bowl of rice |
-| `水果.png` | bowl of mixed fruit |
-| `草莓.png` | strawberry |
-| `眼睛.png` | a pair of eyes |
-| `鼻子.png` | nose |
-| `耳朵.png` | ear |
-| `嘴巴.png` | smiling mouth |
-| `頭髮.png` | hair on a head, back view |
-| `牙齒.png` | tooth |
-| `手指.png` | hand pointing one finger |
-| `腳丫.png` | bare foot |
-| `紅色.png` | red paint blob |
-| `黃色.png` | yellow paint blob |
-| `藍色.png` | blue paint blob |
-| `綠色.png` | green paint blob |
-| `白色.png` | white paint blob on light grey |
-| `黑色.png` | black paint blob |
-| `粉紅.png` | pink paint blob |
-| `紫色.png` | purple paint blob |
-| `吃飯.png` | child eating rice with a spoon |
-| `睡覺.png` | child sleeping in bed |
-| `洗澡.png` | child in a bathtub with bubbles |
-| `刷牙.png` | child brushing teeth |
-| `上學.png` | child with backpack walking to school |
-| `玩具.png` | pile of toys |
-| `書包.png` | school backpack |
-| `學校.png` | school building |
-| `老師.png` | teacher at a blackboard |
-| `朋友.png` | two children holding hands |
-| `太陽.png` | sun |
-| `月亮.png` | crescent moon |
-| `下雨.png` | rain cloud with raindrops |
-| `星星.png` | star |
-| `冰淇淋.png` | ice cream cone |
-| `巧克力.png` | chocolate bar |
-| `幼兒園.png` | kindergarten building with playground |
-| `腳踏車.png` | bicycle |
-| `洗衣機.png` | washing machine |
-| `電視機.png` | television |
-| `小白兔.png` | white rabbit |
-| `大野狼.png` | grey wolf |
-| `小汽車.png` | small car |
-| `溜滑梯.png` | playground slide |

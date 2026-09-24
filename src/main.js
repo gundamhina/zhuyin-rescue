@@ -323,7 +323,7 @@ function main () {
     show('game')
     // 第一次玩這個遊戲：先看小手示範，按播放鍵才開始
     if (hasTutorial(which) && !(state.seen && state.seen[which])) {
-      playArea.innerHTML = bgHtml(which === 'fishing' ? 'scene' : 'home')
+      playArea.innerHTML = bgHtml({ fishing: 'scene', whack: 'garden' }[which] || 'room')
       mountBgs(playArea)
       showTutorial(gameEl, which, () => {
         state = markSeen(state, which)

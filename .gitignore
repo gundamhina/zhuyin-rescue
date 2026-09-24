@@ -2,3 +2,4 @@ node_modules/
 img/raw/
 releases/
 .claude/
+__pycache__/
