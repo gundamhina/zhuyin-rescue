@@ -346,7 +346,7 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
       <div class="panel-row panel-tracks">
         <b>看哪一軌</b>
         ${TRACKS.map(t => `<button class="track-tab ${t === track ? 'on' : ''}" data-track="${t}">${TRACK_NAMES[t]}</button>`).join('')}
-        <span class="panel-hint-inline">聽＝釣魚、打地鼠；讀＝唸給狗狗聽；寫＝寫給狗狗看。星星、混淆、階級、解鎖各軌分開算，下面的設定三軌共用。</span>
+        <span class="panel-hint-inline">聽＝釣魚、打地鼠；讀＝連連看、填空、唸給狗狗聽；寫＝寫給狗狗看。翻牌是純遊玩，不算進任何一軌。星星、混淆、階級、解鎖各軌分開算，下面的設定三軌共用。</span>
       </div>
       <div class="panel-row">
         <div>「${TRACK_NAMES[track]}」目前出題階級：<b>${effectiveTier(state) + 1}</b> / 6（${tierLabel(TIERS[effectiveTier(state)])}）</div>
@@ -360,9 +360,9 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
       ${profile ? `
       <div class="panel-row">
         <b>骨頭</b> 現在 <b>${state.bones || 0}</b> 根（累計賺過 ${state.bonesTotal || 0}，買了 ${(state.owned || []).length} 件配件）
-        <button class="mini" id="bones-minus" title="扣 5 根">−5</button>
-        <button class="mini" id="bones-plus" title="送 5 根">＋5</button>
-        <span class="panel-hint-inline">第一次就答對 2 根、重試才對 1 根、玩完一局再送 3 根，翻牌每配對一對 1 根。</span>
+        <button class="mini" id="bones-minus" title="扣 50 根">−50</button>
+        <button class="mini" id="bones-plus" title="送 50 根">＋50</button>
+        <span class="panel-hint-inline">第一次就答對 2 根、重試才對 1 根、玩完一局再送 3 根。翻牌是純遊玩：配對一對 1 根、沒有過關獎勵，星星和難度都不算它。</span>
       </div>` : ''}
       <div class="panel-row panel-difficulty">
         <label>難度
@@ -423,8 +423,8 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
     root.querySelector('#sel-tier').onchange = e => {
       onStateChange({ lockTier: e.target.value === '' ? null : parseInt(e.target.value, 10) })
     }
-    root.querySelector('#bones-minus').onclick = () => onStateChange({ bones: Math.max(0, (state.bones || 0) - 5) })
-    root.querySelector('#bones-plus').onclick = () => onStateChange({ bones: (state.bones || 0) + 5, bonesTotal: (state.bonesTotal || 0) + 5 })
+    root.querySelector('#bones-minus').onclick = () => onStateChange({ bones: Math.max(0, (state.bones || 0) - 50) })
+    root.querySelector('#bones-plus').onclick = () => onStateChange({ bones: (state.bones || 0) + 50, bonesTotal: (state.bonesTotal || 0) + 50 })
     root.querySelector('#tier-down').onclick = () => onStateChange({ tier: Math.max(0, state.tier - 1), recent: [] })
     root.querySelector('#tier-up').onclick = () => onStateChange({ tier: Math.min(TIERS.length - 1, state.tier + 1), recent: [] })
     root.querySelector('#sel-unlocked').onchange = e => onStateChange({ unlockedUpTo: parseInt(e.target.value, 10) })

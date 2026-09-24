@@ -17,7 +17,8 @@ import { renderCheck } from './check.js'
 
 const SETTINGS_KEY = 'zhuyin-rescue-settings'
 const MEMORY_PAIRS = 5
-// 每個玩法練哪一軌：聽（釣魚、打地鼠、翻牌）、讀（唸給狗狗聽）、寫（寫給狗狗看）
+// 每個玩法練哪一軌：聽（釣魚、打地鼠）、讀（連連看、填空、唸給狗狗聽）、寫（寫給狗狗看）
+// 翻牌只借「聽」那一軌的出題池挑符號，不寫任何紀錄進去
 const TRACK_OF = { fishing: 'listen', whack: 'listen', memory: 'listen', speak: 'read', write: 'write', match: 'read', fill: 'read' }
 const MATCH_PAIRS = 4
 // 唸給狗狗聽的狀態訊息，寫給旁邊的大人看
@@ -240,7 +241,7 @@ function main () {
 
   function finishRound () {
     destroyGame()
-    gain(3) // 玩完一局的獎勵
+    if (kind !== 'memory') gain(3) // 玩完一局的獎勵；翻牌是純遊玩，沒有
     renderResult(resultEl, profile.color, { roundBones, bones: state.bones, mates: ownedMates(state) })
     resultEl.querySelector('#btn-again').addEventListener('pointerdown', () => startGame(kind))
     resultEl.querySelector('#btn-home').addEventListener('pointerdown', goHome)
@@ -542,7 +543,7 @@ function main () {
     askFill()
   }
 
-  // ---- 翻牌：配對，不記進度 ----
+  // ---- 翻牌：純遊玩。不寫進熟練度、混淆對、升降級，骨頭也只有配對那一點，沒有過關獎勵 ----
   function runMemory () {
     game = createMemory(playArea)
     replayBtn.classList.add('hidden')
