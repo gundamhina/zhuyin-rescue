@@ -468,3 +468,160 @@ svg.syl text { font-weight: 900; fill: currentColor; text-anchor: middle; domina
 #stage.portrait .shop-tabs { left: 300px; top: 130px; flex-direction: column; }
 #stage.portrait .shop-grid { left: 30px; top: 390px; width: 740px; }
 #stage.portrait .shop-team { width: 800px; bottom: 0; }
+
+/* ================= 體驗升級 ================= */
+/* 畫面切換淡入 */
+.screen.active { animation: screenIn .28s ease-out; }
+@keyframes screenIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* 特效層：舞台最上層，不擋點擊 */
+#fx { position: absolute; inset: 0; pointer-events: none; z-index: 45; overflow: hidden; }
+.fx-spark { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; animation: fxSpark .85s cubic-bezier(.2,.7,.3,1) forwards; }
+.fx-spark.star { width: auto; height: auto; margin: -18px 0 0 -13px; border-radius: 0; font-size: 36px; line-height: 1; text-shadow: 0 2px 0 rgba(255,255,255,.8); }
+@keyframes fxSpark { 0% { transform: translate(0, 0) scale(.3); opacity: 1; } 65% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 0; } }
+.fx-bone { position: absolute; left: 0; top: 0; }
+.fx-bone .bone { width: 58px; height: 29px; filter: drop-shadow(0 3px 0 rgba(0,0,0,.15)); }
+.bump { animation: bump .35s ease-out; }
+@keyframes bump { 0% { scale: 1; } 40% { scale: 1.28; } 100% { scale: 1; } }
+
+/* 遊戲上方：左邊回首頁和「？」 */
+.tb-left { display: flex; gap: 14px; align-items: center; }
+
+/* 連對徽章 */
+.combo { position: absolute; top: 24px; left: calc(50% + 100px); display: flex; align-items: center; gap: 4px; padding: 6px 18px 6px 10px; border-radius: 40px; background: linear-gradient(#FFB36B, #E0552B); color: #fff; font-size: 34px; font-weight: 900; box-shadow: 0 6px 0 #A8401F; pointer-events: none; }
+.combo[hidden] { display: none; }
+.combo .flame svg { width: 38px; height: 38px; display: block; }
+.combo .flame svg path:first-child { fill: #FFF1C9; }
+.combo.pop { animation: comboPop .45s cubic-bezier(.3,1.6,.5,1); }
+@keyframes comboPop { 0% { scale: .4; } 100% { scale: 1; } }
+
+/* 首頁：每日腳印、寶箱、連續天數 */
+.shop-btn { left: auto; right: 96px; transform: none; }
+.shop-btn:active { transform: translateY(4px); }
+.daily { position: absolute; left: 50%; top: 18px; transform: translateX(-50%); display: flex; align-items: center; gap: 14px; padding: 8px 12px 8px 18px; border-radius: 44px; background: rgba(255,253,247,.92); box-shadow: 0 6px 0 #A9BFCF; }
+.streak { display: flex; align-items: center; gap: 2px; font-size: 44px; }
+.streak b { font-size: 30px; color: #C8553D; min-width: 20px; }
+.streak.cold svg { filter: grayscale(1); opacity: .45; }
+.streak.cold b { color: #A9BFCF; }
+.paws { display: flex; gap: 6px; }
+.paw { font-size: 40px; color: #D5DEE8; display: flex; }
+.paw.on { color: #E0955B; }
+.chest { font-size: 64px; display: flex; padding: 0 4px; }
+.chest svg { overflow: visible; }
+.chest .lid { transform-box: fill-box; transform-origin: 0% 100%; transition: transform .4s; }
+.chest.locked { filter: grayscale(.85); opacity: .5; }
+.chest.ready { animation: chestWiggle 1.2s ease-in-out infinite; filter: drop-shadow(0 0 10px rgba(232,200,106,.95)); }
+.chest.claimed .lid, .chest.opening .lid { transform: rotate(-38deg) translate(-2px, -4px); }
+.chest.claimed { opacity: .55; }
+@keyframes chestWiggle { 0%, 60%, 100% { rotate: 0deg; } 70% { rotate: -9deg; } 80% { rotate: 9deg; } 90% { rotate: -5deg; } }
+#stage.portrait .daily { top: 118px; }
+#stage.portrait .cards { top: 230px; }
+
+/* 首頁：今天推薦的卡片 */
+.card.recommend { box-shadow: 0 0 0 8px rgba(232,200,106,.95), 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,.22); animation: recGlow 1.8s ease-in-out infinite; }
+@keyframes recGlow { 0%, 100% { box-shadow: 0 0 0 6px rgba(232,200,106,.9), 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,.22); } 50% { box-shadow: 0 0 0 14px rgba(232,200,106,.55), 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,.22); } }
+.rec-badge { position: absolute; right: 8px; top: 8px; width: 54px; height: 54px; border-radius: 50%; background: #FFF3B0; color: #E0955B; font-size: 34px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 0 #D9AA1B; z-index: 3; }
+
+/* 首頁：背景音樂開關（左下角） */
+.music-btn { position: absolute; left: 20px; bottom: 20px; width: 64px; height: 64px; border-radius: 50%; background: rgba(27,43,75,.3); font-size: 36px; display: flex; align-items: center; justify-content: center; z-index: 2; }
+.music-btn:active { background: rgba(27,43,75,.6); }
+
+/* 結算：數字、皇冠、腳印 */
+.result-bones b { font-size: inherit; }
+.result-crown { position: absolute; left: 50%; top: 4px; font-size: 110px; transform: translateX(-50%) translateY(-140px); opacity: 0; line-height: 1; }
+.result-crown.show { animation: crownDrop .7s cubic-bezier(.3,1.5,.5,1) forwards; }
+@keyframes crownDrop { 0% { transform: translateX(-50%) translateY(-140px) rotate(-20deg); opacity: 0; } 100% { transform: translateX(-50%) translateY(0) rotate(0deg); opacity: 1; } }
+.result-daily { position: absolute; right: 30px; top: 26px; display: flex; gap: 8px; align-items: center; padding: 8px 16px; border-radius: 40px; background: rgba(255,253,247,.9); box-shadow: 0 6px 0 #A9BFCF; }
+.result-daily .paw { font-size: 40px; }
+.result-daily .paw.stamp { animation: pawStamp .45s cubic-bezier(.3,1.6,.5,1); }
+@keyframes pawStamp { 0% { scale: 2.2; opacity: 0; } 100% { scale: 1; opacity: 1; } }
+.result-daily .chest { font-size: 50px; }
+#stage.portrait .result-crown { top: 30px; }
+#stage.portrait .result-daily { right: 20px; top: 20px; }
+
+/* ================= 教學動畫 ================= */
+.tut { position: absolute; inset: 0; z-index: 30; background: rgba(27,43,75,.5); display: flex; align-items: center; justify-content: center; animation: screenIn .25s ease-out; }
+.tut.out { opacity: 0; transition: opacity .25s; }
+.tut-card { position: relative; width: 700px; max-width: calc(100% - 40px); background: #fff; border-radius: 40px; padding: 20px 20px 80px; box-shadow: 0 16px 0 #A9BFCF, 0 24px 50px rgba(0,0,0,.25); }
+.tut-scene { width: 100%; height: auto; display: block; }
+.tut-go { position: absolute; left: 50%; bottom: -54px; width: 128px; height: 128px; margin-left: -64px; border-radius: 50%; background: #6B9E6B; border: 8px solid #F6F3E6; box-shadow: 0 10px 0 #4E7A4E, 0 16px 30px rgba(0,0,0,.2); display: flex; align-items: center; justify-content: center; animation: goPulse 1.4s ease-in-out infinite; }
+.tut-go:active { translate: 0 6px; box-shadow: 0 4px 0 #4E7A4E; }
+@keyframes goPulse { 0%, 100% { scale: 1; } 50% { scale: 1.08; } }
+
+.tut-scene * { animation-duration: 3.6s; animation-iteration-count: infinite; }
+.tut-scene .tut-hand { transform: translate(600px, 460px); }
+.tut-ripple, .tut-spark, .tut-fish-b1, .tut-match-pic, .tut-write-ok, .tut-speak-mic, .tut-speak-mouth { transform-box: fill-box; transform-origin: center; }
+.tut-ripple, .tut-spark { opacity: 0; }
+
+.tut-wave { opacity: 0; animation-name: tutWave; }
+.tut-wave.w2 { animation-delay: .15s; }
+@keyframes tutWave { 0%, 4% { opacity: 0; } 8%, 26% { opacity: 1; } 32%, 100% { opacity: 0; } }
+
+@keyframes tutRipple { 0%, 48% { transform: scale(.2); opacity: 0; } 50% { transform: scale(.4); opacity: 1; } 66% { transform: scale(1.5); opacity: 0; } 100% { opacity: 0; } }
+@keyframes tutSparkA { 0%, 50% { opacity: 0; transform: scale(.3); } 58% { opacity: 1; transform: scale(1.25); } 72% { opacity: 1; transform: scale(1); } 80%, 100% { opacity: 0; transform: scale(.6); } }
+@keyframes tutSparkB { 0%, 62% { opacity: 0; transform: scale(.3); } 68% { opacity: 1; transform: scale(1.25); } 82% { opacity: 1; transform: scale(1); } 90%, 100% { opacity: 0; transform: scale(.6); } }
+@keyframes tutSparkC { 0%, 80% { opacity: 0; transform: scale(.3); } 85% { opacity: 1; transform: scale(1.25); } 93% { opacity: 1; transform: scale(1); } 98%, 100% { opacity: 0; } }
+@keyframes tutPulse { 0%, 60% { transform: none; } 66% { transform: scale(1.14); } 74%, 100% { transform: none; } }
+
+/* 釣魚 */
+.tut-fish-hand { animation-name: tutFishHand; }
+@keyframes tutFishHand { 0%, 28% { transform: translate(600px, 460px); } 46% { transform: translate(252px, 266px); } 50% { transform: translate(252px, 266px) scale(.86); } 55% { transform: translate(252px, 266px); } 74%, 100% { transform: translate(600px, 460px); } }
+.tut-fish-b1 { animation-name: tutCatch; }
+@keyframes tutCatch { 0%, 52% { transform: none; opacity: 1; } 70% { transform: translate(-40px, -150px) scale(.4); opacity: 1; } 76% { transform: translate(-40px, -150px) scale(.4); opacity: 0; } 77% { transform: none; opacity: 0; } 94%, 100% { transform: none; opacity: 1; } }
+.tut-fish-r, .tut-whack-r { animation-name: tutRipple; }
+.tut-fish-s, .tut-whack-s { animation-name: tutSparkA; }
+
+/* 打地鼠 */
+.tut-mole { animation-name: tutMole; }
+@keyframes tutMole { 0%, 8% { transform: translateY(110px); } 20%, 58% { transform: translateY(0); } 72%, 100% { transform: translateY(110px); } }
+.tut-whack-hand { animation-name: tutWhackHand; }
+@keyframes tutWhackHand { 0%, 26% { transform: translate(600px, 460px); } 45% { transform: translate(322px, 254px); } 50% { transform: translate(322px, 254px) scale(.86); } 55% { transform: translate(322px, 254px); } 74%, 100% { transform: translate(600px, 460px); } }
+
+/* 翻牌 */
+.tut-card .front { opacity: 0; }
+.tut-card.c0 .front { animation-name: tutFrontA; } .tut-card.c0 .back { animation-name: tutBackA; }
+.tut-card.c2 .front { animation-name: tutFrontB; } .tut-card.c2 .back { animation-name: tutBackB; }
+@keyframes tutFrontA { 0%, 26% { opacity: 0; } 30%, 90% { opacity: 1; } 96%, 100% { opacity: 0; } }
+@keyframes tutBackA { 0%, 26% { opacity: 1; } 30%, 90% { opacity: 0; } 96%, 100% { opacity: 1; } }
+@keyframes tutFrontB { 0%, 52% { opacity: 0; } 56%, 90% { opacity: 1; } 96%, 100% { opacity: 0; } }
+@keyframes tutBackB { 0%, 52% { opacity: 1; } 56%, 90% { opacity: 0; } 96%, 100% { opacity: 1; } }
+.tut-mem-hand { animation-name: tutMemHand; }
+@keyframes tutMemHand { 0%, 8% { transform: translate(600px, 460px); } 22% { transform: translate(172px, 200px); } 26% { transform: translate(172px, 200px) scale(.86); } 30% { transform: translate(172px, 200px); } 46% { transform: translate(412px, 200px); } 52% { transform: translate(412px, 200px) scale(.86); } 56% { transform: translate(412px, 200px); } 76%, 100% { transform: translate(600px, 460px); } }
+.tut-mem-s { animation-name: tutSparkB; }
+
+/* 連連看 */
+.tut-match-hand { animation-name: tutMatchHand; animation-timing-function: linear; }
+@keyframes tutMatchHand { 0%, 16% { transform: translate(600px, 460px); } 30% { transform: translate(248px, 208px); } 34% { transform: translate(248px, 208px) scale(.86); } 60% { transform: translate(432px, 208px) scale(.86); } 64% { transform: translate(432px, 208px); } 82%, 100% { transform: translate(600px, 460px); } }
+.tut-match-line { animation-name: tutLine; animation-timing-function: linear; }
+@keyframes tutLine { 0%, 34% { stroke-dashoffset: 176; opacity: 1; } 60%, 88% { stroke-dashoffset: 0; opacity: 1; } 94% { stroke-dashoffset: 0; opacity: 0; } 95%, 100% { stroke-dashoffset: 176; opacity: 0; } }
+.tut-match-pic { animation-name: tutPulse; }
+.tut-match-s { animation-name: tutSparkB; }
+
+/* 填空 */
+.tut-fill-hand { animation-name: tutFillHand; animation-timing-function: linear; }
+@keyframes tutFillHand { 0%, 14% { transform: translate(600px, 460px); } 28% { transform: translate(325px, 306px); } 32% { transform: translate(325px, 306px) scale(.86); } 58% { transform: translate(371px, 136px) scale(.86); } 62% { transform: translate(371px, 136px); } 80%, 100% { transform: translate(600px, 460px); } }
+.tut-fill-tile { animation-name: tutTile; animation-timing-function: linear; }
+@keyframes tutTile { 0%, 32% { transform: none; opacity: 1; } 58%, 90% { transform: translate(46px, -170px); opacity: 1; } 95% { transform: translate(46px, -170px); opacity: 0; } 96% { transform: none; opacity: 0; } 100% { transform: none; opacity: 1; } }
+.tut-fill-blank { animation-name: tutBlank; }
+@keyframes tutBlank { 0%, 58% { opacity: 1; } 60%, 94% { opacity: 0; } 100% { opacity: 1; } }
+.tut-fill-s { animation-name: tutSparkB; }
+
+/* 寫字 */
+.tut-write-hand { animation-name: tutWriteHand; animation-timing-function: linear; }
+@keyframes tutWriteHand { 0%, 6% { transform: translate(600px, 460px); } 18% { transform: translate(250px, 130px) scale(.9); } 44% { transform: translate(250px, 280px) scale(.9); } 70% { transform: translate(400px, 280px) scale(.9); } 74% { transform: translate(400px, 280px); } 82% { transform: translate(470px, 344px); } 85% { transform: translate(470px, 344px) scale(.86); } 88% { transform: translate(470px, 344px); } 97%, 100% { transform: translate(600px, 460px); } }
+.tut-write-ink { animation-name: tutInk; animation-timing-function: linear; }
+@keyframes tutInk { 0%, 18% { stroke-dashoffset: 300; opacity: 1; } 70%, 92% { stroke-dashoffset: 0; opacity: 1; } 96% { stroke-dashoffset: 0; opacity: 0; } 97%, 100% { stroke-dashoffset: 300; opacity: 0; } }
+.tut-write-ok { animation-name: tutOk; }
+@keyframes tutOk { 0%, 84% { transform: none; } 87% { transform: scale(1.2); } 92%, 100% { transform: none; } }
+
+/* 唸給狗狗聽 */
+.tut-speak-hand { animation-name: tutSpeakHand; }
+@keyframes tutSpeakHand { 0%, 10% { transform: translate(600px, 460px); } 24% { transform: translate(482px, 304px); } 28% { transform: translate(482px, 304px) scale(.86); } 32% { transform: translate(482px, 304px); } 46%, 100% { transform: translate(600px, 460px); } }
+.tut-speak-mic { animation-name: tutMic; }
+@keyframes tutMic { 0%, 28% { transform: none; } 34%, 78% { transform: scale(1.1); } 84%, 100% { transform: none; } }
+.tut-speak-mouth { animation-name: tutMouth; }
+@keyframes tutMouth { 0%, 40% { transform: none; } 46% { transform: scaleY(2.2); } 52% { transform: scaleY(.8); } 58% { transform: scaleY(2.2); } 64% { transform: scaleY(.8); } 70%, 100% { transform: none; } }
+.tut-wave.s1, .tut-wave.s2 { animation-name: tutSpeakWave; }
+.tut-wave.s2 { animation-delay: .12s; }
+@keyframes tutSpeakWave { 0%, 40% { opacity: 0; } 46%, 74% { opacity: 1; } 80%, 100% { opacity: 0; } }
+.tut-speak-s { animation-name: tutSparkC; }

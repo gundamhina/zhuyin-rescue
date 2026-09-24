@@ -2,7 +2,7 @@
 
 import { GROUPS, REP_CHAR, GROUP_NAMES } from './data.js'
 import { stars, activePool, effectiveTier, unlockedCount, lifetimeStats, dailyStats, TIERS, TRACKS, TRACK_NAMES } from './scheduler.js'
-import { dogSvg, confettiHtml, DOG_COLORS, bgHtml, cardArt, boneSvg, SHOP_ICONS } from './art.js'
+import { dogSvg, confettiHtml, DOG_COLORS, bgHtml, cardArt, boneSvg, SHOP_ICONS, UX_ICONS } from './art.js'
 
 
 // 舞台會跟著螢幕比例變形，所以不留邊：
@@ -162,7 +162,11 @@ export function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
 }
 
 // 首頁：目前使用者的狗狗、三張玩法卡
-export function renderHome (root, { profile, speech = true, bones = 0, mates = [] }) {
+// daily = { rounds, claimed, streak, goal }；recommend = 推薦的玩法；musicOn = 背景音樂開著沒
+export function renderHome (root, { profile, speech = true, bones = 0, mates = [], daily = null, recommend = null, musicOn = true }) {
+  const d = daily || { rounds: 0, claimed: false, streak: 0, goal: 3 }
+  const chestState = d.claimed ? 'claimed' : d.rounds >= d.goal ? 'ready' : 'locked'
+  const paws = Array.from({ length: d.goal }, (_, i) => `<span class="paw ${i < d.rounds ? 'on' : ''}">${UX_ICONS.paw}</span>`).join('')
   root.innerHTML = `
     ${bgHtml('home')}
     <button class="who" id="btn-who" aria-label="換人">
@@ -170,6 +174,12 @@ export function renderHome (root, { profile, speech = true, bones = 0, mates = [
       <div class="who-name">${escapeHtml(profile.name)}</div>
     </button>
     <button class="shop-btn" id="btn-shop" aria-label="狗狗商店"><span class="bone-ic">${boneSvg()}</span><b>${bones}</b><span class="shop-word">${SHOP_ICONS.bag}</span></button>
+    <div class="daily" id="daily">
+      <div class="streak ${d.streak ? '' : 'cold'}" title="連續 ${d.streak} 天">${UX_ICONS.flame}<b>${d.streak}</b></div>
+      <div class="paws" title="今天玩了 ${Math.min(d.rounds, d.goal)} 局">${paws}</div>
+      <button class="chest ${chestState}" id="btn-chest" aria-label="寶箱" ${chestState === 'ready' ? '' : 'disabled'}>${UX_ICONS.chest}</button>
+    </div>
+    <button class="music-btn ${musicOn ? '' : 'off'}" id="btn-music" aria-label="背景音樂">${musicOn ? UX_ICONS.musicOn : UX_ICONS.musicOff}</button>
     <div class="cards" id="cards">
       <button class="card" data-game="fishing" aria-label="釣魚">
         <div class="card-pic">${cardArt('fishing')}</div>
@@ -196,16 +206,27 @@ export function renderHome (root, { profile, speech = true, bones = 0, mates = [
     <div class="mates home-mates">${mates.map(c => `<div class="mate">${dogSvg(c, { mate: true })}</div>`).join('')}</div>
     <button class="gear" id="btn-gear" aria-label="大人面板">${GEAR_SVG}</button>`
   mountBgs(root)
+  // 今天推薦：那張卡發光、角落蓋一個腳印
+  const rec = recommend && root.querySelector(`.card[data-game="${recommend}"]:not(.hidden)`)
+  if (rec) {
+    rec.classList.add('recommend')
+    const badge = document.createElement('span')
+    badge.className = 'rec-badge'
+    badge.innerHTML = UX_ICONS.paw
+    rec.appendChild(badge)
+  }
 }
 
-export function renderResult (root, color = 0, { roundBones = 0, bones = 0, mates = [] } = {}) {
+export function renderResult (root, color = 0, { roundBones = 0, bones = 0, mates = [], daily = null, perfect = false } = {}) {
   root.innerHTML = `
     ${bgHtml('home')}
     <div class="result-burst"></div>
     <div class="confetti-wrap">${confettiHtml()}</div>
     <div class="result-dogs ${mates.length >= 3 ? 'many' : ''}">${dogSvg(color)}${mates.map(c => dogSvg(c, { mate: true })).join('')}</div>
     <div class="result-stars">${'<span class="star">★</span>'.repeat(5)}</div>
-    <div class="result-bones" id="result-bones"><span class="bone-ic">${boneSvg()}</span> +${roundBones}　<small>共 ${bones}</small></div>
+    <div class="result-bones" id="result-bones" data-gain="${roundBones}" data-total="${bones}"><span class="bone-ic">${boneSvg()}</span> +<b class="rb-gain">0</b>　<small>共 <span class="rb-total">${bones - roundBones}</span></small></div>
+    ${perfect ? `<div class="result-crown" id="result-crown">${UX_ICONS.crown}</div>` : ''}
+    ${daily ? `<div class="result-daily">${Array.from({ length: daily.goal }, (_, i) => `<span class="paw ${i < daily.rounds - 1 ? 'on' : ''} ${i === daily.rounds - 1 ? 'new' : ''}">${UX_ICONS.paw}</span>`).join('')}${daily.rounds >= daily.goal && !daily.claimed ? `<span class="chest ready">${UX_ICONS.chest}</span>` : ''}</div>` : ''}
     <div class="result-actions hidden" id="result-actions">
       <button class="round-btn" id="btn-again" aria-label="再玩一次">
         <svg viewBox="0 0 24 24" width="64" height="64" fill="#fff"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
@@ -217,8 +238,8 @@ export function renderResult (root, color = 0, { roundBones = 0, bones = 0, mate
   mountBgs(root)
 }
 
-// 結算動畫：星星一顆顆亮，3 秒後出按鈕
-export function playResult (root, earned) {
+// 結算動畫：星星一顆顆亮，接著骨頭數字往上跳、今天的腳印蓋上去，全對的話皇冠掉下來；3 秒後出按鈕
+export function playResult (root, earned, { onTick = () => {}, onPerfect = () => {}, onPaw = () => {} } = {}) {
   const starEls = root.querySelectorAll('.result-stars .star')
   starEls.forEach(s => s.classList.remove('lit'))
   earned.forEach((ok, i) => {
@@ -227,7 +248,29 @@ export function playResult (root, earned) {
   })
   root.querySelector('#result-actions').classList.add('hidden')
   const bonesEl = root.querySelector('#result-bones')
-  if (bonesEl) setTimeout(() => bonesEl.classList.add('show'), 400 + earned.length * 350 + 300)
+  const starsDone = 400 + earned.length * 350 + 300
+  if (bonesEl) {
+    setTimeout(() => {
+      bonesEl.classList.add('show')
+      const gainN = parseInt(bonesEl.dataset.gain, 10) || 0
+      const total = parseInt(bonesEl.dataset.total, 10) || 0
+      const gainEl = bonesEl.querySelector('.rb-gain')
+      const totalEl = bonesEl.querySelector('.rb-total')
+      const steps = Math.min(gainN, 20)
+      for (let i = 1; i <= steps; i++) {
+        setTimeout(() => {
+          const v = Math.round(gainN * i / steps)
+          gainEl.textContent = v
+          totalEl.textContent = total - gainN + v
+          onTick()
+        }, i * 60)
+      }
+    }, starsDone)
+  }
+  const paw = root.querySelector('.result-daily .paw.new')
+  if (paw) setTimeout(() => { paw.classList.add('on', 'stamp'); onPaw() }, starsDone + 1400)
+  const crown = root.querySelector('#result-crown')
+  if (crown) setTimeout(() => { crown.classList.add('show'); onPerfect(crown) }, starsDone + 700)
   setTimeout(() => root.querySelector('#result-actions').classList.remove('hidden'), 3000)
 }
 

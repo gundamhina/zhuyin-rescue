@@ -457,3 +457,14 @@ export const TAB_ICONS = {
   acc: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M11 12 3 7v10zm2 0 8-5v10zm-1-2a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg>',
   mate: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><ellipse cx="12" cy="16" rx="6" ry="5"/><circle cx="5" cy="10" r="2.6"/><circle cx="9.5" cy="6.5" r="2.6"/><circle cx="14.5" cy="6.5" r="2.6"/><circle cx="19" cy="10" r="2.6"/></svg>',
 }
+
+
+// ---- 首頁每日目標、連對、結算用的小圖 ----
+export const UX_ICONS = {
+  flame: '<svg viewBox="0 0 24 24" width="1em" height="1em"><path d="M12 1.5c1.2 4.2 5.5 5.6 5.5 11.3a5.5 5.5 0 0 1-11 0c0-2.8 1.3-4.4 2.6-5.7.2 1.9 1.1 3.1 2.3 3.5C11 7.6 12 4.8 12 1.5z" fill="#FFB347"/><path d="M12 11.5c.7 1.8 2.8 2.6 2.8 5.1a2.8 2.8 0 0 1-5.6 0c0-1.5 1-2.3 1.7-2.9.1.9.6 1.4 1.1 1.7-.3-1.6 0-2.7 0-3.9z" fill="#FFF1C9"/></svg>',
+  paw: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><ellipse cx="12" cy="16" rx="5.6" ry="4.6"/><circle cx="5.4" cy="10" r="2.5"/><circle cx="9.5" cy="6.3" r="2.5"/><circle cx="14.5" cy="6.3" r="2.5"/><circle cx="18.6" cy="10" r="2.5"/></svg>',
+  chest: '<svg viewBox="0 0 48 42" width="1em" height="1em"><g class="lid"><path d="M4 18 q0 -14 20 -14 q20 0 20 14 z" fill="#E0955B" stroke="#7A5A3C" stroke-width="2.5" stroke-linejoin="round"/><path d="M14 6.5 v11.5 M34 6.5 v11.5" stroke="#E8C86A" stroke-width="3"/></g><rect x="4" y="18" width="40" height="20" rx="3" fill="#C9763E" stroke="#7A5A3C" stroke-width="2.5"/><path d="M14 18 v20 M34 18 v20" stroke="#E8C86A" stroke-width="3"/><rect x="20" y="15" width="8" height="10" rx="2" fill="#E8C86A" stroke="#7A5A3C" stroke-width="2"/></svg>',
+  musicOn: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="#fff"><path d="M9 17.5a3 3 0 1 1-2-2.8V5.2l12-2.2v11.5a3 3 0 1 1-2-2.8V6.4L9 7.9z"/></svg>',
+  musicOff: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="#fff"><path d="M9 17.5a3 3 0 1 1-2-2.8V5.2l12-2.2v11.5a3 3 0 1 1-2-2.8V6.4L9 7.9z" opacity=".55"/><path d="M3 3 21 21" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>',
+  crown: '<svg viewBox="0 0 64 44" width="1em" height="1em"><path d="M6 38 L2 8 L18 22 L32 2 L46 22 L62 8 L58 38 Z" fill="#E8C86A" stroke="#B99A44" stroke-width="3" stroke-linejoin="round"/><circle cx="18" cy="30" r="4" fill="#C8553D"/><circle cx="32" cy="28" r="4.5" fill="#4A6FA5"/><circle cx="46" cy="30" r="4" fill="#6B9E6B"/></svg>',
+}

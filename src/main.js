@@ -1,6 +1,6 @@
 // 把所有模組接起來：使用者、狀態、出題、三種玩法、畫面切換。
 
-import { addBones, buyItem, wearItem, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, activePool, effectiveTier, trackView, applyTrack } from './scheduler.js'
+import { addBones, buyItem, wearItem, recordRound, claimDaily, dailyView, DAILY_GOAL, markSeen, recommendTrack, dayKey, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, activePool, effectiveTier, trackView, applyTrack } from './scheduler.js'
 import { createStore } from './store.js'
 import { createAudio } from './audio.js'
 import { createFishing } from './fishing.js'
@@ -11,8 +11,10 @@ import { createWrite } from './write.js'
 import { createMatchLine } from './matchline.js'
 import { createFillBlank } from './fillblank.js'
 import { renderShop } from './shop.js'
-import { setOutfit, boneSvg, ownedMates } from './art.js'
-import { fitStage, layoutBg, goFullscreenOnPhone, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage } from './ui.js'
+import { setOutfit, boneSvg, ownedMates, bgHtml, UX_ICONS } from './art.js'
+import { burstAt, flyBones, bump, buzz } from './fx.js'
+import { showTutorial, hasTutorial } from './tutorial.js'
+import { fitStage, layoutBg, mountBgs, goFullscreenOnPhone, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage } from './ui.js'
 import { renderCheck } from './check.js'
 
 const SETTINGS_KEY = 'zhuyin-rescue-settings'
@@ -60,6 +62,30 @@ function main () {
   let profile = null
   let state = null
 
+  // 背景音樂只在這幾個畫面放；進遊戲就停，才不會蓋掉注音的聲音
+  const MUSIC_SCREENS = ['profiles', 'home', 'shop', 'result']
+  let currentScreen = null
+  function updateMusic () {
+    if (!audio.ready()) return
+    if (MUSIC_SCREENS.includes(currentScreen) && !settings.musicOff) audio.startMusic()
+    else audio.stopMusic()
+  }
+  function show (name) {
+    currentScreen = name
+    showScreen(name)
+    updateMusic()
+  }
+  function today () { return dayKey(Date.now()) }
+
+  // 第一次碰畫面才能出聲（瀏覽器規定），順便把音樂打開；點到按鈕輕輕「啵」一聲
+  document.addEventListener('pointerdown', e => {
+    const first = !audio.ready()
+    audio.unlock()
+    if (first) updateMusic()
+    const btn = e.target.closest('button, .card, .profile-card')
+    if (btn && !btn.disabled && !btn.closest('#screen-panel') && !btn.classList.contains('mic-btn')) audio.pop()
+  }, true)
+
   const profilesEl = document.getElementById('screen-profiles')
   const homeEl = document.getElementById('screen-home')
   const gameEl = document.getElementById('screen-game')
@@ -74,7 +100,7 @@ function main () {
       onAdd (info) { audio.unlock(); const p = store.addProfile(info); pickProfile(p.id) },
       onGear: gearTap,
     })
-    showScreen('profiles')
+    show('profiles')
   }
 
   function pickProfile (id) {
@@ -88,16 +114,61 @@ function main () {
   }
 
   // ---- 首頁 ----
+  // 今天推薦哪個玩法：今天練最少的那一軌，軌裡再照日子輪
+  function recommendGame () {
+    const t = recommendTrack(state, today())
+    const odd = Math.floor(Date.now() / 86400000) % 2
+    if (t === 'listen') return odd ? 'whack' : 'fishing'
+    if (t === 'read') return odd ? 'fill' : 'match'
+    return 'write'
+  }
+
   function goHome () {
     destroyGame()
-    renderHome(homeEl, { profile, speech: speechAvailable(), bones: state.bones, mates: ownedMates(state) })
+    const daily = { ...dailyView(state, today()), goal: DAILY_GOAL }
+    renderHome(homeEl, { profile, speech: speechAvailable(), bones: state.bones, mates: ownedMates(state), daily, recommend: recommendGame(), musicOn: !settings.musicOff })
     homeEl.querySelector('#btn-who').addEventListener('pointerdown', goProfiles)
+    homeEl.querySelector('#btn-chest').addEventListener('pointerdown', openChest)
+    homeEl.querySelector('#btn-music').addEventListener('pointerdown', e => {
+      settings = { ...settings, musicOff: !settings.musicOff }
+      saveSettings(settings)
+      const b = e.currentTarget
+      b.classList.toggle('off', !!settings.musicOff)
+      b.innerHTML = settings.musicOff ? UX_ICONS.musicOff : UX_ICONS.musicOn
+      updateMusic()
+    })
     homeEl.querySelector('#btn-shop').addEventListener('pointerdown', () => { audio.unlock(); openShop() })
     homeEl.querySelectorAll('[data-game]').forEach(card => {
       card.addEventListener('pointerdown', () => { audio.unlock(); startGame(card.dataset.game) })
     })
     homeEl.querySelector('#btn-gear').addEventListener('pointerdown', gearTap)
-    showScreen('home')
+    show('home')
+  }
+
+  // 開寶箱：蓋子打開、星星爆開、骨頭一根根飛進商店按鈕
+  function openChest (e) {
+    const chest = e.currentTarget
+    const before = state.bones
+    const next = claimDaily(state, today())
+    if (next === state) return
+    state = next
+    store.save(profile.id, state)
+    const bonus = state.bones - before
+    chest.classList.remove('ready')
+    chest.classList.add('opening')
+    chest.disabled = true
+    audio.chest()
+    buzz(40)
+    burstAt(chest, { count: 20, spread: 1.4 })
+    const shopBtn = homeEl.querySelector('#btn-shop')
+    const countEl = shopBtn.querySelector('b')
+    const k = Math.min(bonus, 8)
+    flyBones(chest, shopBtn.querySelector('.bone-ic'), k, (i, last) => {
+      audio.tick()
+      countEl.textContent = last ? state.bones : before + Math.round(bonus * (i + 1) / k)
+      bump(shopBtn)
+      if (last) setTimeout(() => { chest.classList.remove('opening'); chest.classList.add('claimed') }, 300)
+    })
   }
 
   // ---- 狗狗商店 ----
@@ -128,7 +199,7 @@ function main () {
       },
       onClose: goHome,
     })
-    showScreen('shop')
+    show('shop')
   }
 
   // ---- 骨頭（積分）：答對就有，玩完一局再送 ----
@@ -136,17 +207,59 @@ function main () {
   bonesEl.querySelector('.bone-ic').innerHTML = boneSvg()
   let roundBones = 0
   function showBones () { bonesEl.querySelector('b').textContent = state.bones }
-  function gain (n) {
-    if (!n) return
-    state = addBones(state, n)
-    store.save(profile.id, state)
-    roundBones += n
-    showBones()
+  function floatPlus (n) {
     const f = document.createElement('span')
     f.className = 'bone-float'
     f.textContent = '+' + n
     bonesEl.appendChild(f)
     setTimeout(() => f.remove(), 1200)
+  }
+  // 存檔馬上存；畫面上的數字等骨頭飛到了才加。fromEl 是骨頭飛出來的地方（答對的泡泡、地鼠…）
+  function gain (n, fromEl = null) {
+    if (!n) return
+    state = addBones(state, n)
+    store.save(profile.id, state)
+    roundBones += n
+    if (!fromEl) { showBones(); floatPlus(n); return }
+    flyBones(fromEl, bonesEl.querySelector('.bone-ic'), n, (i, last) => {
+      audio.tick()
+      if (!last) return
+      showBones()
+      bump(bonesEl)
+      floatPlus(n)
+    })
+  }
+
+  // ---- 連對：第一次就答對一題接一題，火焰上的數字往上加；連 3 題多 2 根、連 5 題再多 3 根 ----
+  const comboEl = gameEl.querySelector('#combo')
+  comboEl.querySelector('.flame').innerHTML = UX_ICONS.flame
+  let combo = 0
+  function setCombo (n) {
+    combo = n
+    comboEl.hidden = n < 2
+    if (n < 2) return
+    comboEl.querySelector('b').textContent = n
+    bump(comboEl)
+    comboEl.classList.remove('pop')
+    void comboEl.offsetWidth
+    comboEl.classList.add('pop')
+  }
+  // 答對：星星、骨頭、特效、震動、連對。el 是答對的那個東西（找不到就不放特效）
+  function rewardCorrect (first, el) {
+    earned.push(first)
+    setStars()
+    gain(first ? 2 : 1, el)
+    if (el) burstAt(el)
+    buzz(25)
+    if (!first) return
+    setCombo(combo + 1)
+    if (combo >= 2) audio.combo(combo)
+    if (combo === 3) setTimeout(() => gain(2, comboEl), 450)
+    if (combo === 5) setTimeout(() => gain(3, comboEl), 450)
+  }
+  function rewardWrong () {
+    setCombo(0)
+    buzz([40, 60, 40])
   }
 
   // 齒輪 2 秒內連點三下才開大人面板。每點一下齒輪旁顯示還差幾下，讓大人知道它沒壞。
@@ -204,8 +317,25 @@ function main () {
     kind = which
     earned = []
     roundBones = 0
+    setCombo(0)
+    starsEl.innerHTML = ''
     showBones()
-    showScreen('game')
+    show('game')
+    // 第一次玩這個遊戲：先看小手示範，按播放鍵才開始
+    if (hasTutorial(which) && !(state.seen && state.seen[which])) {
+      playArea.innerHTML = bgHtml(which === 'fishing' ? 'scene' : 'home')
+      mountBgs(playArea)
+      showTutorial(gameEl, which, () => {
+        state = markSeen(state, which)
+        store.save(profile.id, state)
+        if (kind === which && currentScreen === 'game') runGame(which)
+      })
+      return
+    }
+    runGame(which)
+  }
+
+  function runGame (which) {
     if (which === 'memory') return runMemory()
     if (which === 'speak') return runSpeak()
     if (which === 'match') return runMatch()
@@ -213,7 +343,17 @@ function main () {
     runQuestions(which)
   }
 
-  gameEl.querySelector('#btn-quit').addEventListener('pointerdown', () => { busy = false; clearIdle(); goHome() })
+  gameEl.querySelector('#btn-quit').addEventListener('pointerdown', () => {
+    busy = false
+    clearIdle()
+    gameEl.querySelectorAll('.tut').forEach(t => t.remove())
+    goHome()
+  })
+  // 「？」再看一次怎麼玩（蓋在遊戲上，按播放鍵回去繼續玩）
+  gameEl.querySelector('#btn-help').addEventListener('pointerdown', () => {
+    if (!kind || gameEl.querySelector('.tut')) return
+    showTutorial(gameEl, kind, () => {})
+  })
 
   // 記到目前玩法那一軌
   function commit (answer) {
@@ -241,13 +381,26 @@ function main () {
 
   function finishRound () {
     destroyGame()
-    if (kind !== 'memory') gain(3) // 玩完一局的獎勵；翻牌是純遊玩，沒有
-    renderResult(resultEl, profile.color, { roundBones, bones: state.bones, mates: ownedMates(state) })
+    setCombo(0)
+    // 翻牌是純遊玩：沒有玩完的骨頭，也不算今天的腳印
+    let daily = null
+    if (kind !== 'memory') {
+      gain(3)
+      state = recordRound(state, today())
+      store.save(profile.id, state)
+      daily = { ...dailyView(state, today()), goal: DAILY_GOAL }
+    }
+    const perfect = kind !== 'memory' && earned.length > 0 && earned.every(Boolean)
+    renderResult(resultEl, profile.color, { roundBones, bones: state.bones, mates: ownedMates(state), daily, perfect })
     resultEl.querySelector('#btn-again').addEventListener('pointerdown', () => startGame(kind))
     resultEl.querySelector('#btn-home').addEventListener('pointerdown', goHome)
-    showScreen('result')
+    show('result')
     audio.cheer()
-    playResult(resultEl, earned)
+    playResult(resultEl, earned, {
+      onTick: () => audio.tick(),
+      onPaw: () => { audio.combo(3); buzz(20) },
+      onPerfect: crown => { audio.fanfare(); burstAt(crown, { count: 24, spread: 1.6 }) },
+    })
   }
 
   // ---- 釣魚、打地鼠：聽音選形 ----
@@ -318,7 +471,7 @@ function main () {
     audio.say(round[index].target)
   })
 
-  async function onPick (symbol) {
+  async function onPick (symbol, el = null) {
     if (busy) return
     const q = round[index]
     const ms = Date.now() - askedAt
@@ -327,6 +480,7 @@ function main () {
     // 聽寫辨識不出是哪個：算錯但不記混淆對，答案會顯示在板子上讓她照著寫
     if (symbol === '__unknown__') {
       if (firstAttempt) { commit({ target: q.target, ok: false, picked: null, ms, drill: q.drill }); firstAttempt = false }
+      rewardWrong()
       audio.wrong(); game.shake(); game.sad()
       const myIndex = index; const myGame = game
       setTimeout(async () => { if (index !== myIndex || game !== myGame) return; await audio.say(q.target) }, 500)
@@ -337,8 +491,7 @@ function main () {
       clearIdle()
       game.lock()
       if (firstAttempt) commit({ target: q.target, ok: true, picked: symbol, ms, drill: q.drill })
-      earned.push(firstAttempt); gain(firstAttempt ? 2 : 1)
-      setStars()
+      rewardCorrect(firstAttempt, el || playArea.querySelector('.pad-wrap'))
       audio.stop()
       if (kind === 'whack') audio.crunch(); else if (kind === 'write') audio.ding(); else audio.splash()
       await game.celebrate(symbol)
@@ -356,6 +509,7 @@ function main () {
       commit({ target: q.target, ok: false, picked: symbol, ms, drill: q.drill })
       firstAttempt = false
     }
+    rewardWrong()
     audio.wrong()
     game.shake(symbol)
     game.sad()
@@ -424,8 +578,7 @@ function main () {
     game.heard(transcripts[0] || '')
     if (matchesSymbol(q.target, transcripts)) {
       if (firstAttempt) commit({ target: q.target, ok: true, picked: q.target, ms: 0, drill: q.drill })
-      earned.push(firstAttempt); gain(firstAttempt ? 2 : 1)
-      setStars()
+      rewardCorrect(firstAttempt, playArea.querySelector('.sign'))
       audio.ding()
       await game.celebrate()
       if (game !== myGame) return
@@ -439,6 +592,7 @@ function main () {
     }
     // 沒聽出來或唸錯：狗狗歪頭、唸一次答案。兩次沒過就跳下一題，不記錯
     firstAttempt = false
+    rewardWrong()
     speakTries++
     game.sad()
     await audio.say(q.target)
@@ -470,8 +624,7 @@ function main () {
       if (word === picked) {
         busy = true
         if (firstTry[word]) commit({ target: word, ok: true, picked: word, ms: 0, drill: null })
-        earned.push(firstTry[word]); gain(firstTry[word] ? 2 : 1)
-        setStars()
+        rewardCorrect(firstTry[word], playArea.querySelector(`.mpic[data-symbol="${picked}"]`))
         audio.ding()
         game.markCorrect(word, picked)
         await audio.say(word) // 對答案：唸一次這個詞
@@ -479,6 +632,7 @@ function main () {
         return
       }
       if (firstTry[word]) { commit({ target: word, ok: false, picked, ms: 0, drill: null }); firstTry[word] = false }
+      rewardWrong()
       audio.wrong()
       game.markWrong(word, picked)
     })
@@ -522,8 +676,7 @@ function main () {
         busy = true
         game.lock()
         if (firstAttempt) commit({ target: q.target, ok: true, picked: q.target, ms: 0, drill: q.drill })
-        earned.push(firstAttempt); gain(firstAttempt ? 2 : 1)
-        setStars()
+        rewardCorrect(firstAttempt, playArea.querySelector('.fill-sign'))
         audio.ding()
         game.fill(syl)
         await game.celebrate()
@@ -536,6 +689,7 @@ function main () {
         return
       }
       if (firstAttempt) { commit({ target: q.target, ok: false, picked: null, ms: 0, drill: q.drill }); firstAttempt = false }
+      rewardWrong()
       audio.wrong()
       game.bounce(syl)
       game.sad()
@@ -551,7 +705,14 @@ function main () {
     starTotal = symbols.length
     setStars()
     game.onFlip(sym => { audio.flip(); audio.say(sym) })
-    game.onPair(() => { earned.push(true); gain(1); setStars(); audio.ding() })
+    game.onPair(sym => {
+      const cards = playArea.querySelectorAll(`.mcard[data-symbol="${sym}"]`)
+      earned.push(true)
+      setStars()
+      gain(1, cards[1] || null)
+      cards.forEach(c => burstAt(c, { count: 8 }))
+      audio.ding()
+    })
     game.onDone(finishRound)
     game.start(symbols)
   }
@@ -624,7 +785,7 @@ function main () {
       onSay (symbol) { audio.say(symbol) },
       onCheck: openCheck,
     })
-    showScreen('panel')
+    show('panel')
   }
 
   // 發音檢查台：借用家長區的畫面容器
@@ -635,7 +796,7 @@ function main () {
       onSettings (next) { settings = next; saveSettings(settings) },
       onClose: openPanel,
     })
-    showScreen('panel')
+    show('panel')
   }
 
   // 開機：有記住上次的人就直接進首頁，否則選人

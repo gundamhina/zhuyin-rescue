@@ -23,15 +23,21 @@
   <section class="screen" id="screen-game">
     <div class="play-area"></div>
     <div class="topbar">
-      <button class="round-btn quit" id="btn-quit" aria-label="回首頁">
-        <svg viewBox="0 0 24 24" width="40" height="40" fill="#fff"><path d="M12 3 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
-      </button>
+      <div class="tb-left">
+        <button class="round-btn quit" id="btn-quit" aria-label="回首頁">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="#fff"><path d="M12 3 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
+        </button>
+        <button class="round-btn quit" id="btn-help" aria-label="怎麼玩">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="#fff"><path d="M11 18h2v-2h-2v2zm1-16a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm0-14a4 4 0 0 0-4 4h2a2 2 0 1 1 4 0c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5a4 4 0 0 0-4-4z"/></svg>
+        </button>
+      </div>
       <button class="round-btn" id="btn-replay" aria-label="再聽一次">
         <svg viewBox="0 0 24 24" width="60" height="60" fill="#fff"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>
       </button>
     </div>
     <div class="progress-stars"></div>
     <div class="bones-pill" id="bones"><span class="bone-ic"></span><b>0</b></div>
+    <div class="combo" id="combo" hidden><span class="flame"></span><b>2</b></div>
   </section>
   <section class="screen" id="screen-shop"></section>
   <section class="screen" id="screen-result"></section>

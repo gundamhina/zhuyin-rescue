@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   createState, stars, activePool, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, trackView, applyTrack, effectiveTier, lifetimeStats, dailyStats, TIERS,
   addBones, buyItem, wearItem, withWallet,
+  dayKey, dailyView, recordRound, claimDaily, dailyBonus, DAILY_GOAL, markSeen, recommendTrack,
 } from '../src/scheduler.js';
 import { GROUPS, coreOf } from '../src/data.js';
 
@@ -506,4 +507,76 @@ test('舊的 version 2 存檔沒有骨頭欄位，載入時補上，清除練習
   assert.deepEqual(s.owned, [])
   const rich = addBones(s, 12)
   assert.equal(resetProgress(rich).bones, 12)
+})
+
+
+// ---- 每日目標與連續天數 ----
+test('每日目標：玩完一局蓋一個腳印，換天歸零；蓋滿才開得了寶箱，一天只能開一次', () => {
+  let s = createState()
+  assert.deepEqual(dailyView(s, '2026-09-24'), { date: '2026-09-24', rounds: 0, claimed: false, streak: 0 })
+  s = recordRound(s, '2026-09-24')
+  s = recordRound(s, '2026-09-24')
+  assert.equal(dailyView(s, '2026-09-24').rounds, 2)
+  assert.equal(claimDaily(s, '2026-09-24').bones, 0, '還沒蓋滿不能開')
+  s = recordRound(s, '2026-09-24')
+  assert.equal(DAILY_GOAL, 3)
+  s = claimDaily(s, '2026-09-24')
+  assert.equal(s.bones, dailyBonus(1))
+  assert.equal(dailyView(s, '2026-09-24').claimed, true)
+  assert.equal(claimDaily(s, '2026-09-24').bones, s.bones, '同一天不能開兩次')
+  assert.equal(dailyView(s, '2026-09-25').rounds, 0, '隔天重新算')
+  assert.equal(dailyView(s, '2026-09-25').claimed, false)
+})
+
+test('連續天數：每天都玩就加一，漏一天就從一開始；過了兩天沒玩畫面顯示零', () => {
+  let s = createState()
+  s = recordRound(s, '2026-09-29')
+  s = recordRound(s, '2026-09-29')
+  assert.equal(dailyView(s, '2026-09-29').streak, 1, '同一天玩兩局還是一天')
+  s = recordRound(s, '2026-09-30')
+  s = recordRound(s, '2026-10-01')
+  assert.equal(dailyView(s, '2026-10-01').streak, 3, '跨月也要接得上')
+  assert.equal(dailyView(s, '2026-10-02').streak, 3, '今天還沒玩，昨天有玩，火還在')
+  assert.equal(dailyView(s, '2026-10-03').streak, 0, '漏了一天，火熄了')
+  s = recordRound(s, '2026-10-03')
+  assert.equal(dailyView(s, '2026-10-03').streak, 1)
+})
+
+test('寶箱骨頭隨連續天數變多，七天封頂', () => {
+  assert.equal(dailyBonus(1), 30)
+  assert.equal(dailyBonus(2), 35)
+  assert.equal(dailyBonus(7), 60)
+  assert.equal(dailyBonus(30), 60)
+  assert.equal(dailyBonus(0), 30)
+})
+
+test('dayKey 用當地時間的年月日', () => {
+  assert.equal(dayKey(new Date(2026, 0, 5, 23, 59).getTime()), '2026-01-05')
+  assert.equal(dayKey(new Date(2026, 11, 31, 0, 1).getTime()), '2026-12-31')
+})
+
+test('看過的教學記在 seen，舊存檔補空物件', () => {
+  const old = createState()
+  delete old.seen
+  const s = withWallet(old)
+  assert.deepEqual(s.seen, {})
+  const t = markSeen(s, 'fishing')
+  assert.equal(t.seen.fishing, true)
+  assert.equal(s.seen.fishing, undefined, '不能改到原本的物件')
+})
+
+test('今天推薦：推今天練最少的那一軌，都一樣就照日子輪', () => {
+  let s = createState()
+  const at = new Date(2026, 8, 24, 10).getTime()
+  const today = dayKey(at)
+  const ans = (target, ok = true) => ({ target, ok, picked: target, ms: 1000, at })
+  // 聽練了兩題、讀練了一題、寫沒練 → 推寫
+  s = applyTrack(s, 'listen', recordAnswer(trackView(s, 'listen'), ans('ㄚ')))
+  s = applyTrack(s, 'listen', recordAnswer(trackView(s, 'listen'), ans('ㄛ')))
+  s = applyTrack(s, 'read', recordAnswer(trackView(s, 'read'), ans('ㄚ')))
+  assert.equal(recommendTrack(s, today), 'write')
+  // 昨天練的不算
+  const fresh = createState()
+  const days = ['2026-09-24', '2026-09-25', '2026-09-26'].map(d => recommendTrack(fresh, d))
+  assert.equal(new Set(days).size, 3, '三軌都沒練的時候，每天輪一軌')
 })

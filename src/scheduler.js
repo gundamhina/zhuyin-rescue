@@ -49,11 +49,18 @@ export function createState ({ known = [], groups = null } = {}) {
 
 // 骨頭（積分）與商店：三軌共用。bones 現在有幾根、bonesTotal 累計賺過幾根、owned 買過的配件、worn 每個部位戴著哪一件
 export function emptyWallet () {
-  return { bones: 0, bonesTotal: 0, owned: [], worn: {} }
+  return { bones: 0, bonesTotal: 0, owned: [], worn: {}, daily: null, streak: { last: null, count: 0 }, seen: {} }
 }
-// 舊存檔沒有這幾個欄位，補上
+// 舊存檔沒有這幾個欄位，補上。daily 今天玩了幾局、寶箱開了沒；streak 連續天數；seen 看過哪些玩法的教學
 export function withWallet (state) {
-  return { ...emptyWallet(), ...state, owned: [...(state.owned || [])], worn: { ...(state.worn || {}) } }
+  return {
+    ...emptyWallet(),
+    ...state,
+    owned: [...(state.owned || [])],
+    worn: { ...(state.worn || {}) },
+    streak: { ...(state.streak || { last: null, count: 0 }) },
+    seen: { ...(state.seen || {}) },
+  }
 }
 export function addBones (state, n) {
   const s = withWallet(state)
@@ -370,4 +377,66 @@ export function dailyStats (state, days, now = Date.now()) {
     if (e.ok) row.correct++
   }
   return out
+}
+
+
+// ---- 每日目標與連續天數 ----
+// 一天玩滿 DAILY_GOAL 局（翻牌不算）就能開寶箱。日期都用當地時間的 'YYYY-MM-DD'，由呼叫的人傳進來，測試才好寫。
+export const DAILY_GOAL = 3
+
+export function dayKey (ms) {
+  const d = new Date(ms)
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+}
+function prevDay (key) {
+  const [y, m, d] = key.split('-').map(Number)
+  return dayKey(new Date(y, m - 1, d - 1).getTime())
+}
+
+// 今天的進度。連續天數要昨天或今天有玩才算數，中斷了顯示 0
+export function dailyView (state, today) {
+  const d = state.daily && state.daily.date === today ? state.daily : { date: today, rounds: 0, claimed: false }
+  const st = state.streak || { last: null, count: 0 }
+  const alive = st.last === today || st.last === prevDay(today)
+  return { date: today, rounds: d.rounds, claimed: d.claimed, streak: alive ? st.count : 0 }
+}
+
+// 玩完一局：今天多一個腳印；今天第一局就更新連續天數
+export function recordRound (state, today) {
+  const s = withWallet(state)
+  const d = dailyView(s, today)
+  const st = s.streak
+  const streak = st.last === today ? st : { last: today, count: st.last === prevDay(today) ? st.count + 1 : 1 }
+  return { ...s, daily: { date: today, rounds: d.rounds + 1, claimed: d.claimed }, streak }
+}
+
+// 寶箱：30 根起跳，連續每多一天多 5 根，七天封頂 60
+export function dailyBonus (streak) {
+  return 30 + 5 * Math.min(Math.max(streak - 1, 0), 6)
+}
+
+// 開寶箱：蓋滿腳印、今天還沒開過才開得了
+export function claimDaily (state, today) {
+  const d = dailyView(state, today)
+  if (d.claimed || d.rounds < DAILY_GOAL) return state
+  return { ...addBones(state, dailyBonus(d.streak)), daily: { date: today, rounds: d.rounds, claimed: true } }
+}
+
+// 教學看過了
+export function markSeen (state, kind) {
+  const s = withWallet(state)
+  return { ...s, seen: { ...s.seen, [kind]: true } }
+}
+
+// 今天推薦練哪一軌：今天答題數最少的那一軌；一樣少就照日子輪，每天換一軌
+export function recommendTrack (state, today) {
+  const counts = TRACKS.map(t => {
+    const log = (state.tracks && state.tracks[t] && state.tracks[t].log) || []
+    return log.filter(e => dayKey(e.at) === today).length
+  })
+  const min = Math.min(...counts)
+  const [y, m, d] = today.split('-').map(Number)
+  const dayNo = Math.floor(new Date(y, m - 1, d).getTime() / 86400000)
+  const tied = TRACKS.filter((t, i) => counts[i] === min)
+  return tied[dayNo % tied.length]
 }

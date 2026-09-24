@@ -483,6 +483,163 @@ svg.syl text { font-weight: 900; fill: currentColor; text-anchor: middle; domina
 #stage.portrait .shop-grid { left: 30px; top: 390px; width: 740px; }
 #stage.portrait .shop-team { width: 800px; bottom: 0; }
 
+/* ================= 體驗升級 ================= */
+/* 畫面切換淡入 */
+.screen.active { animation: screenIn .28s ease-out; }
+@keyframes screenIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* 特效層：舞台最上層，不擋點擊 */
+#fx { position: absolute; inset: 0; pointer-events: none; z-index: 45; overflow: hidden; }
+.fx-spark { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; animation: fxSpark .85s cubic-bezier(.2,.7,.3,1) forwards; }
+.fx-spark.star { width: auto; height: auto; margin: -18px 0 0 -13px; border-radius: 0; font-size: 36px; line-height: 1; text-shadow: 0 2px 0 rgba(255,255,255,.8); }
+@keyframes fxSpark { 0% { transform: translate(0, 0) scale(.3); opacity: 1; } 65% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 0; } }
+.fx-bone { position: absolute; left: 0; top: 0; }
+.fx-bone .bone { width: 58px; height: 29px; filter: drop-shadow(0 3px 0 rgba(0,0,0,.15)); }
+.bump { animation: bump .35s ease-out; }
+@keyframes bump { 0% { scale: 1; } 40% { scale: 1.28; } 100% { scale: 1; } }
+
+/* 遊戲上方：左邊回首頁和「？」 */
+.tb-left { display: flex; gap: 14px; align-items: center; }
+
+/* 連對徽章 */
+.combo { position: absolute; top: 24px; left: calc(50% + 100px); display: flex; align-items: center; gap: 4px; padding: 6px 18px 6px 10px; border-radius: 40px; background: linear-gradient(#FFB36B, #E0552B); color: #fff; font-size: 34px; font-weight: 900; box-shadow: 0 6px 0 #A8401F; pointer-events: none; }
+.combo[hidden] { display: none; }
+.combo .flame svg { width: 38px; height: 38px; display: block; }
+.combo .flame svg path:first-child { fill: #FFF1C9; }
+.combo.pop { animation: comboPop .45s cubic-bezier(.3,1.6,.5,1); }
+@keyframes comboPop { 0% { scale: .4; } 100% { scale: 1; } }
+
+/* 首頁：每日腳印、寶箱、連續天數 */
+.shop-btn { left: auto; right: 96px; transform: none; }
+.shop-btn:active { transform: translateY(4px); }
+.daily { position: absolute; left: 50%; top: 18px; transform: translateX(-50%); display: flex; align-items: center; gap: 14px; padding: 8px 12px 8px 18px; border-radius: 44px; background: rgba(255,253,247,.92); box-shadow: 0 6px 0 #A9BFCF; }
+.streak { display: flex; align-items: center; gap: 2px; font-size: 44px; }
+.streak b { font-size: 30px; color: #C8553D; min-width: 20px; }
+.streak.cold svg { filter: grayscale(1); opacity: .45; }
+.streak.cold b { color: #A9BFCF; }
+.paws { display: flex; gap: 6px; }
+.paw { font-size: 40px; color: #D5DEE8; display: flex; }
+.paw.on { color: #E0955B; }
+.chest { font-size: 64px; display: flex; padding: 0 4px; }
+.chest svg { overflow: visible; }
+.chest .lid { transform-box: fill-box; transform-origin: 0% 100%; transition: transform .4s; }
+.chest.locked { filter: grayscale(.85); opacity: .5; }
+.chest.ready { animation: chestWiggle 1.2s ease-in-out infinite; filter: drop-shadow(0 0 10px rgba(232,200,106,.95)); }
+.chest.claimed .lid, .chest.opening .lid { transform: rotate(-38deg) translate(-2px, -4px); }
+.chest.claimed { opacity: .55; }
+@keyframes chestWiggle { 0%, 60%, 100% { rotate: 0deg; } 70% { rotate: -9deg; } 80% { rotate: 9deg; } 90% { rotate: -5deg; } }
+#stage.portrait .daily { top: 118px; }
+#stage.portrait .cards { top: 230px; }
+
+/* 首頁：今天推薦的卡片 */
+.card.recommend { box-shadow: 0 0 0 8px rgba(232,200,106,.95), 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,.22); animation: recGlow 1.8s ease-in-out infinite; }
+@keyframes recGlow { 0%, 100% { box-shadow: 0 0 0 6px rgba(232,200,106,.9), 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,.22); } 50% { box-shadow: 0 0 0 14px rgba(232,200,106,.55), 0 14px 0 #A9BFCF, 0 22px 36px rgba(20,60,110,.22); } }
+.rec-badge { position: absolute; right: 8px; top: 8px; width: 54px; height: 54px; border-radius: 50%; background: #FFF3B0; color: #E0955B; font-size: 34px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 0 #D9AA1B; z-index: 3; }
+
+/* 首頁：背景音樂開關（左下角） */
+.music-btn { position: absolute; left: 20px; bottom: 20px; width: 64px; height: 64px; border-radius: 50%; background: rgba(27,43,75,.3); font-size: 36px; display: flex; align-items: center; justify-content: center; z-index: 2; }
+.music-btn:active { background: rgba(27,43,75,.6); }
+
+/* 結算：數字、皇冠、腳印 */
+.result-bones b { font-size: inherit; }
+.result-crown { position: absolute; left: 50%; top: 4px; font-size: 110px; transform: translateX(-50%) translateY(-140px); opacity: 0; line-height: 1; }
+.result-crown.show { animation: crownDrop .7s cubic-bezier(.3,1.5,.5,1) forwards; }
+@keyframes crownDrop { 0% { transform: translateX(-50%) translateY(-140px) rotate(-20deg); opacity: 0; } 100% { transform: translateX(-50%) translateY(0) rotate(0deg); opacity: 1; } }
+.result-daily { position: absolute; right: 30px; top: 26px; display: flex; gap: 8px; align-items: center; padding: 8px 16px; border-radius: 40px; background: rgba(255,253,247,.9); box-shadow: 0 6px 0 #A9BFCF; }
+.result-daily .paw { font-size: 40px; }
+.result-daily .paw.stamp { animation: pawStamp .45s cubic-bezier(.3,1.6,.5,1); }
+@keyframes pawStamp { 0% { scale: 2.2; opacity: 0; } 100% { scale: 1; opacity: 1; } }
+.result-daily .chest { font-size: 50px; }
+#stage.portrait .result-crown { top: 30px; }
+#stage.portrait .result-daily { right: 20px; top: 20px; }
+
+/* ================= 教學動畫 ================= */
+.tut { position: absolute; inset: 0; z-index: 30; background: rgba(27,43,75,.5); display: flex; align-items: center; justify-content: center; animation: screenIn .25s ease-out; }
+.tut.out { opacity: 0; transition: opacity .25s; }
+.tut-card { position: relative; width: 700px; max-width: calc(100% - 40px); background: #fff; border-radius: 40px; padding: 20px 20px 80px; box-shadow: 0 16px 0 #A9BFCF, 0 24px 50px rgba(0,0,0,.25); }
+.tut-scene { width: 100%; height: auto; display: block; }
+.tut-go { position: absolute; left: 50%; bottom: -54px; width: 128px; height: 128px; margin-left: -64px; border-radius: 50%; background: #6B9E6B; border: 8px solid #F6F3E6; box-shadow: 0 10px 0 #4E7A4E, 0 16px 30px rgba(0,0,0,.2); display: flex; align-items: center; justify-content: center; animation: goPulse 1.4s ease-in-out infinite; }
+.tut-go:active { translate: 0 6px; box-shadow: 0 4px 0 #4E7A4E; }
+@keyframes goPulse { 0%, 100% { scale: 1; } 50% { scale: 1.08; } }
+
+.tut-scene * { animation-duration: 3.6s; animation-iteration-count: infinite; }
+.tut-scene .tut-hand { transform: translate(600px, 460px); }
+.tut-ripple, .tut-spark, .tut-fish-b1, .tut-match-pic, .tut-write-ok, .tut-speak-mic, .tut-speak-mouth { transform-box: fill-box; transform-origin: center; }
+.tut-ripple, .tut-spark { opacity: 0; }
+
+.tut-wave { opacity: 0; animation-name: tutWave; }
+.tut-wave.w2 { animation-delay: .15s; }
+@keyframes tutWave { 0%, 4% { opacity: 0; } 8%, 26% { opacity: 1; } 32%, 100% { opacity: 0; } }
+
+@keyframes tutRipple { 0%, 48% { transform: scale(.2); opacity: 0; } 50% { transform: scale(.4); opacity: 1; } 66% { transform: scale(1.5); opacity: 0; } 100% { opacity: 0; } }
+@keyframes tutSparkA { 0%, 50% { opacity: 0; transform: scale(.3); } 58% { opacity: 1; transform: scale(1.25); } 72% { opacity: 1; transform: scale(1); } 80%, 100% { opacity: 0; transform: scale(.6); } }
+@keyframes tutSparkB { 0%, 62% { opacity: 0; transform: scale(.3); } 68% { opacity: 1; transform: scale(1.25); } 82% { opacity: 1; transform: scale(1); } 90%, 100% { opacity: 0; transform: scale(.6); } }
+@keyframes tutSparkC { 0%, 80% { opacity: 0; transform: scale(.3); } 85% { opacity: 1; transform: scale(1.25); } 93% { opacity: 1; transform: scale(1); } 98%, 100% { opacity: 0; } }
+@keyframes tutPulse { 0%, 60% { transform: none; } 66% { transform: scale(1.14); } 74%, 100% { transform: none; } }
+
+/* 釣魚 */
+.tut-fish-hand { animation-name: tutFishHand; }
+@keyframes tutFishHand { 0%, 28% { transform: translate(600px, 460px); } 46% { transform: translate(252px, 266px); } 50% { transform: translate(252px, 266px) scale(.86); } 55% { transform: translate(252px, 266px); } 74%, 100% { transform: translate(600px, 460px); } }
+.tut-fish-b1 { animation-name: tutCatch; }
+@keyframes tutCatch { 0%, 52% { transform: none; opacity: 1; } 70% { transform: translate(-40px, -150px) scale(.4); opacity: 1; } 76% { transform: translate(-40px, -150px) scale(.4); opacity: 0; } 77% { transform: none; opacity: 0; } 94%, 100% { transform: none; opacity: 1; } }
+.tut-fish-r, .tut-whack-r { animation-name: tutRipple; }
+.tut-fish-s, .tut-whack-s { animation-name: tutSparkA; }
+
+/* 打地鼠 */
+.tut-mole { animation-name: tutMole; }
+@keyframes tutMole { 0%, 8% { transform: translateY(110px); } 20%, 58% { transform: translateY(0); } 72%, 100% { transform: translateY(110px); } }
+.tut-whack-hand { animation-name: tutWhackHand; }
+@keyframes tutWhackHand { 0%, 26% { transform: translate(600px, 460px); } 45% { transform: translate(322px, 254px); } 50% { transform: translate(322px, 254px) scale(.86); } 55% { transform: translate(322px, 254px); } 74%, 100% { transform: translate(600px, 460px); } }
+
+/* 翻牌 */
+.tut-card .front { opacity: 0; }
+.tut-card.c0 .front { animation-name: tutFrontA; } .tut-card.c0 .back { animation-name: tutBackA; }
+.tut-card.c2 .front { animation-name: tutFrontB; } .tut-card.c2 .back { animation-name: tutBackB; }
+@keyframes tutFrontA { 0%, 26% { opacity: 0; } 30%, 90% { opacity: 1; } 96%, 100% { opacity: 0; } }
+@keyframes tutBackA { 0%, 26% { opacity: 1; } 30%, 90% { opacity: 0; } 96%, 100% { opacity: 1; } }
+@keyframes tutFrontB { 0%, 52% { opacity: 0; } 56%, 90% { opacity: 1; } 96%, 100% { opacity: 0; } }
+@keyframes tutBackB { 0%, 52% { opacity: 1; } 56%, 90% { opacity: 0; } 96%, 100% { opacity: 1; } }
+.tut-mem-hand { animation-name: tutMemHand; }
+@keyframes tutMemHand { 0%, 8% { transform: translate(600px, 460px); } 22% { transform: translate(172px, 200px); } 26% { transform: translate(172px, 200px) scale(.86); } 30% { transform: translate(172px, 200px); } 46% { transform: translate(412px, 200px); } 52% { transform: translate(412px, 200px) scale(.86); } 56% { transform: translate(412px, 200px); } 76%, 100% { transform: translate(600px, 460px); } }
+.tut-mem-s { animation-name: tutSparkB; }
+
+/* 連連看 */
+.tut-match-hand { animation-name: tutMatchHand; animation-timing-function: linear; }
+@keyframes tutMatchHand { 0%, 16% { transform: translate(600px, 460px); } 30% { transform: translate(248px, 208px); } 34% { transform: translate(248px, 208px) scale(.86); } 60% { transform: translate(432px, 208px) scale(.86); } 64% { transform: translate(432px, 208px); } 82%, 100% { transform: translate(600px, 460px); } }
+.tut-match-line { animation-name: tutLine; animation-timing-function: linear; }
+@keyframes tutLine { 0%, 34% { stroke-dashoffset: 176; opacity: 1; } 60%, 88% { stroke-dashoffset: 0; opacity: 1; } 94% { stroke-dashoffset: 0; opacity: 0; } 95%, 100% { stroke-dashoffset: 176; opacity: 0; } }
+.tut-match-pic { animation-name: tutPulse; }
+.tut-match-s { animation-name: tutSparkB; }
+
+/* 填空 */
+.tut-fill-hand { animation-name: tutFillHand; animation-timing-function: linear; }
+@keyframes tutFillHand { 0%, 14% { transform: translate(600px, 460px); } 28% { transform: translate(325px, 306px); } 32% { transform: translate(325px, 306px) scale(.86); } 58% { transform: translate(371px, 136px) scale(.86); } 62% { transform: translate(371px, 136px); } 80%, 100% { transform: translate(600px, 460px); } }
+.tut-fill-tile { animation-name: tutTile; animation-timing-function: linear; }
+@keyframes tutTile { 0%, 32% { transform: none; opacity: 1; } 58%, 90% { transform: translate(46px, -170px); opacity: 1; } 95% { transform: translate(46px, -170px); opacity: 0; } 96% { transform: none; opacity: 0; } 100% { transform: none; opacity: 1; } }
+.tut-fill-blank { animation-name: tutBlank; }
+@keyframes tutBlank { 0%, 58% { opacity: 1; } 60%, 94% { opacity: 0; } 100% { opacity: 1; } }
+.tut-fill-s { animation-name: tutSparkB; }
+
+/* 寫字 */
+.tut-write-hand { animation-name: tutWriteHand; animation-timing-function: linear; }
+@keyframes tutWriteHand { 0%, 6% { transform: translate(600px, 460px); } 18% { transform: translate(250px, 130px) scale(.9); } 44% { transform: translate(250px, 280px) scale(.9); } 70% { transform: translate(400px, 280px) scale(.9); } 74% { transform: translate(400px, 280px); } 82% { transform: translate(470px, 344px); } 85% { transform: translate(470px, 344px) scale(.86); } 88% { transform: translate(470px, 344px); } 97%, 100% { transform: translate(600px, 460px); } }
+.tut-write-ink { animation-name: tutInk; animation-timing-function: linear; }
+@keyframes tutInk { 0%, 18% { stroke-dashoffset: 300; opacity: 1; } 70%, 92% { stroke-dashoffset: 0; opacity: 1; } 96% { stroke-dashoffset: 0; opacity: 0; } 97%, 100% { stroke-dashoffset: 300; opacity: 0; } }
+.tut-write-ok { animation-name: tutOk; }
+@keyframes tutOk { 0%, 84% { transform: none; } 87% { transform: scale(1.2); } 92%, 100% { transform: none; } }
+
+/* 唸給狗狗聽 */
+.tut-speak-hand { animation-name: tutSpeakHand; }
+@keyframes tutSpeakHand { 0%, 10% { transform: translate(600px, 460px); } 24% { transform: translate(482px, 304px); } 28% { transform: translate(482px, 304px) scale(.86); } 32% { transform: translate(482px, 304px); } 46%, 100% { transform: translate(600px, 460px); } }
+.tut-speak-mic { animation-name: tutMic; }
+@keyframes tutMic { 0%, 28% { transform: none; } 34%, 78% { transform: scale(1.1); } 84%, 100% { transform: none; } }
+.tut-speak-mouth { animation-name: tutMouth; }
+@keyframes tutMouth { 0%, 40% { transform: none; } 46% { transform: scaleY(2.2); } 52% { transform: scaleY(.8); } 58% { transform: scaleY(2.2); } 64% { transform: scaleY(.8); } 70%, 100% { transform: none; } }
+.tut-wave.s1, .tut-wave.s2 { animation-name: tutSpeakWave; }
+.tut-wave.s2 { animation-delay: .12s; }
+@keyframes tutSpeakWave { 0%, 40% { opacity: 0; } 46%, 74% { opacity: 1; } 80%, 100% { opacity: 0; } }
+.tut-speak-s { animation-name: tutSparkC; }
+
 </style>
 </head>
 <body>
@@ -493,15 +650,21 @@ svg.syl text { font-weight: 900; fill: currentColor; text-anchor: middle; domina
   <section class="screen" id="screen-game">
     <div class="play-area"></div>
     <div class="topbar">
-      <button class="round-btn quit" id="btn-quit" aria-label="回首頁">
-        <svg viewBox="0 0 24 24" width="40" height="40" fill="#fff"><path d="M12 3 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
-      </button>
+      <div class="tb-left">
+        <button class="round-btn quit" id="btn-quit" aria-label="回首頁">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="#fff"><path d="M12 3 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
+        </button>
+        <button class="round-btn quit" id="btn-help" aria-label="怎麼玩">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="#fff"><path d="M11 18h2v-2h-2v2zm1-16a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm0-14a4 4 0 0 0-4 4h2a2 2 0 1 1 4 0c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5a4 4 0 0 0-4-4z"/></svg>
+        </button>
+      </div>
       <button class="round-btn" id="btn-replay" aria-label="再聽一次">
         <svg viewBox="0 0 24 24" width="60" height="60" fill="#fff"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>
       </button>
     </div>
     <div class="progress-stars"></div>
     <div class="bones-pill" id="bones"><span class="bone-ic"></span><b>0</b></div>
+    <div class="combo" id="combo" hidden><span class="flame"></span><b>2</b></div>
   </section>
   <section class="screen" id="screen-shop"></section>
   <section class="screen" id="screen-result"></section>
@@ -1213,11 +1376,18 @@ function createState ({ known = [], groups = null } = {}) {
 
 // 骨頭（積分）與商店：三軌共用。bones 現在有幾根、bonesTotal 累計賺過幾根、owned 買過的配件、worn 每個部位戴著哪一件
 function emptyWallet () {
-  return { bones: 0, bonesTotal: 0, owned: [], worn: {} }
+  return { bones: 0, bonesTotal: 0, owned: [], worn: {}, daily: null, streak: { last: null, count: 0 }, seen: {} }
 }
-// 舊存檔沒有這幾個欄位，補上
+// 舊存檔沒有這幾個欄位，補上。daily 今天玩了幾局、寶箱開了沒；streak 連續天數；seen 看過哪些玩法的教學
 function withWallet (state) {
-  return { ...emptyWallet(), ...state, owned: [...(state.owned || [])], worn: { ...(state.worn || {}) } }
+  return {
+    ...emptyWallet(),
+    ...state,
+    owned: [...(state.owned || [])],
+    worn: { ...(state.worn || {}) },
+    streak: { ...(state.streak || { last: null, count: 0 }) },
+    seen: { ...(state.seen || {}) },
+  }
 }
 function addBones (state, n) {
   const s = withWallet(state)
@@ -1536,6 +1706,68 @@ function dailyStats (state, days, now = Date.now()) {
   return out
 }
 
+
+// ---- 每日目標與連續天數 ----
+// 一天玩滿 DAILY_GOAL 局（翻牌不算）就能開寶箱。日期都用當地時間的 'YYYY-MM-DD'，由呼叫的人傳進來，測試才好寫。
+const DAILY_GOAL = 3
+
+function dayKey (ms) {
+  const d = new Date(ms)
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+}
+function prevDay (key) {
+  const [y, m, d] = key.split('-').map(Number)
+  return dayKey(new Date(y, m - 1, d - 1).getTime())
+}
+
+// 今天的進度。連續天數要昨天或今天有玩才算數，中斷了顯示 0
+function dailyView (state, today) {
+  const d = state.daily && state.daily.date === today ? state.daily : { date: today, rounds: 0, claimed: false }
+  const st = state.streak || { last: null, count: 0 }
+  const alive = st.last === today || st.last === prevDay(today)
+  return { date: today, rounds: d.rounds, claimed: d.claimed, streak: alive ? st.count : 0 }
+}
+
+// 玩完一局：今天多一個腳印；今天第一局就更新連續天數
+function recordRound (state, today) {
+  const s = withWallet(state)
+  const d = dailyView(s, today)
+  const st = s.streak
+  const streak = st.last === today ? st : { last: today, count: st.last === prevDay(today) ? st.count + 1 : 1 }
+  return { ...s, daily: { date: today, rounds: d.rounds + 1, claimed: d.claimed }, streak }
+}
+
+// 寶箱：30 根起跳，連續每多一天多 5 根，七天封頂 60
+function dailyBonus (streak) {
+  return 30 + 5 * Math.min(Math.max(streak - 1, 0), 6)
+}
+
+// 開寶箱：蓋滿腳印、今天還沒開過才開得了
+function claimDaily (state, today) {
+  const d = dailyView(state, today)
+  if (d.claimed || d.rounds < DAILY_GOAL) return state
+  return { ...addBones(state, dailyBonus(d.streak)), daily: { date: today, rounds: d.rounds, claimed: true } }
+}
+
+// 教學看過了
+function markSeen (state, kind) {
+  const s = withWallet(state)
+  return { ...s, seen: { ...s.seen, [kind]: true } }
+}
+
+// 今天推薦練哪一軌：今天答題數最少的那一軌；一樣少就照日子輪，每天換一軌
+function recommendTrack (state, today) {
+  const counts = TRACKS.map(t => {
+    const log = (state.tracks && state.tracks[t] && state.tracks[t].log) || []
+    return log.filter(e => dayKey(e.at) === today).length
+  })
+  const min = Math.min(...counts)
+  const [y, m, d] = today.split('-').map(Number)
+  const dayNo = Math.floor(new Date(y, m - 1, d).getTime() / 86400000)
+  const tied = TRACKS.filter((t, i) => counts[i] === min)
+  return tied[dayNo % tied.length]
+}
+
 // ===== store.js =====
 // 進度存取：多位使用者、每人一份進度、匯出匯入。storage 用參數傳進來，測試時換成假的。
 
@@ -1819,7 +2051,90 @@ function createAudio (getSettings) {
     tone(1319, 0.5, 0.6, 'triangle', 0.2)
   }
 
-  return { unlock, say, stop, sourceOf, ding, wrong, splash, crunch, flip, cheer, listVoices: () => { refreshVoices(); return voices } }
+  // 按鈕：輕輕的「啵」
+  function pop () { tone(520, 0, 0.06, 'sine', 0.12); tone(780, 0.03, 0.06, 'sine', 0.08) }
+  // 骨頭飛進計數器、結算數字往上跳：小小的「叮」
+  function tick () { tone(1480 + Math.random() * 200, 0, 0.05, 'triangle', 0.07) }
+  // 連對：越多越高
+  function combo (level) {
+    const base = 660 * Math.pow(2, Math.min(level, 8) / 12 * 2)
+    tone(base, 0, 0.12, 'triangle', 0.18); tone(base * 1.5, 0.08, 0.2, 'triangle', 0.14)
+  }
+  // 開寶箱
+  function chest () {
+    ;[392, 523, 659, 784, 1047, 1319].forEach((n, i) => tone(n, i * 0.07, 0.4, 'triangle', 0.16))
+    tone(1568, 0.5, 0.8, 'sine', 0.12)
+  }
+  // 五題全部第一次就答對
+  function fanfare () {
+    ;[523, 523, 523, 698, 880, 784, 1047].forEach((n, i) => tone(n, [0, 0.14, 0.28, 0.42, 0.62, 0.78, 0.94][i], 0.3, 'square', 0.06))
+    tone(1047, 0.94, 0.9, 'triangle', 0.16)
+  }
+
+  // ---- 背景音樂：只在首頁、商店、結算放；進遊戲就停，才不會蓋掉注音的聲音 ----
+  // 用合成的音樂盒：C–Am–F–G 四個和弦輪流，每小節八個分散和弦音，外加一個低音。音量很小。
+  const CHORDS = [
+    [261.6, 329.6, 392.0], // C
+    [220.0, 261.6, 329.6], // Am
+    [174.6, 220.0, 261.6], // F
+    [196.0, 246.9, 293.7], // G
+  ]
+  const ARP = [0, 1, 2, 3, 2, 1, 2, 1] // 3 是根音高八度
+  const EIGHTH = 0.32
+  let musicGain = null
+  let musicTimer = null
+  let nextNote = 0
+  let noteNo = 0
+  function musicNote (freq, when, dur, type, vol) {
+    const o = ctx.createOscillator()
+    const g = ctx.createGain()
+    o.type = type
+    o.frequency.value = freq
+    g.gain.setValueAtTime(0, when)
+    g.gain.linearRampToValueAtTime(vol, when + 0.015)
+    g.gain.exponentialRampToValueAtTime(0.0008, when + dur)
+    o.connect(g).connect(musicGain)
+    o.start(when)
+    o.stop(when + dur + 0.05)
+  }
+  function scheduleMusic () {
+    while (nextNote < ctx.currentTime + 0.5) {
+      const bar = Math.floor(noteNo / 8) % CHORDS.length
+      const step = noteNo % 8
+      const chord = CHORDS[bar]
+      const i = ARP[step]
+      const freq = i === 3 ? chord[0] * 2 : chord[i]
+      musicNote(freq * 2, nextNote, 0.9, 'triangle', 0.5)
+      if (step === 0) musicNote(chord[0] / 2, nextNote, EIGHTH * 7, 'sine', 0.6)
+      nextNote += EIGHTH
+      noteNo++
+    }
+  }
+  function startMusic () {
+    if (!ctx || musicTimer) return
+    musicGain = ctx.createGain()
+    musicGain.gain.setValueAtTime(0, ctx.currentTime)
+    musicGain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 1.2)
+    musicGain.connect(ctx.destination)
+    nextNote = ctx.currentTime + 0.1
+    noteNo = 0
+    scheduleMusic()
+    musicTimer = setInterval(scheduleMusic, 150)
+  }
+  function stopMusic () {
+    if (!musicTimer) return
+    clearInterval(musicTimer)
+    musicTimer = null
+    const g = musicGain
+    musicGain = null
+    g.gain.cancelScheduledValues(ctx.currentTime)
+    g.gain.setValueAtTime(g.gain.value, ctx.currentTime)
+    g.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4)
+    setTimeout(() => g.disconnect(), 600)
+  }
+  function ready () { return !!ctx }
+
+  return { unlock, ready, say, stop, sourceOf, ding, wrong, splash, crunch, flip, cheer, pop, tick, combo, chest, fanfare, startMusic, stopMusic, listVoices: () => { refreshVoices(); return voices } }
 }
 
 // ===== art.js =====
@@ -2280,6 +2595,17 @@ function ownedMates (state) {
 const TAB_ICONS = {
   acc: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M11 12 3 7v10zm2 0 8-5v10zm-1-2a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg>',
   mate: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><ellipse cx="12" cy="16" rx="6" ry="5"/><circle cx="5" cy="10" r="2.6"/><circle cx="9.5" cy="6.5" r="2.6"/><circle cx="14.5" cy="6.5" r="2.6"/><circle cx="19" cy="10" r="2.6"/></svg>',
+}
+
+
+// ---- 首頁每日目標、連對、結算用的小圖 ----
+const UX_ICONS = {
+  flame: '<svg viewBox="0 0 24 24" width="1em" height="1em"><path d="M12 1.5c1.2 4.2 5.5 5.6 5.5 11.3a5.5 5.5 0 0 1-11 0c0-2.8 1.3-4.4 2.6-5.7.2 1.9 1.1 3.1 2.3 3.5C11 7.6 12 4.8 12 1.5z" fill="#FFB347"/><path d="M12 11.5c.7 1.8 2.8 2.6 2.8 5.1a2.8 2.8 0 0 1-5.6 0c0-1.5 1-2.3 1.7-2.9.1.9.6 1.4 1.1 1.7-.3-1.6 0-2.7 0-3.9z" fill="#FFF1C9"/></svg>',
+  paw: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><ellipse cx="12" cy="16" rx="5.6" ry="4.6"/><circle cx="5.4" cy="10" r="2.5"/><circle cx="9.5" cy="6.3" r="2.5"/><circle cx="14.5" cy="6.3" r="2.5"/><circle cx="18.6" cy="10" r="2.5"/></svg>',
+  chest: '<svg viewBox="0 0 48 42" width="1em" height="1em"><g class="lid"><path d="M4 18 q0 -14 20 -14 q20 0 20 14 z" fill="#E0955B" stroke="#7A5A3C" stroke-width="2.5" stroke-linejoin="round"/><path d="M14 6.5 v11.5 M34 6.5 v11.5" stroke="#E8C86A" stroke-width="3"/></g><rect x="4" y="18" width="40" height="20" rx="3" fill="#C9763E" stroke="#7A5A3C" stroke-width="2.5"/><path d="M14 18 v20 M34 18 v20" stroke="#E8C86A" stroke-width="3"/><rect x="20" y="15" width="8" height="10" rx="2" fill="#E8C86A" stroke="#7A5A3C" stroke-width="2"/></svg>',
+  musicOn: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="#fff"><path d="M9 17.5a3 3 0 1 1-2-2.8V5.2l12-2.2v11.5a3 3 0 1 1-2-2.8V6.4L9 7.9z"/></svg>',
+  musicOff: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="#fff"><path d="M9 17.5a3 3 0 1 1-2-2.8V5.2l12-2.2v11.5a3 3 0 1 1-2-2.8V6.4L9 7.9z" opacity=".55"/><path d="M3 3 21 21" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>',
+  crown: '<svg viewBox="0 0 64 44" width="1em" height="1em"><path d="M6 38 L2 8 L18 22 L32 2 L46 22 L62 8 L58 38 Z" fill="#E8C86A" stroke="#B99A44" stroke-width="3" stroke-linejoin="round"/><circle cx="18" cy="30" r="4" fill="#C8553D"/><circle cx="32" cy="28" r="4.5" fill="#4A6FA5"/><circle cx="46" cy="30" r="4" fill="#6B9E6B"/></svg>',
 }
 
 // ===== fishing.js =====
@@ -3704,7 +4030,11 @@ function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
 }
 
 // 首頁：目前使用者的狗狗、三張玩法卡
-function renderHome (root, { profile, speech = true, bones = 0, mates = [] }) {
+// daily = { rounds, claimed, streak, goal }；recommend = 推薦的玩法；musicOn = 背景音樂開著沒
+function renderHome (root, { profile, speech = true, bones = 0, mates = [], daily = null, recommend = null, musicOn = true }) {
+  const d = daily || { rounds: 0, claimed: false, streak: 0, goal: 3 }
+  const chestState = d.claimed ? 'claimed' : d.rounds >= d.goal ? 'ready' : 'locked'
+  const paws = Array.from({ length: d.goal }, (_, i) => `<span class="paw ${i < d.rounds ? 'on' : ''}">${UX_ICONS.paw}</span>`).join('')
   root.innerHTML = `
     ${bgHtml('home')}
     <button class="who" id="btn-who" aria-label="換人">
@@ -3712,6 +4042,12 @@ function renderHome (root, { profile, speech = true, bones = 0, mates = [] }) {
       <div class="who-name">${escapeHtml(profile.name)}</div>
     </button>
     <button class="shop-btn" id="btn-shop" aria-label="狗狗商店"><span class="bone-ic">${boneSvg()}</span><b>${bones}</b><span class="shop-word">${SHOP_ICONS.bag}</span></button>
+    <div class="daily" id="daily">
+      <div class="streak ${d.streak ? '' : 'cold'}" title="連續 ${d.streak} 天">${UX_ICONS.flame}<b>${d.streak}</b></div>
+      <div class="paws" title="今天玩了 ${Math.min(d.rounds, d.goal)} 局">${paws}</div>
+      <button class="chest ${chestState}" id="btn-chest" aria-label="寶箱" ${chestState === 'ready' ? '' : 'disabled'}>${UX_ICONS.chest}</button>
+    </div>
+    <button class="music-btn ${musicOn ? '' : 'off'}" id="btn-music" aria-label="背景音樂">${musicOn ? UX_ICONS.musicOn : UX_ICONS.musicOff}</button>
     <div class="cards" id="cards">
       <button class="card" data-game="fishing" aria-label="釣魚">
         <div class="card-pic">${cardArt('fishing')}</div>
@@ -3738,16 +4074,27 @@ function renderHome (root, { profile, speech = true, bones = 0, mates = [] }) {
     <div class="mates home-mates">${mates.map(c => `<div class="mate">${dogSvg(c, { mate: true })}</div>`).join('')}</div>
     <button class="gear" id="btn-gear" aria-label="大人面板">${GEAR_SVG}</button>`
   mountBgs(root)
+  // 今天推薦：那張卡發光、角落蓋一個腳印
+  const rec = recommend && root.querySelector(`.card[data-game="${recommend}"]:not(.hidden)`)
+  if (rec) {
+    rec.classList.add('recommend')
+    const badge = document.createElement('span')
+    badge.className = 'rec-badge'
+    badge.innerHTML = UX_ICONS.paw
+    rec.appendChild(badge)
+  }
 }
 
-function renderResult (root, color = 0, { roundBones = 0, bones = 0, mates = [] } = {}) {
+function renderResult (root, color = 0, { roundBones = 0, bones = 0, mates = [], daily = null, perfect = false } = {}) {
   root.innerHTML = `
     ${bgHtml('home')}
     <div class="result-burst"></div>
     <div class="confetti-wrap">${confettiHtml()}</div>
     <div class="result-dogs ${mates.length >= 3 ? 'many' : ''}">${dogSvg(color)}${mates.map(c => dogSvg(c, { mate: true })).join('')}</div>
     <div class="result-stars">${'<span class="star">★</span>'.repeat(5)}</div>
-    <div class="result-bones" id="result-bones"><span class="bone-ic">${boneSvg()}</span> +${roundBones}　<small>共 ${bones}</small></div>
+    <div class="result-bones" id="result-bones" data-gain="${roundBones}" data-total="${bones}"><span class="bone-ic">${boneSvg()}</span> +<b class="rb-gain">0</b>　<small>共 <span class="rb-total">${bones - roundBones}</span></small></div>
+    ${perfect ? `<div class="result-crown" id="result-crown">${UX_ICONS.crown}</div>` : ''}
+    ${daily ? `<div class="result-daily">${Array.from({ length: daily.goal }, (_, i) => `<span class="paw ${i < daily.rounds - 1 ? 'on' : ''} ${i === daily.rounds - 1 ? 'new' : ''}">${UX_ICONS.paw}</span>`).join('')}${daily.rounds >= daily.goal && !daily.claimed ? `<span class="chest ready">${UX_ICONS.chest}</span>` : ''}</div>` : ''}
     <div class="result-actions hidden" id="result-actions">
       <button class="round-btn" id="btn-again" aria-label="再玩一次">
         <svg viewBox="0 0 24 24" width="64" height="64" fill="#fff"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
@@ -3759,8 +4106,8 @@ function renderResult (root, color = 0, { roundBones = 0, bones = 0, mates = [] 
   mountBgs(root)
 }
 
-// 結算動畫：星星一顆顆亮，3 秒後出按鈕
-function playResult (root, earned) {
+// 結算動畫：星星一顆顆亮，接著骨頭數字往上跳、今天的腳印蓋上去，全對的話皇冠掉下來；3 秒後出按鈕
+function playResult (root, earned, { onTick = () => {}, onPerfect = () => {}, onPaw = () => {} } = {}) {
   const starEls = root.querySelectorAll('.result-stars .star')
   starEls.forEach(s => s.classList.remove('lit'))
   earned.forEach((ok, i) => {
@@ -3769,7 +4116,29 @@ function playResult (root, earned) {
   })
   root.querySelector('#result-actions').classList.add('hidden')
   const bonesEl = root.querySelector('#result-bones')
-  if (bonesEl) setTimeout(() => bonesEl.classList.add('show'), 400 + earned.length * 350 + 300)
+  const starsDone = 400 + earned.length * 350 + 300
+  if (bonesEl) {
+    setTimeout(() => {
+      bonesEl.classList.add('show')
+      const gainN = parseInt(bonesEl.dataset.gain, 10) || 0
+      const total = parseInt(bonesEl.dataset.total, 10) || 0
+      const gainEl = bonesEl.querySelector('.rb-gain')
+      const totalEl = bonesEl.querySelector('.rb-total')
+      const steps = Math.min(gainN, 20)
+      for (let i = 1; i <= steps; i++) {
+        setTimeout(() => {
+          const v = Math.round(gainN * i / steps)
+          gainEl.textContent = v
+          totalEl.textContent = total - gainN + v
+          onTick()
+        }, i * 60)
+      }
+    }, starsDone)
+  }
+  const paw = root.querySelector('.result-daily .paw.new')
+  if (paw) setTimeout(() => { paw.classList.add('on', 'stamp'); onPaw() }, starsDone + 1400)
+  const crown = root.querySelector('#result-crown')
+  if (crown) setTimeout(() => { crown.classList.add('show'); onPerfect(crown) }, starsDone + 700)
   setTimeout(() => root.querySelector('#result-actions').classList.remove('hidden'), 3000)
 }
 
@@ -3996,6 +4365,229 @@ function renderPanel (root, { profile, profiles, state, track = 'listen', onTrac
 function panelMessage (root, text) {
   const el = root.querySelector('#panel-msg')
   if (el) el.textContent = text
+}
+
+// ===== fx.js =====
+// 特效：答對時星星爆開、骨頭一根根飛進計數器、手機輕輕震動。
+// 全部畫在舞台最上層的 #fx，不擋點擊。座標一律換成舞台座標，直版橫版都對。
+
+
+const SPARK_COLORS = ['#E8C86A', '#E39AA8', '#6B9E6B', '#4A6FA5', '#E0955B']
+
+function fxLayer () {
+  let el = document.getElementById('fx')
+  if (!el) {
+    el = document.createElement('div')
+    el.id = 'fx'
+    document.getElementById('stage').appendChild(el)
+  }
+  return el
+}
+
+function centerOf (el) {
+  const r = el.getBoundingClientRect()
+  return stagePoint({ clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })
+}
+
+// 在某個元素的中心爆出一圈星星和彩色小點
+function burstAt (el, { count = 14, spread = 1 } = {}) {
+  if (!el || !el.isConnected) return
+  const [x, y] = centerOf(el)
+  const layer = fxLayer()
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('span')
+    const star = i % 3 === 0
+    p.className = star ? 'fx-spark star' : 'fx-spark'
+    if (star) { p.textContent = '★'; p.style.color = SPARK_COLORS[i % SPARK_COLORS.length] } else p.style.background = SPARK_COLORS[i % SPARK_COLORS.length]
+    const a = (Math.PI * 2 * i) / count + Math.random() * 0.5
+    const d = (80 + Math.random() * 90) * spread
+    p.style.left = x + 'px'
+    p.style.top = y + 'px'
+    p.style.setProperty('--dx', Math.cos(a) * d + 'px')
+    p.style.setProperty('--dy', Math.sin(a) * d + 'px')
+    layer.appendChild(p)
+    setTimeout(() => p.remove(), 900)
+  }
+}
+
+// 骨頭從 fromEl 飛到 toEl，一根一根（最多 8 根），每根到了呼叫 onEach(i, last)。
+// 找不到起點或終點就直接呼叫，數字照樣會更新。
+function flyBones (fromEl, toEl, n, onEach = () => {}) {
+  const k = Math.max(1, Math.min(n, 8))
+  if (!fromEl || !toEl || !fromEl.isConnected || !toEl.isConnected) {
+    for (let i = 0; i < k; i++) onEach(i, i === k - 1)
+    return
+  }
+  const [x0, y0] = centerOf(fromEl)
+  const [x1, y1] = centerOf(toEl)
+  const layer = fxLayer()
+  for (let i = 0; i < k; i++) {
+    const b = document.createElement('span')
+    b.className = 'fx-bone'
+    b.innerHTML = boneSvg()
+    layer.appendChild(b)
+    // 走一條往上拱的弧線，每根高低左右都不太一樣
+    const mx = (x0 + x1) / 2 + (Math.random() - 0.5) * 220
+    const my = Math.min(y0, y1) - 70 - Math.random() * 90
+    const anim = b.animate([
+      { left: x0 + 'px', top: y0 + 'px', transform: 'translate(-50%, -50%) scale(0.5) rotate(0deg)', opacity: 0.2 },
+      { left: mx + 'px', top: my + 'px', transform: 'translate(-50%, -50%) scale(1.15) rotate(200deg)', opacity: 1, offset: 0.45 },
+      { left: x1 + 'px', top: y1 + 'px', transform: 'translate(-50%, -50%) scale(0.7) rotate(360deg)', opacity: 1 },
+    ], { duration: 700, delay: i * 110, easing: 'cubic-bezier(.45,.05,.55,.95)', fill: 'both' })
+    // 動畫被瀏覽器暫停（分頁在背景、省電模式）也要讓數字更新：時間到還沒飛完就直接算到了
+    let done = false
+    const arrive = () => { if (done) return; done = true; b.remove(); onEach(i, i === k - 1) }
+    anim.onfinish = arrive
+    setTimeout(arrive, 700 + i * 110 + 500)
+  }
+}
+
+// 讓元素彈一下（計數器收到骨頭、腳印蓋上去）
+function bump (el) {
+  if (!el) return
+  el.classList.remove('bump')
+  void el.offsetWidth
+  el.classList.add('bump')
+}
+
+// 手機震動：答對短短一下、答錯兩下。不支援的裝置什麼都不做
+function buzz (pattern) {
+  try { if (navigator.vibrate) navigator.vibrate(pattern) } catch (err) { /* 不支援就算了 */ }
+}
+
+// ===== tutorial.js =====
+// 教學：每個玩法第一次玩之前，先放一段小手示範怎麼操作。全是圖、不用字，她看得懂就好。
+// 示範只教「怎麼操作」（點、拖、畫、按），不教答案。動畫在 style.css 的 .tut-* 那一段，一輪 3.6 秒一直重播。
+// showTutorial(root, kind, onGo)：蓋在遊戲畫面上，按綠色播放鍵才開始；回傳一個關掉它的函式。
+
+const INK = '#2B3A4A'
+const WOOD = '#B08A63'
+const FONT = 'font-family="Microsoft JhengHei, Noto Sans TC, PingFang TC, sans-serif" font-weight="900"'
+
+// 手指尖在 (0, 0)，動畫只改整組的位移
+const HAND = `
+  <rect x="-22" y="40" width="68" height="62" rx="26" fill="#FFE3C4" stroke="#8E6D4C" stroke-width="4"/>
+  <rect x="-11" y="-2" width="22" height="62" rx="11" fill="#FFE3C4" stroke="#8E6D4C" stroke-width="4"/>
+  <rect x="-7" y="44" width="14" height="14" fill="#FFE3C4"/>
+  <path d="M8 58 v-6 M24 60 v-8" stroke="#8E6D4C" stroke-width="3" stroke-linecap="round"/>`
+
+const hand = cls => `<g class="tut-hand ${cls}">${HAND}</g>`
+const ripple = (cls, x, y) => `<circle class="tut-ripple ${cls}" cx="${x}" cy="${y}" r="34" fill="none" stroke="#E8C86A" stroke-width="7"/>`
+const sparks = (cls, x, y) => [[-60, -30], [55, -40], [-40, 45], [60, 35], [0, -70]].map(([dx, dy], i) =>
+  `<text class="tut-spark ${cls}" x="${x + dx}" y="${y + dy}" font-size="34" fill="${['#E8C86A', '#E39AA8', '#6B9E6B', '#4A6FA5', '#E0955B'][i]}" text-anchor="middle" dominant-baseline="central">★</text>`).join('')
+
+// 喇叭：先「聽」
+const SPEAKER = `<g class="tut-speaker"><path d="M60 70 h22 l26 -22 v68 l-26 -22 h-22 z" fill="#E0955B"/>
+  <path class="tut-wave w1" d="M122 68 q10 14 0 28" stroke="#E0955B" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path class="tut-wave w2" d="M136 58 q18 24 0 48" stroke="#E0955B" stroke-width="6" fill="none" stroke-linecap="round"/></g>`
+
+const SCENES = {
+  // 聽音，點泡泡
+  fishing: `
+    <rect x="0" y="210" width="640" height="190" fill="#8FC7D2"/>
+    <path d="M0 214 q40 -12 80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0" stroke="#CFEAF0" stroke-width="6" fill="none"/>
+    ${SPEAKER}
+    <g class="tut-fish-b1"><circle cx="250" cy="262" r="54" fill="#F6F3E6" stroke="#fff" stroke-width="6"/><text x="250" y="264" font-size="62" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄅ</text></g>
+    <g><circle cx="420" cy="276" r="54" fill="#F6F3E6" stroke="#fff" stroke-width="6"/><text x="420" y="278" font-size="62" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄆ</text></g>
+    ${ripple('tut-fish-r', 250, 262)}${sparks('tut-fish-s', 250, 262)}
+    ${hand('tut-fish-hand')}`,
+
+  // 聽音，拍冒出來的
+  whack: `
+    <rect x="0" y="250" width="640" height="150" fill="#9BC47F"/>
+    ${SPEAKER}
+    ${[180, 320, 460].map(x => `<ellipse cx="${x}" cy="300" rx="64" ry="22" fill="#3E2A1A"/>`).join('')}
+    <clipPath id="tut-hole"><rect x="240" y="100" width="160" height="202"/></clipPath>
+    <g clip-path="url(#tut-hole)"><g class="tut-mole"><circle cx="320" cy="250" r="50" fill="#F6E7C8" stroke="#E2C89A" stroke-width="5"/><text x="320" y="252" font-size="60" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄅ</text></g></g>
+    ${[180, 320, 460].map(x => `<path d="M${x - 66} 300 a66 22 0 0 0 132 0" fill="#6E9C58"/>`).join('')}
+    ${ripple('tut-whack-r', 320, 250)}${sparks('tut-whack-s', 320, 240)}
+    ${hand('tut-whack-hand')}`,
+
+  // 翻兩張一樣的
+  memory: `
+    ${[130, 250, 370, 490].map((x, i) => `
+      <g class="tut-card c${i}">
+        <rect class="back" x="${x - 10}" y="130" width="100" height="130" rx="18" fill="#6B9E6B" stroke="#F6F3E6" stroke-width="5"/>
+        <text class="back" x="${x + 40}" y="198" font-size="40" fill="#F6E7C8" text-anchor="middle" dominant-baseline="central">🐾</text>
+        <rect class="front" x="${x - 10}" y="130" width="100" height="130" rx="18" fill="#FFFDF7" stroke="#E8C86A" stroke-width="5"/>
+        <text class="front" x="${x + 40}" y="198" font-size="62" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄇ</text>
+      </g>`).join('')}
+    ${sparks('tut-mem-s', 300, 200)}
+    ${hand('tut-mem-hand')}`,
+
+  // 從詞拉一條線到圖
+  match: `
+    <rect x="60" y="148" width="190" height="110" rx="20" fill="#FFFDF7" stroke="${WOOD}" stroke-width="6"/>
+    <text x="155" y="205" font-size="58" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄇㄠ</text>
+    <g class="tut-match-pic"><rect x="430" y="143" width="120" height="120" rx="22" fill="#FFFDF7" stroke="#fff" stroke-width="6"/>
+    <text x="490" y="205" font-size="70" text-anchor="middle" dominant-baseline="central">🐱</text></g>
+    <line class="tut-match-line" x1="252" y1="203" x2="428" y2="203" stroke="#6B9E6B" stroke-width="10" stroke-linecap="round" stroke-dasharray="176" stroke-dashoffset="176"/>
+    ${sparks('tut-match-s', 490, 203)}
+    ${hand('tut-match-hand')}`,
+
+  // 把一塊拖進空格
+  fill: `
+    <rect x="150" y="60" width="340" height="140" rx="24" fill="#FFFDF7" stroke="${WOOD}" stroke-width="8"/>
+    <text x="255" y="132" font-size="80" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄚ</text>
+    <rect class="tut-fill-blank" x="336" y="88" width="70" height="88" rx="14" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="10 8"/>
+    <g class="tut-fill-tile"><rect x="285" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#F6F3E6" stroke-width="5"/>
+    <text x="325" y="304" font-size="56" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄧ</text></g>
+    <rect x="435" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#F6F3E6" stroke-width="5"/>
+    <text x="475" y="304" font-size="56" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄨ</text>
+    ${sparks('tut-fill-s', 371, 132)}
+    ${hand('tut-fill-hand')}`,
+
+  // 在板子上寫
+  write: `
+    <rect x="170" y="70" width="300" height="280" rx="26" fill="#FFFDF7" stroke="${WOOD}" stroke-width="8"/>
+    <path class="tut-write-ink" d="M250 130 L250 280 L400 280" stroke="${INK}" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-dasharray="300" stroke-dashoffset="300"/>
+    <g class="tut-write-ok"><circle cx="470" cy="340" r="36" fill="#6B9E6B" stroke="#F6F3E6" stroke-width="5"/><path d="M454 340 l11 11 l20 -22" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+    ${hand('tut-write-hand')}`,
+
+  // 看牌子、按麥克風、唸出來
+  speak: `
+    <rect x="245" y="40" width="150" height="150" rx="22" fill="#FFFDF7" stroke="${WOOD}" stroke-width="8"/>
+    <text x="320" y="118" font-size="96" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄚ</text>
+    <circle cx="170" cy="300" r="56" fill="#F6E7C8" stroke="#D9A86C" stroke-width="5"/>
+    <circle cx="150" cy="286" r="6" fill="${INK}"/><circle cx="190" cy="286" r="6" fill="${INK}"/>
+    <ellipse class="tut-speak-mouth" cx="170" cy="318" rx="14" ry="10" fill="#C8553D"/>
+    <path class="tut-wave s1" d="M244 282 q14 18 0 36" stroke="#E0955B" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path class="tut-wave s2" d="M262 268 q24 32 0 64" stroke="#E0955B" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <g class="tut-speak-mic"><circle cx="480" cy="300" r="52" fill="#C8553D" stroke="#F6F3E6" stroke-width="6"/>
+    <rect x="468" y="272" width="24" height="40" rx="12" fill="#fff"/><path d="M458 302 a22 22 0 0 0 44 0 M480 324 v12" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/></g>
+    ${sparks('tut-speak-s', 320, 115)}
+    ${hand('tut-speak-hand')}`,
+}
+
+const GO_SVG = '<svg viewBox="0 0 24 24" width="64" height="64" fill="#fff"><path d="M8 5v14l11-7z"/></svg>'
+
+function hasTutorial (kind) { return !!SCENES[kind] }
+
+function showTutorial (root, kind, onGo) {
+  const wrap = document.createElement('div')
+  wrap.className = 'tut'
+  wrap.innerHTML = `
+    <div class="tut-card">
+      <svg class="tut-scene tut-${kind}" viewBox="0 0 640 400" xmlns="http://www.w3.org/2000/svg">
+        <rect width="640" height="400" rx="30" fill="#EAF4F6"/>
+        ${SCENES[kind] || ''}
+      </svg>
+      <button class="tut-go" aria-label="開始">${GO_SVG}</button>
+    </div>`
+  root.appendChild(wrap)
+  let closed = false
+  const close = () => {
+    if (closed) return
+    closed = true
+    wrap.classList.add('out')
+    setTimeout(() => wrap.remove(), 250)
+  }
+  wrap.querySelector('.tut-go').addEventListener('pointerdown', e => {
+    e.stopPropagation()
+    close()
+    onGo()
+  })
+  return close
 }
 
 // ===== shop.js =====
@@ -4281,6 +4873,30 @@ function main () {
   let profile = null
   let state = null
 
+  // 背景音樂只在這幾個畫面放；進遊戲就停，才不會蓋掉注音的聲音
+  const MUSIC_SCREENS = ['profiles', 'home', 'shop', 'result']
+  let currentScreen = null
+  function updateMusic () {
+    if (!audio.ready()) return
+    if (MUSIC_SCREENS.includes(currentScreen) && !settings.musicOff) audio.startMusic()
+    else audio.stopMusic()
+  }
+  function show (name) {
+    currentScreen = name
+    showScreen(name)
+    updateMusic()
+  }
+  function today () { return dayKey(Date.now()) }
+
+  // 第一次碰畫面才能出聲（瀏覽器規定），順便把音樂打開；點到按鈕輕輕「啵」一聲
+  document.addEventListener('pointerdown', e => {
+    const first = !audio.ready()
+    audio.unlock()
+    if (first) updateMusic()
+    const btn = e.target.closest('button, .card, .profile-card')
+    if (btn && !btn.disabled && !btn.closest('#screen-panel') && !btn.classList.contains('mic-btn')) audio.pop()
+  }, true)
+
   const profilesEl = document.getElementById('screen-profiles')
   const homeEl = document.getElementById('screen-home')
   const gameEl = document.getElementById('screen-game')
@@ -4295,7 +4911,7 @@ function main () {
       onAdd (info) { audio.unlock(); const p = store.addProfile(info); pickProfile(p.id) },
       onGear: gearTap,
     })
-    showScreen('profiles')
+    show('profiles')
   }
 
   function pickProfile (id) {
@@ -4309,16 +4925,61 @@ function main () {
   }
 
   // ---- 首頁 ----
+  // 今天推薦哪個玩法：今天練最少的那一軌，軌裡再照日子輪
+  function recommendGame () {
+    const t = recommendTrack(state, today())
+    const odd = Math.floor(Date.now() / 86400000) % 2
+    if (t === 'listen') return odd ? 'whack' : 'fishing'
+    if (t === 'read') return odd ? 'fill' : 'match'
+    return 'write'
+  }
+
   function goHome () {
     destroyGame()
-    renderHome(homeEl, { profile, speech: speechAvailable(), bones: state.bones, mates: ownedMates(state) })
+    const daily = { ...dailyView(state, today()), goal: DAILY_GOAL }
+    renderHome(homeEl, { profile, speech: speechAvailable(), bones: state.bones, mates: ownedMates(state), daily, recommend: recommendGame(), musicOn: !settings.musicOff })
     homeEl.querySelector('#btn-who').addEventListener('pointerdown', goProfiles)
+    homeEl.querySelector('#btn-chest').addEventListener('pointerdown', openChest)
+    homeEl.querySelector('#btn-music').addEventListener('pointerdown', e => {
+      settings = { ...settings, musicOff: !settings.musicOff }
+      saveSettings(settings)
+      const b = e.currentTarget
+      b.classList.toggle('off', !!settings.musicOff)
+      b.innerHTML = settings.musicOff ? UX_ICONS.musicOff : UX_ICONS.musicOn
+      updateMusic()
+    })
     homeEl.querySelector('#btn-shop').addEventListener('pointerdown', () => { audio.unlock(); openShop() })
     homeEl.querySelectorAll('[data-game]').forEach(card => {
       card.addEventListener('pointerdown', () => { audio.unlock(); startGame(card.dataset.game) })
     })
     homeEl.querySelector('#btn-gear').addEventListener('pointerdown', gearTap)
-    showScreen('home')
+    show('home')
+  }
+
+  // 開寶箱：蓋子打開、星星爆開、骨頭一根根飛進商店按鈕
+  function openChest (e) {
+    const chest = e.currentTarget
+    const before = state.bones
+    const next = claimDaily(state, today())
+    if (next === state) return
+    state = next
+    store.save(profile.id, state)
+    const bonus = state.bones - before
+    chest.classList.remove('ready')
+    chest.classList.add('opening')
+    chest.disabled = true
+    audio.chest()
+    buzz(40)
+    burstAt(chest, { count: 20, spread: 1.4 })
+    const shopBtn = homeEl.querySelector('#btn-shop')
+    const countEl = shopBtn.querySelector('b')
+    const k = Math.min(bonus, 8)
+    flyBones(chest, shopBtn.querySelector('.bone-ic'), k, (i, last) => {
+      audio.tick()
+      countEl.textContent = last ? state.bones : before + Math.round(bonus * (i + 1) / k)
+      bump(shopBtn)
+      if (last) setTimeout(() => { chest.classList.remove('opening'); chest.classList.add('claimed') }, 300)
+    })
   }
 
   // ---- 狗狗商店 ----
@@ -4349,7 +5010,7 @@ function main () {
       },
       onClose: goHome,
     })
-    showScreen('shop')
+    show('shop')
   }
 
   // ---- 骨頭（積分）：答對就有，玩完一局再送 ----
@@ -4357,17 +5018,59 @@ function main () {
   bonesEl.querySelector('.bone-ic').innerHTML = boneSvg()
   let roundBones = 0
   function showBones () { bonesEl.querySelector('b').textContent = state.bones }
-  function gain (n) {
-    if (!n) return
-    state = addBones(state, n)
-    store.save(profile.id, state)
-    roundBones += n
-    showBones()
+  function floatPlus (n) {
     const f = document.createElement('span')
     f.className = 'bone-float'
     f.textContent = '+' + n
     bonesEl.appendChild(f)
     setTimeout(() => f.remove(), 1200)
+  }
+  // 存檔馬上存；畫面上的數字等骨頭飛到了才加。fromEl 是骨頭飛出來的地方（答對的泡泡、地鼠…）
+  function gain (n, fromEl = null) {
+    if (!n) return
+    state = addBones(state, n)
+    store.save(profile.id, state)
+    roundBones += n
+    if (!fromEl) { showBones(); floatPlus(n); return }
+    flyBones(fromEl, bonesEl.querySelector('.bone-ic'), n, (i, last) => {
+      audio.tick()
+      if (!last) return
+      showBones()
+      bump(bonesEl)
+      floatPlus(n)
+    })
+  }
+
+  // ---- 連對：第一次就答對一題接一題，火焰上的數字往上加；連 3 題多 2 根、連 5 題再多 3 根 ----
+  const comboEl = gameEl.querySelector('#combo')
+  comboEl.querySelector('.flame').innerHTML = UX_ICONS.flame
+  let combo = 0
+  function setCombo (n) {
+    combo = n
+    comboEl.hidden = n < 2
+    if (n < 2) return
+    comboEl.querySelector('b').textContent = n
+    bump(comboEl)
+    comboEl.classList.remove('pop')
+    void comboEl.offsetWidth
+    comboEl.classList.add('pop')
+  }
+  // 答對：星星、骨頭、特效、震動、連對。el 是答對的那個東西（找不到就不放特效）
+  function rewardCorrect (first, el) {
+    earned.push(first)
+    setStars()
+    gain(first ? 2 : 1, el)
+    if (el) burstAt(el)
+    buzz(25)
+    if (!first) return
+    setCombo(combo + 1)
+    if (combo >= 2) audio.combo(combo)
+    if (combo === 3) setTimeout(() => gain(2, comboEl), 450)
+    if (combo === 5) setTimeout(() => gain(3, comboEl), 450)
+  }
+  function rewardWrong () {
+    setCombo(0)
+    buzz([40, 60, 40])
   }
 
   // 齒輪 2 秒內連點三下才開大人面板。每點一下齒輪旁顯示還差幾下，讓大人知道它沒壞。
@@ -4425,8 +5128,25 @@ function main () {
     kind = which
     earned = []
     roundBones = 0
+    setCombo(0)
+    starsEl.innerHTML = ''
     showBones()
-    showScreen('game')
+    show('game')
+    // 第一次玩這個遊戲：先看小手示範，按播放鍵才開始
+    if (hasTutorial(which) && !(state.seen && state.seen[which])) {
+      playArea.innerHTML = bgHtml(which === 'fishing' ? 'scene' : 'home')
+      mountBgs(playArea)
+      showTutorial(gameEl, which, () => {
+        state = markSeen(state, which)
+        store.save(profile.id, state)
+        if (kind === which && currentScreen === 'game') runGame(which)
+      })
+      return
+    }
+    runGame(which)
+  }
+
+  function runGame (which) {
     if (which === 'memory') return runMemory()
     if (which === 'speak') return runSpeak()
     if (which === 'match') return runMatch()
@@ -4434,7 +5154,17 @@ function main () {
     runQuestions(which)
   }
 
-  gameEl.querySelector('#btn-quit').addEventListener('pointerdown', () => { busy = false; clearIdle(); goHome() })
+  gameEl.querySelector('#btn-quit').addEventListener('pointerdown', () => {
+    busy = false
+    clearIdle()
+    gameEl.querySelectorAll('.tut').forEach(t => t.remove())
+    goHome()
+  })
+  // 「？」再看一次怎麼玩（蓋在遊戲上，按播放鍵回去繼續玩）
+  gameEl.querySelector('#btn-help').addEventListener('pointerdown', () => {
+    if (!kind || gameEl.querySelector('.tut')) return
+    showTutorial(gameEl, kind, () => {})
+  })
 
   // 記到目前玩法那一軌
   function commit (answer) {
@@ -4462,13 +5192,26 @@ function main () {
 
   function finishRound () {
     destroyGame()
-    if (kind !== 'memory') gain(3) // 玩完一局的獎勵；翻牌是純遊玩，沒有
-    renderResult(resultEl, profile.color, { roundBones, bones: state.bones, mates: ownedMates(state) })
+    setCombo(0)
+    // 翻牌是純遊玩：沒有玩完的骨頭，也不算今天的腳印
+    let daily = null
+    if (kind !== 'memory') {
+      gain(3)
+      state = recordRound(state, today())
+      store.save(profile.id, state)
+      daily = { ...dailyView(state, today()), goal: DAILY_GOAL }
+    }
+    const perfect = kind !== 'memory' && earned.length > 0 && earned.every(Boolean)
+    renderResult(resultEl, profile.color, { roundBones, bones: state.bones, mates: ownedMates(state), daily, perfect })
     resultEl.querySelector('#btn-again').addEventListener('pointerdown', () => startGame(kind))
     resultEl.querySelector('#btn-home').addEventListener('pointerdown', goHome)
-    showScreen('result')
+    show('result')
     audio.cheer()
-    playResult(resultEl, earned)
+    playResult(resultEl, earned, {
+      onTick: () => audio.tick(),
+      onPaw: () => { audio.combo(3); buzz(20) },
+      onPerfect: crown => { audio.fanfare(); burstAt(crown, { count: 24, spread: 1.6 }) },
+    })
   }
 
   // ---- 釣魚、打地鼠：聽音選形 ----
@@ -4539,7 +5282,7 @@ function main () {
     audio.say(round[index].target)
   })
 
-  async function onPick (symbol) {
+  async function onPick (symbol, el = null) {
     if (busy) return
     const q = round[index]
     const ms = Date.now() - askedAt
@@ -4548,6 +5291,7 @@ function main () {
     // 聽寫辨識不出是哪個：算錯但不記混淆對，答案會顯示在板子上讓她照著寫
     if (symbol === '__unknown__') {
       if (firstAttempt) { commit({ target: q.target, ok: false, picked: null, ms, drill: q.drill }); firstAttempt = false }
+      rewardWrong()
       audio.wrong(); game.shake(); game.sad()
       const myIndex = index; const myGame = game
       setTimeout(async () => { if (index !== myIndex || game !== myGame) return; await audio.say(q.target) }, 500)
@@ -4558,8 +5302,7 @@ function main () {
       clearIdle()
       game.lock()
       if (firstAttempt) commit({ target: q.target, ok: true, picked: symbol, ms, drill: q.drill })
-      earned.push(firstAttempt); gain(firstAttempt ? 2 : 1)
-      setStars()
+      rewardCorrect(firstAttempt, el || playArea.querySelector('.pad-wrap'))
       audio.stop()
       if (kind === 'whack') audio.crunch(); else if (kind === 'write') audio.ding(); else audio.splash()
       await game.celebrate(symbol)
@@ -4577,6 +5320,7 @@ function main () {
       commit({ target: q.target, ok: false, picked: symbol, ms, drill: q.drill })
       firstAttempt = false
     }
+    rewardWrong()
     audio.wrong()
     game.shake(symbol)
     game.sad()
@@ -4645,8 +5389,7 @@ function main () {
     game.heard(transcripts[0] || '')
     if (matchesSymbol(q.target, transcripts)) {
       if (firstAttempt) commit({ target: q.target, ok: true, picked: q.target, ms: 0, drill: q.drill })
-      earned.push(firstAttempt); gain(firstAttempt ? 2 : 1)
-      setStars()
+      rewardCorrect(firstAttempt, playArea.querySelector('.sign'))
       audio.ding()
       await game.celebrate()
       if (game !== myGame) return
@@ -4660,6 +5403,7 @@ function main () {
     }
     // 沒聽出來或唸錯：狗狗歪頭、唸一次答案。兩次沒過就跳下一題，不記錯
     firstAttempt = false
+    rewardWrong()
     speakTries++
     game.sad()
     await audio.say(q.target)
@@ -4691,8 +5435,7 @@ function main () {
       if (word === picked) {
         busy = true
         if (firstTry[word]) commit({ target: word, ok: true, picked: word, ms: 0, drill: null })
-        earned.push(firstTry[word]); gain(firstTry[word] ? 2 : 1)
-        setStars()
+        rewardCorrect(firstTry[word], playArea.querySelector(`.mpic[data-symbol="${picked}"]`))
         audio.ding()
         game.markCorrect(word, picked)
         await audio.say(word) // 對答案：唸一次這個詞
@@ -4700,6 +5443,7 @@ function main () {
         return
       }
       if (firstTry[word]) { commit({ target: word, ok: false, picked, ms: 0, drill: null }); firstTry[word] = false }
+      rewardWrong()
       audio.wrong()
       game.markWrong(word, picked)
     })
@@ -4743,8 +5487,7 @@ function main () {
         busy = true
         game.lock()
         if (firstAttempt) commit({ target: q.target, ok: true, picked: q.target, ms: 0, drill: q.drill })
-        earned.push(firstAttempt); gain(firstAttempt ? 2 : 1)
-        setStars()
+        rewardCorrect(firstAttempt, playArea.querySelector('.fill-sign'))
         audio.ding()
         game.fill(syl)
         await game.celebrate()
@@ -4757,6 +5500,7 @@ function main () {
         return
       }
       if (firstAttempt) { commit({ target: q.target, ok: false, picked: null, ms: 0, drill: q.drill }); firstAttempt = false }
+      rewardWrong()
       audio.wrong()
       game.bounce(syl)
       game.sad()
@@ -4772,7 +5516,14 @@ function main () {
     starTotal = symbols.length
     setStars()
     game.onFlip(sym => { audio.flip(); audio.say(sym) })
-    game.onPair(() => { earned.push(true); gain(1); setStars(); audio.ding() })
+    game.onPair(sym => {
+      const cards = playArea.querySelectorAll(`.mcard[data-symbol="${sym}"]`)
+      earned.push(true)
+      setStars()
+      gain(1, cards[1] || null)
+      cards.forEach(c => burstAt(c, { count: 8 }))
+      audio.ding()
+    })
     game.onDone(finishRound)
     game.start(symbols)
   }
@@ -4845,7 +5596,7 @@ function main () {
       onSay (symbol) { audio.say(symbol) },
       onCheck: openCheck,
     })
-    showScreen('panel')
+    show('panel')
   }
 
   // 發音檢查台：借用家長區的畫面容器
@@ -4856,7 +5607,7 @@ function main () {
       onSettings (next) { settings = next; saveSettings(settings) },
       onClose: openPanel,
     })
-    showScreen('panel')
+    show('panel')
   }
 
   // 開機：有記住上次的人就直接進首頁，否則選人

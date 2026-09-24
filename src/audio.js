@@ -194,5 +194,88 @@ export function createAudio (getSettings) {
     tone(1319, 0.5, 0.6, 'triangle', 0.2)
   }
 
-  return { unlock, say, stop, sourceOf, ding, wrong, splash, crunch, flip, cheer, listVoices: () => { refreshVoices(); return voices } }
+  // 按鈕：輕輕的「啵」
+  function pop () { tone(520, 0, 0.06, 'sine', 0.12); tone(780, 0.03, 0.06, 'sine', 0.08) }
+  // 骨頭飛進計數器、結算數字往上跳：小小的「叮」
+  function tick () { tone(1480 + Math.random() * 200, 0, 0.05, 'triangle', 0.07) }
+  // 連對：越多越高
+  function combo (level) {
+    const base = 660 * Math.pow(2, Math.min(level, 8) / 12 * 2)
+    tone(base, 0, 0.12, 'triangle', 0.18); tone(base * 1.5, 0.08, 0.2, 'triangle', 0.14)
+  }
+  // 開寶箱
+  function chest () {
+    ;[392, 523, 659, 784, 1047, 1319].forEach((n, i) => tone(n, i * 0.07, 0.4, 'triangle', 0.16))
+    tone(1568, 0.5, 0.8, 'sine', 0.12)
+  }
+  // 五題全部第一次就答對
+  function fanfare () {
+    ;[523, 523, 523, 698, 880, 784, 1047].forEach((n, i) => tone(n, [0, 0.14, 0.28, 0.42, 0.62, 0.78, 0.94][i], 0.3, 'square', 0.06))
+    tone(1047, 0.94, 0.9, 'triangle', 0.16)
+  }
+
+  // ---- 背景音樂：只在首頁、商店、結算放；進遊戲就停，才不會蓋掉注音的聲音 ----
+  // 用合成的音樂盒：C–Am–F–G 四個和弦輪流，每小節八個分散和弦音，外加一個低音。音量很小。
+  const CHORDS = [
+    [261.6, 329.6, 392.0], // C
+    [220.0, 261.6, 329.6], // Am
+    [174.6, 220.0, 261.6], // F
+    [196.0, 246.9, 293.7], // G
+  ]
+  const ARP = [0, 1, 2, 3, 2, 1, 2, 1] // 3 是根音高八度
+  const EIGHTH = 0.32
+  let musicGain = null
+  let musicTimer = null
+  let nextNote = 0
+  let noteNo = 0
+  function musicNote (freq, when, dur, type, vol) {
+    const o = ctx.createOscillator()
+    const g = ctx.createGain()
+    o.type = type
+    o.frequency.value = freq
+    g.gain.setValueAtTime(0, when)
+    g.gain.linearRampToValueAtTime(vol, when + 0.015)
+    g.gain.exponentialRampToValueAtTime(0.0008, when + dur)
+    o.connect(g).connect(musicGain)
+    o.start(when)
+    o.stop(when + dur + 0.05)
+  }
+  function scheduleMusic () {
+    while (nextNote < ctx.currentTime + 0.5) {
+      const bar = Math.floor(noteNo / 8) % CHORDS.length
+      const step = noteNo % 8
+      const chord = CHORDS[bar]
+      const i = ARP[step]
+      const freq = i === 3 ? chord[0] * 2 : chord[i]
+      musicNote(freq * 2, nextNote, 0.9, 'triangle', 0.5)
+      if (step === 0) musicNote(chord[0] / 2, nextNote, EIGHTH * 7, 'sine', 0.6)
+      nextNote += EIGHTH
+      noteNo++
+    }
+  }
+  function startMusic () {
+    if (!ctx || musicTimer) return
+    musicGain = ctx.createGain()
+    musicGain.gain.setValueAtTime(0, ctx.currentTime)
+    musicGain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 1.2)
+    musicGain.connect(ctx.destination)
+    nextNote = ctx.currentTime + 0.1
+    noteNo = 0
+    scheduleMusic()
+    musicTimer = setInterval(scheduleMusic, 150)
+  }
+  function stopMusic () {
+    if (!musicTimer) return
+    clearInterval(musicTimer)
+    musicTimer = null
+    const g = musicGain
+    musicGain = null
+    g.gain.cancelScheduledValues(ctx.currentTime)
+    g.gain.setValueAtTime(g.gain.value, ctx.currentTime)
+    g.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4)
+    setTimeout(() => g.disconnect(), 600)
+  }
+  function ready () { return !!ctx }
+
+  return { unlock, ready, say, stop, sourceOf, ding, wrong, splash, crunch, flip, cheer, pop, tick, combo, chest, fanfare, startMusic, stopMusic, listVoices: () => { refreshVoices(); return voices } }
 }
