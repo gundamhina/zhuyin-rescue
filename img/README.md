@@ -166,7 +166,7 @@ the cozy inside of a wooden treehouse classroom, sunlight through a round window
 a small cozy pet accessory shop, wooden shelves with colorful hats, scarves, bows and toys along the left and right walls, little bunting flags, warm afternoon light, wide 3:2 landscape format, the middle of the picture is open and calm with little detail because game pieces are placed on top, the nicer details stay near the left and right edges, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
 ```
 
-## 74 個詞的圖
+## 191 個詞的圖
 
 連連看和填空的圖，現在是表情符號。一次生九張，處理工具會自動切開。上傳 img/home.jpg 當畫風參考。生出來請確認九個東西的順序跟下面列的一樣。
 
@@ -250,14 +250,144 @@ A 3 by 3 grid of nine separate small illustrations, each centered in its own cel
 A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: star; ice cream cone; chocolate bar. Row 2, left to right: kindergarten building with playground; bicycle; washing machine. Row 3, left to right: television; white rabbit; grey wolf.
 ```
 
-### `words-9`　小汽車、溜滑梯
+### `words-9`　小汽車、溜滑梯、火車、飛機、輪船、帆船、機車、卡車、警車
 
 切成每張 384×384，透明背景。參考圖：`img/home.jpg`。
 
-一列，由左到右、由上到下：小汽車、溜滑梯。切開後存成 `img/words/<國字>.png`。
+三行三列，由左到右、由上到下：小汽車、溜滑梯、火車、飛機、輪船、帆船、機車、卡車、警車。切開後存成 `img/words/<國字>.png`。
 
 ```
-A single row of 2 separate small illustrations side by side, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Left to right: small car; playground slide.
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: small car; playground slide; steam train. Row 2, left to right: airplane; big ship; sailboat. Row 3, left to right: scooter; truck; police car.
+```
+
+### `words-10`　火箭、捷運、救護車、消防車、直升機、計程車、小雞、小豬、小馬
+
+切成每張 384×384，透明背景。參考圖：`img/home.jpg`。
+
+三行三列，由左到右、由上到下：火箭、捷運、救護車、消防車、直升機、計程車、小雞、小豬、小馬。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: rocket; metro train; ambulance. Row 2, left to right: fire engine; helicopter; yellow taxi. Row 3, left to right: baby chick; piglet; pony.
+```
+
+### `words-11`　乳牛、綿羊、鴨子、老鼠、蜜蜂、螞蟻、企鵝、烏龜、斑馬
+
+切成每張 384×384，透明背景。參考圖：`img/home.jpg`。
+
+三行三列，由左到右、由上到下：乳牛、綿羊、鴨子、老鼠、蜜蜂、螞蟻、企鵝、烏龜、斑馬。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: dairy cow; fluffy sheep; duck. Row 2, left to right: little mouse; honeybee; ant. Row 3, left to right: penguin; turtle; zebra.
+```
+
+### `words-12`　章魚、鯨魚、恐龍、狐狸、刺蝟、長頸鹿、無尾熊、麵條、披薩
+
+切成每張 384×384，透明背景。參考圖：`img/home.jpg`。
+
+三行三列，由左到右、由上到下：章魚、鯨魚、恐龍、狐狸、刺蝟、長頸鹿、無尾熊、麵條、披薩。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: octopus; whale; friendly dinosaur. Row 2, left to right: fox; hedgehog; giraffe. Row 3, left to right: koala; bowl of noodles; slice of pizza.
+```
+
+### `words-13`　漢堡、薯條、飯糰、壽司、餃子、蜂蜜、棒棒糖、爆米花、甜甜圈
+
+切成每張 384×384，透明背景。參考圖：`img/home.jpg`。
+
+三行三列，由左到右、由上到下：漢堡、薯條、飯糰、壽司、餃子、蜂蜜、棒棒糖、爆米花、甜甜圈。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: hamburger; french fries; rice ball. Row 2, left to right: sushi; dumplings; honey pot. Row 3, left to right: lollipop; popcorn; donut.
+```
+
+### `words-14`　橘子、檸檬、鳳梨、桃子、櫻桃、玉米、番茄、蘑菇、茄子
+
+切成每張 384×384，透明背景。參考圖：`img/home.jpg`。
+
+三行三列，由左到右、由上到下：橘子、檸檬、鳳梨、桃子、櫻桃、玉米、番茄、蘑菇、茄子。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: orange (fruit); lemon; pineapple. Row 2, left to right: peach; cherries; corn cob. Row 3, left to right: tomato; mushroom; eggplant.
+```
+
+### `words-15`　紅蘿蔔、衣服、褲子、裙子、帽子、鞋子、襪子、手套、圍巾
+
+切成每張 384×384，透明背景。參考圖：`img/home.jpg`。
+
+三行三列，由左到右、由上到下：紅蘿蔔、衣服、褲子、裙子、帽子、鞋子、襪子、手套、圍巾。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: carrot; t-shirt; trousers. Row 2, left to right: dress; sun hat; sneakers. Row 3, left to right: socks; mittens; knitted scarf.
+```
+
+### `words-16`　雨傘、眼鏡、靴子、外套、鬧鐘、電話、手機、電腦、燈泡
+
+切成每張 384×384，透明背景。參考圖：`img/home.jpg`。
+
+三行三列，由左到右、由上到下：雨傘、眼鏡、靴子、外套、鬧鐘、電話、手機、電腦、燈泡。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: umbrella; eyeglasses; rain boots. Row 2, left to right: coat; alarm clock; old telephone. Row 3, left to right: mobile phone; laptop computer; light bulb.
+```
+
+### `words-17`　鑰匙、剪刀、鉛筆、書本、鈴鐺、蠟燭、馬桶、氣球、禮物
+
+切成每張 384×384，透明背景。參考圖：`img/home.jpg`。
+
+三行三列，由左到右、由上到下：鑰匙、剪刀、鉛筆、書本、鈴鐺、蠟燭、馬桶、氣球、禮物。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: key; scissors; pencil. Row 2, left to right: open book; bell; candle. Row 3, left to right: toilet; balloon; gift box.
+```
+
+### `words-18`　花朵、大樹、小草、葉子、楓葉、高山、火山、大海、沙灘
+
+切成每張 384×384，透明背景。參考圖：`img/home.jpg`。
+
+三行三列，由左到右、由上到下：花朵、大樹、小草、葉子、楓葉、高山、火山、大海、沙灘。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: tulip flower; big tree; little sprout. Row 2, left to right: green leaves; red maple leaf; mountain. Row 3, left to right: volcano; sea waves; sandy beach.
+```
+
+### `words-19`　貝殼、彩虹、閃電、雪人、向日葵、仙人掌、跑步、游泳、唱歌
+
+切成每張 384×384，透明背景。參考圖：`img/home.jpg`。
+
+三行三列，由左到右、由上到下：貝殼、彩虹、閃電、雪人、向日葵、仙人掌、跑步、游泳、唱歌。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: seashell; rainbow; lightning bolt. Row 2, left to right: snowman; sunflower; cactus. Row 3, left to right: child running; child swimming; child singing with a microphone.
+```
+
+### `words-20`　跳舞、畫畫、釣魚、洗手、拍手、揮手、哭泣、生氣、足球
+
+切成每張 384×384，透明背景。參考圖：`img/home.jpg`。
+
+三行三列，由左到右、由上到下：跳舞、畫畫、釣魚、洗手、拍手、揮手、哭泣、生氣、足球。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: child dancing; child painting with a palette; fishing rod catching a fish. Row 2, left to right: washing hands with soap; clapping hands; waving hand. Row 3, left to right: crying child; angry child; soccer ball.
+```
+
+### `words-21`　籃球、醫生、警察、廚師、農夫、公主、國王、小丑、巫師
+
+切成每張 384×384，透明背景。參考圖：`img/home.jpg`。
+
+三行三列，由左到右、由上到下：籃球、醫生、警察、廚師、農夫、公主、國王、小丑、巫師。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: basketball; doctor; police officer. Row 2, left to right: chef; farmer; princess. Row 3, left to right: king; clown; friendly wizard.
+```
+
+### `words-22`　消防員、太空人
+
+切成每張 384×384，透明背景。參考圖：`img/home.jpg`。
+
+一列，由左到右、由上到下：消防員、太空人。切開後存成 `img/words/<國字>.png`。
+
+```
+A single row of 2 separate small illustrations side by side, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Left to right: firefighter; astronaut.
 ```
 
 ## 注意

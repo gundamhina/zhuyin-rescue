@@ -1,7 +1,7 @@
 // 37 個注音符號與相關靜態資料。純資料，不含邏輯。
 
 import { SYLLABLE_GROUPS, SYLLABLE_CHAR, WORD_GROUPS, WORD_TEXT, WORD_ICON } from './syllables.js'
-export { WORD_ICON }
+export { WORD_ICON, WORD_TEXT }
 
 export const SYMBOLS = [
   'ㄅ', 'ㄆ', 'ㄇ', 'ㄈ', 'ㄉ', 'ㄊ', 'ㄋ', 'ㄌ', 'ㄍ', 'ㄎ', 'ㄏ',

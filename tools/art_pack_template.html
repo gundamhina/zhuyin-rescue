@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <title>救援隊生圖清單</title>
-<meta name="description" content="注音救援隊還缺的 24 張手繪圖：照優先順序排好，提示詞一鍵複製，做完蓋腳印。">
+<meta name="description" content="注音救援隊還缺的手繪圖：照優先順序排好，提示詞一鍵複製，做完蓋腳印。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -47,7 +47,7 @@
   .lede { color: var(--muted); margin: 0 0 22px; max-width: 60ch; }
 
   /* 進度：一格是一張圖，顏色是它屬於哪一組 */
-  .album { display: grid; grid-template-columns: repeat(24, 1fr); gap: 4px; margin-bottom: 8px; }
+  .album { display: grid; grid-template-columns: repeat(auto-fill, minmax(14px, 1fr)); gap: 4px; margin-bottom: 8px; }
   .album span { height: 14px; border-radius: 4px; background: var(--line); transition: background .25s; }
   .album span.done { background: var(--g); }
   .album-count { display: flex; justify-content: space-between; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }

@@ -114,12 +114,19 @@ export async function requestMic () {
 }
 
 // 辨識結果裡出現符號本身，或它的同音字任何一個，就算唸對
+// 詞（音節之間有空白）要嚴一點：詞裡不重複的字，兩個字的詞要全部出現，三個字的詞至少對兩個。
+// 不然只唸「火」就會同時算火車、火箭、火山對。
 export function matchesSymbol (symbol, transcripts) {
   const accept = SPEAK_ACCEPT[symbol] || ''
+  const isWord = symbol.includes(' ')
   return transcripts.some(t => {
     const clean = String(t).replace(/[\s，。、？！,.?!]/g, '')
     if (clean.includes(symbol)) return true
-    return [...clean].some(ch => accept.includes(ch))
+    if (!isWord) return [...clean].some(ch => accept.includes(ch))
+    if (clean.includes(accept)) return true
+    const chars = [...new Set(accept)]
+    const hit = chars.filter(ch => clean.includes(ch)).length
+    return hit >= (chars.length >= 3 ? chars.length - 1 : chars.length)
   })
 }
 
