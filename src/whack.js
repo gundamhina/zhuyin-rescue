@@ -6,8 +6,8 @@ import { dogSvg, bgHtml, symbolMarkup } from './art.js'
 import { STAGE, mountBgs } from './ui.js'
 
 const HOLES = [[330, 430], [600, 430], [870, 430], [460, 620], [730, 620], [1000, 620]]
-const UP_MS = 2100 // 每一個冒出來停多久
-const POP_MS = 700 // 每隔多久冒下一個（所以同時最多三個在外面）
+const UP_MS = 3200 // 每一個冒出來停多久（2026-09-25 使用者說太快，從 2100 放慢）
+const POP_MS = 1100 // 每隔多久冒下一個（UP_MS／POP_MS ≈ 3，同時最多三個在外面）
 
 // 直的：兩欄三排，在狗狗下面、星星上面那段置中，排距 190～300
 function holesFor () {
