@@ -1,7 +1,7 @@
 // 唸給狗狗聽。狗狗舉一張牌，她按麥克風唸出來，用瀏覽器的語音辨識判斷。
 // 辨識小孩的單音不會很準，所以 main.js 只在唸對時記錄，沒聽出來不算她錯。
 // 介面：show(symbol)、setListening(bool)、heard(text)、celebrate()、sad()、onMic(fn)、destroy。
-// 另外匯出 speechAvailable()、createListener()、matchesSymbol()。
+// 另外匯出 speechAvailable()、createListener()、matchesSymbol()、openMicMeter()。
 
 import { dogSvg, bgHtml, symbolMarkup } from './art.js'
 import { mountBgs } from './ui.js'
@@ -92,6 +92,7 @@ export function createListener () {
       if (fault) return Promise.resolve({ status: fault, transcripts: [] })
       return new Promise(resolve => {
         if (waiter) deliver('silent')
+        events.length = 0 // 每按一次重新記，訊息只顯示這一次的經過
         const w = { resolve, isMatch, interim: [] }
         w.timer = setTimeout(() => { if (w.interim.length) deliver('heard', w.interim); else deliver('silent') }, ms)
         waiter = w
@@ -101,15 +102,47 @@ export function createListener () {
   }
 }
 
-// 進遊戲先問一次麥克風。回 'granted' | 'denied' | 'unknown'。
-export async function requestMic () {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return 'unknown'
+// 音量計：自己開一條麥克風，量瀏覽器實際收到多大的聲音。
+// 用途兩個：按麥克風時按鈕外圈跟著聲音跳（小孩知道狗狗有在聽），
+// 沒聽到的時候把「最大音量」和「用哪個麥克風」寫給大人看，分得出是麥克風沒聲音還是辨識服務的問題。
+// 回 { level(), peak(), resetPeak(), label, stop() }；拿不到麥克風回 { error: 'denied' | 'nomic' | 'unknown' }
+export async function openMicMeter () {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return { error: 'unknown' }
+  let stream
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-    stream.getTracks().forEach(t => t.stop())
-    return 'granted'
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true })
   } catch (err) {
-    return (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) ? 'denied' : 'unknown'
+    const name = err && err.name
+    if (name === 'NotAllowedError' || name === 'SecurityError') return { error: 'denied' }
+    if (name === 'NotFoundError' || name === 'NotReadableError') return { error: 'nomic' }
+    return { error: 'unknown' }
+  }
+  const track = stream.getAudioTracks()[0]
+  const AC = window.AudioContext || window.webkitAudioContext
+  const ctx = new AC()
+  if (ctx.state === 'suspended') ctx.resume()
+  const src = ctx.createMediaStreamSource(stream)
+  const an = ctx.createAnalyser()
+  an.fftSize = 1024
+  src.connect(an)
+  const buf = new Float32Array(an.fftSize)
+  let peak = 0
+  function level () {
+    an.getFloatTimeDomainData(buf)
+    let sum = 0
+    for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i]
+    // 說話的 RMS 大約 0.02～0.2，放大到 0～1 好看
+    const v = Math.min(1, Math.sqrt(sum / buf.length) * 6)
+    if (v > peak) peak = v
+    return v
+  }
+  return {
+    level,
+    peak: () => peak,
+    resetPeak () { peak = 0 },
+    label: (track && track.label) || '（不知道名稱的麥克風）',
+    muted: () => !!(track && (track.muted || !track.enabled || track.readyState !== 'live')),
+    stop () { stream.getTracks().forEach(t => t.stop()); ctx.close() },
   }
 }
 
@@ -170,6 +203,10 @@ export function createSpeak (root, { color = 0 } = {}) {
   function setMicEnabled (on) {
     micBtn.classList.toggle('disabled', !on)
   }
+  // 音量 0～1：按鈕外圈跟著聲音大小擴散
+  function setLevel (v) {
+    micBtn.style.setProperty('--lvl', v.toFixed(3))
+  }
   function celebrate () {
     return new Promise(resolve => {
       signEl.classList.add('glow')
@@ -187,5 +224,5 @@ export function createSpeak (root, { color = 0 } = {}) {
   function onMic (fn) { handler = fn }
   function destroy () { root.innerHTML = ''; handler = null }
 
-  return { show, setListening, heard, notice, setMicEnabled, celebrate, sad, onMic, destroy }
+  return { show, setListening, heard, notice, setMicEnabled, setLevel, celebrate, sad, onMic, destroy }
 }

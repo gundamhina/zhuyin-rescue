@@ -6,7 +6,7 @@ import { createAudio } from './audio.js'
 import { createFishing } from './fishing.js'
 import { createWhack } from './whack.js'
 import { createMemory } from './memory.js'
-import { createSpeak, speechAvailable, createListener, matchesSymbol, requestMic } from './speak.js'
+import { createSpeak, speechAvailable, createListener, matchesSymbol, openMicMeter } from './speak.js'
 import { createWrite } from './write.js'
 import { createMatchLine } from './matchline.js'
 import { createFillBlank } from './fillblank.js'
@@ -310,6 +310,8 @@ function main () {
     if (game) game.destroy()
     game = null
     if (listener) { listener.stop(); listener = null }
+    if (meter) { meter.stop(); meter = null }
+    cancelAnimationFrame(meterRaf)
     audio.stop()
   }
 
@@ -528,6 +530,8 @@ function main () {
   // ---- 唸給狗狗聽（讀）：她看符號自己唸，遊戲不先播音。每題判完狗狗唸一次答案。只記唸對。 ----
   let speakTries = 0
   let listener = null
+  let meter = null // 音量計（openMicMeter）
+  let meterRaf = 0
   function runSpeak () {
     game = createSpeak(playArea, { color: profile.color })
     replayBtn.classList.add('hidden') // 讀的練習不給聽
@@ -537,10 +541,14 @@ function main () {
     listener = createListener()
     listener.onInterim(text => { if (game === myGame && text) game.heard(text) }) // 邊聽邊顯示聽到什麼
     listener.start()
-    // 先主動要一次權限，被擋就直接告訴大人，不用等她按
-    requestMic().then(result => {
-      if (game !== myGame) return
-      if (result === 'denied') { game.notice(MIC_MSG.denied); game.setMicEnabled(false) }
+    // 先開音量計（順便要一次麥克風權限），被擋就直接告訴大人，不用等她按
+    openMicMeter().then(m => {
+      if (game !== myGame) { if (!m.error) m.stop(); return }
+      if (m.error) {
+        if (m.error === 'denied' || m.error === 'nomic') { game.notice(MIC_MSG[m.error]); game.setMicEnabled(false) }
+        return
+      }
+      meter = m
     })
     round = buildRound(currentView(), Math.random)
     index = 0
@@ -560,6 +568,18 @@ function main () {
     busy = false
   }
 
+  // 沒聽到的時候寫給大人看：麥克風收到的最大音量、用的是哪個裝置、辨識的經過
+  function micReport () {
+    const parts = []
+    if (meter) {
+      const pct = Math.round(meter.peak() * 100)
+      parts.push(`最大音量 ${pct}%` + (pct < 3 ? '（麥克風幾乎沒收到聲音）' : ''))
+      parts.push(`麥克風：${meter.label}` + (meter.muted() ? '（被靜音）' : ''))
+    }
+    parts.push('辨識：' + listener.debug())
+    return parts.join('　')
+  }
+
   async function onMicPressed () {
     if (busy || !game) return
     const q = round[index]
@@ -568,12 +588,22 @@ function main () {
     audio.stop()
     game.setListening(true)
     game.notice(MIC_MSG.listening, false)
+    // 聽的時候按鈕外圈跟著音量跳
+    if (meter) meter.resetPeak()
+    const tickMeter = () => {
+      if (game !== myGame || !meter) return
+      game.setLevel(meter.level())
+      meterRaf = requestAnimationFrame(tickMeter)
+    }
+    tickMeter()
     const { status, transcripts } = await listener.next(5000, alts => matchesSymbol(q.target, alts))
+    cancelAnimationFrame(meterRaf)
     if (game !== myGame) return
+    game.setLevel(0)
     game.setListening(false)
     // 沒聽到聲音、或麥克風／辨識不能用：不算她唸錯，不播答案
     if (status !== 'heard') {
-      if (status === 'silent') { game.notice(MIC_MSG.silent + '　辨識狀態：' + listener.debug(), false); game.sad() } else { game.notice(MIC_MSG[status] || MIC_MSG.unavailable); game.setMicEnabled(false) }
+      if (status === 'silent') { game.notice(MIC_MSG.silent + '　' + micReport(), false); game.sad() } else { game.notice(MIC_MSG[status] || MIC_MSG.unavailable); game.setMicEnabled(false) }
       busy = false
       return
     }
