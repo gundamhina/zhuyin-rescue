@@ -5,6 +5,7 @@
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, existsSync, rmSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { execSync } from 'node:child_process'
 
 const root = dirname(fileURLToPath(import.meta.url))
 const ORDER = ['syllables.js', 'data.js', 'scheduler.js', 'store.js', 'audio.js', 'art.js', 'fishing.js', 'whack.js', 'memory.js', 'speak.js', 'ink.js', 'write.js', 'matchline.js', 'fillblank.js', 'ui.js', 'fx.js', 'tutorial.js', 'shop.js', 'check.js', 'main.js']
@@ -38,14 +39,26 @@ try {
   process.exit(1)
 }
 const css = readFileSync(join(root, 'src', 'style.css'), 'utf8')
+// 版號：package.json 的版本 + commit + 打包時間（台北），右下角顯示，重新整理後看得出有沒有換到新版
+// GitHub Actions 上用 GITHUB_SHA（就是這次推上去的 commit）；本機用目前的 HEAD
+function buildVersion () {
+  const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
+  let sha = process.env.GITHUB_SHA || ''
+  if (!sha) { try { sha = execSync('git rev-parse HEAD', { cwd: root }).toString().trim() } catch (err) { /* 沒有 git */ } }
+  const when = new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date())
+  return [`v${pkg.version}`, sha.slice(0, 7), when].filter(Boolean).join(' · ')
+}
+const version = buildVersion()
+
 const html = readFileSync(join(root, 'src', 'index.html'), 'utf8')
+  .replace('__VERSION__', () => version)
   .replace('/*__CSS__*/', () => css)
   .replace('/*__JS__*/', () => js)
 
 mkdirSync(join(root, 'dist'), { recursive: true })
 writeFileSync(join(root, 'dist', 'index.html'), html)
 copyFileSync(join(root, 'src', 'manifest.webmanifest'), join(root, 'dist', 'manifest.webmanifest'))
-console.log('dist/index.html', (html.length / 1024).toFixed(0) + ' KB')
+console.log('dist/index.html', (html.length / 1024).toFixed(0) + ' KB', version)
 
 // 錄音檔：audio/ 底下的 mp3、wav 一起複製到 dist/audio/
 const audioDir = join(root, 'audio')
