@@ -26,6 +26,9 @@ const MATCH_PAIRS = 4
 // 唸給狗狗聽的狀態訊息，寫給旁邊的大人看
 const MIC_MSG = {
   silent: '沒聽到聲音，靠近一點再唸一次',
+  // 麥克風有收到聲音、辨識卻沒回任何字：單一個注音太短，辨識服務常常直接丟掉，連唸幾次比較聽得懂
+  unclear: '狗狗有聽到聲音，但聽不出是哪個字：一個注音可以連唸三次，例如「ㄅ、ㄅ、ㄅ」',
+  unclearWord: '狗狗有聽到聲音，但聽不出是哪個詞：唸大聲、慢一點再試一次',
   denied: '麥克風被封鎖了：按網址列左邊的鎖頭或圖示，把麥克風改成「允許」，再重新整理',
   nomic: '找不到麥克風，或麥克風被別的程式占用',
   listening: '我在聽…',
@@ -580,6 +583,13 @@ function main () {
     return parts.join('　')
   }
 
+  // 沒回字的時候分兩種：麥克風根本沒收到聲音，還是有聲音但辨識聽不懂
+  function silentMsg (target) {
+    const hadSound = (meter && meter.peak() >= 0.1) || /(sound|speech)/.test(listener.debug())
+    if (!hadSound) return MIC_MSG.silent
+    return target.includes(' ') ? MIC_MSG.unclearWord : MIC_MSG.unclear
+  }
+
   async function onMicPressed () {
     if (busy || !game) return
     const q = round[index]
@@ -603,7 +613,7 @@ function main () {
     game.setListening(false)
     // 沒聽到聲音、或麥克風／辨識不能用：不算她唸錯，不播答案
     if (status !== 'heard') {
-      if (status === 'silent') { game.notice(MIC_MSG.silent + '　' + micReport(), false); game.sad() } else { game.notice(MIC_MSG[status] || MIC_MSG.unavailable); game.setMicEnabled(false) }
+      if (status === 'silent') { game.notice(silentMsg(q.target) + '　' + micReport(), false); game.sad() } else { game.notice(MIC_MSG[status] || MIC_MSG.unavailable); game.setMicEnabled(false) }
       busy = false
       return
     }
