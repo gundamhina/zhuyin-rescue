@@ -14,6 +14,7 @@ import { renderShop } from './shop.js'
 import { setOutfit, boneSvg, ownedMates, bgHtml, UX_ICONS } from './art.js'
 import { burstAt, flyBones, bump, buzz } from './fx.js'
 import { showTutorial, hasTutorial } from './tutorial.js'
+import { WORD_ICON } from './data.js'
 import { fitStage, layoutBg, mountBgs, goFullscreenOnPhone, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage } from './ui.js'
 import { renderCheck } from './check.js'
 
@@ -693,7 +694,7 @@ function main () {
   function runFill (mode) {
     game = createFillBlank(playArea, { color: profile.color })
     replayBtn.classList.add('hidden')
-    const v = wordsOnlyState(currentView())
+    const v = wordsOnlyState(currentView(), { pictures: mode !== 'tone' })
     // 聲調填空專挑聲調難分辨的詞，空格放在最難的音節
     round = mode === 'tone' ? buildToneRound(v, Math.random) : buildRound(v, Math.random)
     index = 0
@@ -720,6 +721,12 @@ function main () {
       firstAttempt = true
       busy = true
       game.start(q, { blankIndex: bi, tiles, mode })
+      // 只聽不看圖的詞：狗狗先唸一次再開放作答（點喇叭可以再聽）
+      if (!WORD_ICON[q.target]) {
+        const myGame = game
+        audio.say(q.target).then(() => { if (game === myGame) { game.unlock(); busy = false } })
+        return
+      }
       setTimeout(() => { if (game) { game.unlock(); busy = false } }, 350)
     }
     game.onPicTap(() => { if (!busy && round[index]) audio.say(round[index].target) })

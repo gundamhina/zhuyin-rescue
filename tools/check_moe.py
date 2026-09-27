@@ -77,10 +77,12 @@ def main():
     char = {ch: [z for o, z in sorted(rs)] for ch, rs in char.items()}
     problems = 0
     print('== 詞 ==')
-    for name, items in g.parse_words():
+    listen = [(n, [(t, z, None) for t, z in items]) for n, items in g.parse_listen_words()]
+    for name, items in g.parse_words() + listen:
         for text, zy, icon in items:
             if text in word:
-                if zy != word[text][0]:
+                # 辭典裡同一個詞有兩條（例如「那裡」ㄋㄚˇ／ㄋㄚˋ）就接受任何一條
+                if zy not in word[text]:
                     print(f'  {text}：表裡 {zy}，辭典 {word[text][0]}')
                     problems += 1
                 continue

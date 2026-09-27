@@ -75,6 +75,31 @@ WORDS = """
 遊戲和獎品: 撲克牌/🃏=ㄆㄨ ㄎㄜˋ ㄆㄞˊ 保齡球/🎳=ㄅㄠˇ ㄌㄧㄥˊ ㄑㄧㄡˊ 獎牌/🏅=ㄐㄧㄤˇ ㄆㄞˊ 金牌/🥇=ㄐㄧㄣ ㄆㄞˊ 鞭炮/🧨=ㄅㄧㄢ ㄆㄠˋ 電影/🎬=ㄉㄧㄢˋ ㄧㄥˇ 門票/🎫=ㄇㄣˊ ㄆㄧㄠˋ 國旗/🎌=ㄍㄨㄛˊ ㄑㄧˊ
 """
 
+# 只聽不看圖的詞：沒有圖，只給聲調填空用（狗狗先唸，她聽聲音選調號），不進連連看、填空。
+# 挑一年級常聽到、聲調又不好分辨的（有三聲、二聲或輕聲）；格式「組名: 詞=音節 音節 …」。接在有圖的詞後面。
+LISTEN_WORDS = """
+打招呼: 早安=ㄗㄠˇ ㄢ 晚安=ㄨㄢˇ ㄢ 對不起=ㄉㄨㄟˋ ㄅㄨˋ ㄑㄧˇ 沒關係=ㄇㄟˊ ㄍㄨㄢ ㄒㄧˋ 請問=ㄑㄧㄥˇ ㄨㄣˋ 歡迎=ㄏㄨㄢ ㄧㄥˊ
+心情和樣子: 難過=ㄋㄢˊ ㄍㄨㄛˋ 可愛=ㄎㄜˇ ㄞˋ 聰明=ㄘㄨㄥ ㄇㄧㄥˊ 勇敢=ㄩㄥˇ ㄍㄢˇ 小心=ㄒㄧㄠˇ ㄒㄧㄣ 好吃=ㄏㄠˇ ㄔ 好玩=ㄏㄠˇ ㄨㄢˊ 好看=ㄏㄠˇ ㄎㄢˋ 有趣=ㄧㄡˇ ㄑㄩˋ
+時間: 明天=ㄇㄧㄥˊ ㄊㄧㄢ 昨天=ㄗㄨㄛˊ ㄊㄧㄢ 早上=ㄗㄠˇ ㄕㄤˋ 晚上=ㄨㄢˇ ㄕㄤˋ 中午=ㄓㄨㄥ ㄨˇ 以後=ㄧˇ ㄏㄡˋ 以前=ㄧˇ ㄑㄧㄢˊ 馬上=ㄇㄚˇ ㄕㄤˋ 每天=ㄇㄟˇ ㄊㄧㄢ 常常=ㄔㄤˊ ㄔㄤˊ 時候=ㄕˊ ㄏㄡˋ
+位置: 前面=ㄑㄧㄢˊ ㄇㄧㄢˋ 裡面=ㄌㄧˇ ㄇㄧㄢˋ 這裡=ㄓㄜˋ ㄌㄧˇ 那裡=ㄋㄚˋ ㄌㄧˇ 哪裡=ㄋㄚˇ ㄌㄧˇ 旁邊=ㄆㄤˊ ㄅㄧㄢ 左邊=ㄗㄨㄛˇ ㄅㄧㄢ
+常用的話: 可以=ㄎㄜˇ ㄧˇ 所以=ㄙㄨㄛˇ ㄧˇ 如果=ㄖㄨˊ ㄍㄨㄛˇ 已經=ㄧˇ ㄐㄧㄥ 還有=ㄏㄞˊ ㄧㄡˇ 一起=ㄧ ㄑㄧˇ 自己=ㄗˋ ㄐㄧˇ 我們=ㄨㄛˇ ˙ㄇㄣ 你們=ㄋㄧˇ ˙ㄇㄣ 他們=ㄊㄚ ˙ㄇㄣ 什麼=ㄕㄣˊ ˙ㄇㄜ 怎麼=ㄗㄣˇ ˙ㄇㄜ 為什麼=ㄨㄟˋ ㄕㄣˊ ˙ㄇㄜ 喜歡=ㄒㄧˇ ㄏㄨㄢ 可能=ㄎㄜˇ ㄋㄥˊ 當然=ㄉㄤ ㄖㄢˊ 也許=ㄧㄝˇ ㄒㄩˇ
+學校生活: 回家=ㄏㄨㄟˊ ㄐㄧㄚ 起床=ㄑㄧˇ ㄔㄨㄤˊ 讀書=ㄉㄨˊ ㄕㄨ 練習=ㄌㄧㄢˋ ㄒㄧˊ 學習=ㄒㄩㄝˊ ㄒㄧˊ 幫忙=ㄅㄤ ㄇㄤˊ 分享=ㄈㄣ ㄒㄧㄤˇ 排隊=ㄆㄞˊ ㄉㄨㄟˋ 遊戲=ㄧㄡˊ ㄒㄧˋ 問題=ㄨㄣˋ ㄊㄧˊ 名字=ㄇㄧㄥˊ ˙ㄗ 事情=ㄕˋ ㄑㄧㄥˊ 意思=ㄧˋ ˙ㄙ 考試=ㄎㄠˇ ㄕˋ 同學=ㄊㄨㄥˊ ㄒㄩㄝˊ
+"""
+
+def parse_listen_words():
+    groups = []
+    for line in LISTEN_WORDS.strip().splitlines():
+        name, rest = line.split(':', 1)
+        items = []
+        for tok in rest.strip().split():
+            if '=' in tok:
+                text, first = tok.split('=')
+                items.append([text, [first]])
+            else:
+                items[-1][1].append(tok)
+        groups.append((name.strip(), [(text, ' '.join(syls)) for text, syls in items]))
+    return groups
+
 def parse_words():
     groups = []
     for line in WORDS.strip().splitlines():
@@ -180,10 +205,20 @@ def main():
         out.append(f'  {{ name: {js(name)}, items: [{", ".join(js(z) for t, z, ic in witems)}] }},')
     out.append(']')
     out.append('')
+    lgroups = parse_listen_words()
+    out.append('// 只聽不看圖的詞：只給聲調填空用，接在有圖的詞後面')
+    out.append('export const LISTEN_WORD_GROUPS = [')
+    for name, litems in lgroups:
+        out.append(f'  {{ name: {js(name)}, items: [{", ".join(js(z) for t, z in litems)}] }},')
+    out.append(']')
+    out.append('')
     out.append('// 每個詞的國字（語音合成唸這個詞，語音辨識也比對它）')
     out.append('export const WORD_TEXT = {')
     for name, witems in wgroups:
         for t, z, ic in witems:
+            out.append(f'  {js(z)}: {js(t)},')
+    for name, litems in lgroups:
+        for t, z in litems:
             out.append(f'  {js(z)}: {js(t)},')
     out.append('}')
     out.append('')
@@ -194,7 +229,7 @@ def main():
             out.append(f'  {js(z)}: {js(ic)},')
     out.append('}')
     out.append('')
-    allw = [z for name, witems in wgroups for t, z, ic in witems]
+    allw = [z for name, witems in wgroups for t, z, ic in witems] + [z for name, litems in lgroups for t, z in litems]
     assert len(allw) == len(set(allw)), '詞重複'
     print('words:', len(allw), 'word groups:', len(wgroups))
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

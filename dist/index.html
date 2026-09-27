@@ -689,7 +689,7 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
   </defs>
 </svg>
 <div id="install-hint" hidden>手機請用 Chrome 開，再從選單「加到主畫面」，就會是全螢幕。點這裡關掉。</div>
-<div id="version" aria-hidden="true">v0.3.0 · 41e61d4 · 09/27 23:32</div>
+<div id="version" aria-hidden="true">v0.3.0 · 5d99292 · 09/27 23:33</div>
 <div id="stage">
   <section class="screen" id="screen-profiles"></section>
   <section class="screen" id="screen-home"></section>
@@ -1143,6 +1143,16 @@ const WORD_GROUPS = [
   { name: '遊戲和獎品', items: ['ㄆㄨ ㄎㄜˋ ㄆㄞˊ', 'ㄅㄠˇ ㄌㄧㄥˊ ㄑㄧㄡˊ', 'ㄐㄧㄤˇ ㄆㄞˊ', 'ㄐㄧㄣ ㄆㄞˊ', 'ㄅㄧㄢ ㄆㄠˋ', 'ㄉㄧㄢˋ ㄧㄥˇ', 'ㄇㄣˊ ㄆㄧㄠˋ', 'ㄍㄨㄛˊ ㄑㄧˊ'] },
 ]
 
+// 只聽不看圖的詞：只給聲調填空用，接在有圖的詞後面
+const LISTEN_WORD_GROUPS = [
+  { name: '打招呼', items: ['ㄗㄠˇ ㄢ', 'ㄨㄢˇ ㄢ', 'ㄉㄨㄟˋ ㄅㄨˋ ㄑㄧˇ', 'ㄇㄟˊ ㄍㄨㄢ ㄒㄧˋ', 'ㄑㄧㄥˇ ㄨㄣˋ', 'ㄏㄨㄢ ㄧㄥˊ'] },
+  { name: '心情和樣子', items: ['ㄋㄢˊ ㄍㄨㄛˋ', 'ㄎㄜˇ ㄞˋ', 'ㄘㄨㄥ ㄇㄧㄥˊ', 'ㄩㄥˇ ㄍㄢˇ', 'ㄒㄧㄠˇ ㄒㄧㄣ', 'ㄏㄠˇ ㄔ', 'ㄏㄠˇ ㄨㄢˊ', 'ㄏㄠˇ ㄎㄢˋ', 'ㄧㄡˇ ㄑㄩˋ'] },
+  { name: '時間', items: ['ㄇㄧㄥˊ ㄊㄧㄢ', 'ㄗㄨㄛˊ ㄊㄧㄢ', 'ㄗㄠˇ ㄕㄤˋ', 'ㄨㄢˇ ㄕㄤˋ', 'ㄓㄨㄥ ㄨˇ', 'ㄧˇ ㄏㄡˋ', 'ㄧˇ ㄑㄧㄢˊ', 'ㄇㄚˇ ㄕㄤˋ', 'ㄇㄟˇ ㄊㄧㄢ', 'ㄔㄤˊ ㄔㄤˊ', 'ㄕˊ ㄏㄡˋ'] },
+  { name: '位置', items: ['ㄑㄧㄢˊ ㄇㄧㄢˋ', 'ㄌㄧˇ ㄇㄧㄢˋ', 'ㄓㄜˋ ㄌㄧˇ', 'ㄋㄚˋ ㄌㄧˇ', 'ㄋㄚˇ ㄌㄧˇ', 'ㄆㄤˊ ㄅㄧㄢ', 'ㄗㄨㄛˇ ㄅㄧㄢ'] },
+  { name: '常用的話', items: ['ㄎㄜˇ ㄧˇ', 'ㄙㄨㄛˇ ㄧˇ', 'ㄖㄨˊ ㄍㄨㄛˇ', 'ㄧˇ ㄐㄧㄥ', 'ㄏㄞˊ ㄧㄡˇ', 'ㄧ ㄑㄧˇ', 'ㄗˋ ㄐㄧˇ', 'ㄨㄛˇ ˙ㄇㄣ', 'ㄋㄧˇ ˙ㄇㄣ', 'ㄊㄚ ˙ㄇㄣ', 'ㄕㄣˊ ˙ㄇㄜ', 'ㄗㄣˇ ˙ㄇㄜ', 'ㄨㄟˋ ㄕㄣˊ ˙ㄇㄜ', 'ㄒㄧˇ ㄏㄨㄢ', 'ㄎㄜˇ ㄋㄥˊ', 'ㄉㄤ ㄖㄢˊ', 'ㄧㄝˇ ㄒㄩˇ'] },
+  { name: '學校生活', items: ['ㄏㄨㄟˊ ㄐㄧㄚ', 'ㄑㄧˇ ㄔㄨㄤˊ', 'ㄉㄨˊ ㄕㄨ', 'ㄌㄧㄢˋ ㄒㄧˊ', 'ㄒㄩㄝˊ ㄒㄧˊ', 'ㄅㄤ ㄇㄤˊ', 'ㄈㄣ ㄒㄧㄤˇ', 'ㄆㄞˊ ㄉㄨㄟˋ', 'ㄧㄡˊ ㄒㄧˋ', 'ㄨㄣˋ ㄊㄧˊ', 'ㄇㄧㄥˊ ˙ㄗ', 'ㄕˋ ㄑㄧㄥˊ', 'ㄧˋ ˙ㄙ', 'ㄎㄠˇ ㄕˋ', 'ㄊㄨㄥˊ ㄒㄩㄝˊ'] },
+]
+
 // 每個詞的國字（語音合成唸這個詞，語音辨識也比對它）
 const WORD_TEXT = {
   'ㄅㄚˋ ˙ㄅㄚ': '爸爸',
@@ -1553,6 +1563,71 @@ const WORD_TEXT = {
   'ㄉㄧㄢˋ ㄧㄥˇ': '電影',
   'ㄇㄣˊ ㄆㄧㄠˋ': '門票',
   'ㄍㄨㄛˊ ㄑㄧˊ': '國旗',
+  'ㄗㄠˇ ㄢ': '早安',
+  'ㄨㄢˇ ㄢ': '晚安',
+  'ㄉㄨㄟˋ ㄅㄨˋ ㄑㄧˇ': '對不起',
+  'ㄇㄟˊ ㄍㄨㄢ ㄒㄧˋ': '沒關係',
+  'ㄑㄧㄥˇ ㄨㄣˋ': '請問',
+  'ㄏㄨㄢ ㄧㄥˊ': '歡迎',
+  'ㄋㄢˊ ㄍㄨㄛˋ': '難過',
+  'ㄎㄜˇ ㄞˋ': '可愛',
+  'ㄘㄨㄥ ㄇㄧㄥˊ': '聰明',
+  'ㄩㄥˇ ㄍㄢˇ': '勇敢',
+  'ㄒㄧㄠˇ ㄒㄧㄣ': '小心',
+  'ㄏㄠˇ ㄔ': '好吃',
+  'ㄏㄠˇ ㄨㄢˊ': '好玩',
+  'ㄏㄠˇ ㄎㄢˋ': '好看',
+  'ㄧㄡˇ ㄑㄩˋ': '有趣',
+  'ㄇㄧㄥˊ ㄊㄧㄢ': '明天',
+  'ㄗㄨㄛˊ ㄊㄧㄢ': '昨天',
+  'ㄗㄠˇ ㄕㄤˋ': '早上',
+  'ㄨㄢˇ ㄕㄤˋ': '晚上',
+  'ㄓㄨㄥ ㄨˇ': '中午',
+  'ㄧˇ ㄏㄡˋ': '以後',
+  'ㄧˇ ㄑㄧㄢˊ': '以前',
+  'ㄇㄚˇ ㄕㄤˋ': '馬上',
+  'ㄇㄟˇ ㄊㄧㄢ': '每天',
+  'ㄔㄤˊ ㄔㄤˊ': '常常',
+  'ㄕˊ ㄏㄡˋ': '時候',
+  'ㄑㄧㄢˊ ㄇㄧㄢˋ': '前面',
+  'ㄌㄧˇ ㄇㄧㄢˋ': '裡面',
+  'ㄓㄜˋ ㄌㄧˇ': '這裡',
+  'ㄋㄚˋ ㄌㄧˇ': '那裡',
+  'ㄋㄚˇ ㄌㄧˇ': '哪裡',
+  'ㄆㄤˊ ㄅㄧㄢ': '旁邊',
+  'ㄗㄨㄛˇ ㄅㄧㄢ': '左邊',
+  'ㄎㄜˇ ㄧˇ': '可以',
+  'ㄙㄨㄛˇ ㄧˇ': '所以',
+  'ㄖㄨˊ ㄍㄨㄛˇ': '如果',
+  'ㄧˇ ㄐㄧㄥ': '已經',
+  'ㄏㄞˊ ㄧㄡˇ': '還有',
+  'ㄧ ㄑㄧˇ': '一起',
+  'ㄗˋ ㄐㄧˇ': '自己',
+  'ㄨㄛˇ ˙ㄇㄣ': '我們',
+  'ㄋㄧˇ ˙ㄇㄣ': '你們',
+  'ㄊㄚ ˙ㄇㄣ': '他們',
+  'ㄕㄣˊ ˙ㄇㄜ': '什麼',
+  'ㄗㄣˇ ˙ㄇㄜ': '怎麼',
+  'ㄨㄟˋ ㄕㄣˊ ˙ㄇㄜ': '為什麼',
+  'ㄒㄧˇ ㄏㄨㄢ': '喜歡',
+  'ㄎㄜˇ ㄋㄥˊ': '可能',
+  'ㄉㄤ ㄖㄢˊ': '當然',
+  'ㄧㄝˇ ㄒㄩˇ': '也許',
+  'ㄏㄨㄟˊ ㄐㄧㄚ': '回家',
+  'ㄑㄧˇ ㄔㄨㄤˊ': '起床',
+  'ㄉㄨˊ ㄕㄨ': '讀書',
+  'ㄌㄧㄢˋ ㄒㄧˊ': '練習',
+  'ㄒㄩㄝˊ ㄒㄧˊ': '學習',
+  'ㄅㄤ ㄇㄤˊ': '幫忙',
+  'ㄈㄣ ㄒㄧㄤˇ': '分享',
+  'ㄆㄞˊ ㄉㄨㄟˋ': '排隊',
+  'ㄧㄡˊ ㄒㄧˋ': '遊戲',
+  'ㄨㄣˋ ㄊㄧˊ': '問題',
+  'ㄇㄧㄥˊ ˙ㄗ': '名字',
+  'ㄕˋ ㄑㄧㄥˊ': '事情',
+  'ㄧˋ ˙ㄙ': '意思',
+  'ㄎㄠˇ ㄕˋ': '考試',
+  'ㄊㄨㄥˊ ㄒㄩㄝˊ': '同學',
 }
 
 // 每個詞的圖（表情符號），連連看與填空用
@@ -1998,10 +2073,11 @@ const GROUPS = [
 
 // 拼讀字（兩拼、三拼）由 syllables.js 產生的表接在後面
 for (const g of SYLLABLE_GROUPS) GROUPS.push(g.items)
-// 詞（兩三個音節）接在最後
+// 詞（兩三個音節）接在後面；只聽不看圖的詞（只給聲調填空）排最後
 for (const g of WORD_GROUPS) GROUPS.push(g.items)
+for (const g of LISTEN_WORD_GROUPS) GROUPS.push(g.items)
 // 第 14 組起的組名，家長區顯示用（索引對應 GROUPS）
-const GROUP_NAMES = [...SYLLABLE_GROUPS.map(g => g.name), ...WORD_GROUPS.map(g => '詞：' + g.name)]
+const GROUP_NAMES = [...SYLLABLE_GROUPS.map(g => g.name), ...WORD_GROUPS.map(g => '詞：' + g.name), ...LISTEN_WORD_GROUPS.map(g => '聽的詞：' + g.name)]
 
 // 22 個結合韻
 
@@ -2009,12 +2085,13 @@ const GROUP_NAMES = [...SYLLABLE_GROUPS.map(g => g.name), ...WORD_GROUPS.map(g =
 const COMPOUNDS = GROUPS.slice(10, 13).flat()
 // 拼讀字：兩拼與三拼，字串尾端帶調號（一聲不標）
 const SYLLABLES = SYLLABLE_GROUPS.flatMap(g => g.items)
-// 詞
+// 詞（有圖的）；只聽不看圖的另外放
 const WORDS = WORD_GROUPS.flatMap(g => g.items)
+const LISTEN_WORDS = LISTEN_WORD_GROUPS.flatMap(g => g.items)
 const TONE_MARKS = 'ˊˇˋ˙'
 // 去掉調號，只留符號
 function coreOf (sym) { return sym.replace(/[ˊˇˋ˙]/g, '') }
-const ALL_SYMBOLS = [...SYMBOLS, ...COMPOUNDS, ...SYLLABLES, ...WORDS]
+const ALL_SYMBOLS = [...SYMBOLS, ...COMPOUNDS, ...SYLLABLES, ...WORDS, ...LISTEN_WORDS]
 
 // 語音合成唸不好單一符號，改唸代表字（注音教學的標準唸法）。
 // ㄝ、ㄥ 沒有常用單字，先放字典用字，試聽頁可改。
@@ -2374,9 +2451,10 @@ function noWordsState (state) {
 }
 
 // 連連看、填空只出詞：家長範圍裡有詞的組就用那些，否則全部詞的組。
-function wordsOnlyState (state) {
+// 連連看、填空要看圖，只用有圖的詞；聲調填空傳 { pictures: false }，只聽不看圖的詞也出。
+function wordsOnlyState (state, { pictures = true } = {}) {
   const groups = state.groups || GROUPS
-  const wordIdx = [...groups.keys()].filter(i => isWordGroup(groups[i]))
+  const wordIdx = [...groups.keys()].filter(i => isWordGroup(groups[i]) && (!pictures || groups[i].every(w => WORD_ICON[w])))
   let chosen = []
   if (Array.isArray(state.rangeGroups) && state.rangeGroups.length) {
     chosen = state.rangeGroups.filter(i => wordIdx.includes(i))
@@ -3111,7 +3189,10 @@ function toneMark (tone, x, y, size) {
 }
 
 // 詞的圖：img/words/<國字>.png 有就用，沒有退回表情符號
+// 沒有圖的詞（只聽不看圖）：放一個大喇叭，點了再唸一次
+const SPEAKER_PIC = '<svg class="pic-speaker" viewBox="0 0 100 100" width="150" height="150"><path d="M18 38h18l24-20v64L36 62H18z" fill="#E0955B"/><path d="M70 36q10 14 0 28M80 26q18 24 0 48" stroke="#E0955B" stroke-width="7" fill="none" stroke-linecap="round"/></svg>'
 function wordPicMarkup (word) {
+  if (!WORD_ICON[word]) return SPEAKER_PIC
   const text = WORD_TEXT[word] || ''
   return `<img class="art-slot" src="img/words/${text}.png" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()"><span class="emoji">${WORD_ICON[word] || '❓'}</span>`
 }
@@ -6564,7 +6645,7 @@ function main () {
   function runFill (mode) {
     game = createFillBlank(playArea, { color: profile.color })
     replayBtn.classList.add('hidden')
-    const v = wordsOnlyState(currentView())
+    const v = wordsOnlyState(currentView(), { pictures: mode !== 'tone' })
     // 聲調填空專挑聲調難分辨的詞，空格放在最難的音節
     round = mode === 'tone' ? buildToneRound(v, Math.random) : buildRound(v, Math.random)
     index = 0
@@ -6591,6 +6672,12 @@ function main () {
       firstAttempt = true
       busy = true
       game.start(q, { blankIndex: bi, tiles, mode })
+      // 只聽不看圖的詞：狗狗先唸一次再開放作答（點喇叭可以再聽）
+      if (!WORD_ICON[q.target]) {
+        const myGame = game
+        audio.say(q.target).then(() => { if (game === myGame) { game.unlock(); busy = false } })
+        return
+      }
       setTimeout(() => { if (game) { game.unlock(); busy = false } }, 350)
     }
     game.onPicTap(() => { if (!busy && round[index]) audio.say(round[index].target) })

@@ -1,6 +1,6 @@
 // 37 個注音符號與相關靜態資料。純資料，不含邏輯。
 
-import { SYLLABLE_GROUPS, SYLLABLE_CHAR, WORD_GROUPS, WORD_TEXT, WORD_ICON } from './syllables.js'
+import { SYLLABLE_GROUPS, SYLLABLE_CHAR, WORD_GROUPS, LISTEN_WORD_GROUPS, WORD_TEXT, WORD_ICON } from './syllables.js'
 export { WORD_ICON, WORD_TEXT }
 
 export const SYMBOLS = [
@@ -30,10 +30,11 @@ export const GROUPS = [
 
 // 拼讀字（兩拼、三拼）由 syllables.js 產生的表接在後面
 for (const g of SYLLABLE_GROUPS) GROUPS.push(g.items)
-// 詞（兩三個音節）接在最後
+// 詞（兩三個音節）接在後面；只聽不看圖的詞（只給聲調填空）排最後
 for (const g of WORD_GROUPS) GROUPS.push(g.items)
+for (const g of LISTEN_WORD_GROUPS) GROUPS.push(g.items)
 // 第 14 組起的組名，家長區顯示用（索引對應 GROUPS）
-export const GROUP_NAMES = [...SYLLABLE_GROUPS.map(g => g.name), ...WORD_GROUPS.map(g => '詞：' + g.name)]
+export const GROUP_NAMES = [...SYLLABLE_GROUPS.map(g => g.name), ...WORD_GROUPS.map(g => '詞：' + g.name), ...LISTEN_WORD_GROUPS.map(g => '聽的詞：' + g.name)]
 
 // 22 個結合韻
 
@@ -41,12 +42,13 @@ export const GROUP_NAMES = [...SYLLABLE_GROUPS.map(g => g.name), ...WORD_GROUPS.
 export const COMPOUNDS = GROUPS.slice(10, 13).flat()
 // 拼讀字：兩拼與三拼，字串尾端帶調號（一聲不標）
 export const SYLLABLES = SYLLABLE_GROUPS.flatMap(g => g.items)
-// 詞
+// 詞（有圖的）；只聽不看圖的另外放
 export const WORDS = WORD_GROUPS.flatMap(g => g.items)
+export const LISTEN_WORDS = LISTEN_WORD_GROUPS.flatMap(g => g.items)
 export const TONE_MARKS = 'ˊˇˋ˙'
 // 去掉調號，只留符號
 export function coreOf (sym) { return sym.replace(/[ˊˇˋ˙]/g, '') }
-export const ALL_SYMBOLS = [...SYMBOLS, ...COMPOUNDS, ...SYLLABLES, ...WORDS]
+export const ALL_SYMBOLS = [...SYMBOLS, ...COMPOUNDS, ...SYLLABLES, ...WORDS, ...LISTEN_WORDS]
 
 // 語音合成唸不好單一符號，改唸代表字（注音教學的標準唸法）。
 // ㄝ、ㄥ 沒有常用單字，先放字典用字，試聽頁可改。

@@ -1,7 +1,7 @@
 // 出題邏輯：熟練度、解鎖、加權出題、混淆對加練、階級升降。
 // 純函式，不碰 DOM，不碰 localStorage。所有函式回傳新狀態，不改舊的。
 
-import { GROUPS, SIMILAR_SHAPE, SIMILAR_SOUND, coreOf } from './data.js'
+import { GROUPS, SIMILAR_SHAPE, SIMILAR_SOUND, coreOf, WORD_ICON } from './data.js'
 
 export const HISTORY_CAP = 10
 export const RECENT_CAP = 10
@@ -288,9 +288,10 @@ export function noWordsState (state) {
 }
 
 // 連連看、填空只出詞：家長範圍裡有詞的組就用那些，否則全部詞的組。
-export function wordsOnlyState (state) {
+// 連連看、填空要看圖，只用有圖的詞；聲調填空傳 { pictures: false }，只聽不看圖的詞也出。
+export function wordsOnlyState (state, { pictures = true } = {}) {
   const groups = state.groups || GROUPS
-  const wordIdx = [...groups.keys()].filter(i => isWordGroup(groups[i]))
+  const wordIdx = [...groups.keys()].filter(i => isWordGroup(groups[i]) && (!pictures || groups[i].every(w => WORD_ICON[w])))
   let chosen = []
   if (Array.isArray(state.rangeGroups) && state.rangeGroups.length) {
     chosen = state.rangeGroups.filter(i => wordIdx.includes(i))

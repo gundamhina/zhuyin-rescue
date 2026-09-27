@@ -688,3 +688,14 @@ test('聲調填空的一局：只出有難分辨音節的詞，空格放在最�
     assert.equal(h[q.blank], Math.max(...h), q.target + ' 的空格要在最難的音節')
   }
 })
+
+test('只聽不看圖的詞：連連看、填空不出，聲調填空才出', async () => {
+  const { LISTEN_WORDS, WORD_ICON } = await import('../src/data.js')
+  assert.ok(LISTEN_WORDS.length > 0)
+  for (const w of LISTEN_WORDS) assert.equal(WORD_ICON[w], undefined, w + ' 不該有圖')
+  const v = trackView(createState(), 'word')
+  const withPics = activePool(wordsOnlyState(v))
+  assert.ok(withPics.every(w => WORD_ICON[w]), '連連看、填空只出有圖的詞')
+  const all = activePool(wordsOnlyState(v, { pictures: false }))
+  assert.ok(LISTEN_WORDS.every(w => all.includes(w)), '聲調填空也出只聽的詞')
+})
