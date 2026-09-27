@@ -44,16 +44,17 @@ function syllableMarkup (sym, inWord) {
 }
 
 // 調號自己畫線，不用字型裡的 ˊˇˋ˙：那幾個字元在字型裡只佔字框一小角，跟注音擺在一起顯得太小。
-// (x, y) 是調號中心，size 大約是調號的高度，線寬跟注音的粗細差不多。
+// 畫成細線（使用者從三種裡選的）：粗細跟注音筆畫差不多、端點是平的，跟注音同一種字體風格。
+// (x, y) 是調號中心，size 大約是調號的高度。
 function toneMark (tone, x, y, size) {
   const h = size / 2
   const w = size * 0.26
-  const sw = (size * 0.24).toFixed(1)
-  const line = d => `<path class="tone" d="${d}" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`
-  if (tone === 'ˊ') return line(`M${x - w} ${y + h}L${x + w} ${y - h}`)
-  if (tone === 'ˋ') return line(`M${x - w} ${y - h}L${x + w} ${y + h}`)
-  if (tone === 'ˇ') return line(`M${x - w * 1.5} ${y - h * 0.6}L${x} ${y + h * 0.6}L${x + w * 1.5} ${y - h * 0.6}`)
-  return `<circle class="tone" cx="${x}" cy="${y}" r="${(size * 0.17).toFixed(1)}" fill="currentColor"/>`
+  const r = (n) => n.toFixed(1)
+  const line = d => `<path class="tone" d="${d}" fill="none" stroke="currentColor" stroke-width="${r(size * 0.16)}" stroke-linecap="butt" stroke-linejoin="miter"/>`
+  if (tone === 'ˊ') return line(`M${r(x - w)} ${r(y + h)}L${r(x + w)} ${r(y - h)}`)
+  if (tone === 'ˋ') return line(`M${r(x - w)} ${r(y - h)}L${r(x + w)} ${r(y + h)}`)
+  if (tone === 'ˇ') return line(`M${r(x - w * 1.4)} ${r(y - h * 0.55)}L${r(x)} ${r(y + h * 0.55)}L${r(x + w * 1.4)} ${r(y - h * 0.55)}`)
+  return `<circle class="tone" cx="${x}" cy="${y}" r="${r(size * 0.17)}" fill="currentColor"/>`
 }
 
 // 詞的圖：img/words/<國字>.png 有就用，沒有退回表情符號
