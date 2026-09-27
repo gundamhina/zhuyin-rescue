@@ -1,6 +1,6 @@
 // 把所有模組接起來：使用者、狀態、出題、三種玩法、畫面切換。
 
-import { addBones, buyItem, wearItem, recordRound, claimDaily, dailyView, DAILY_GOAL, markSeen, recommendTrack, dayKey, questionReward, roundBonus, comboBonus, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, activePool, effectiveTier, trackView, applyTrack, toneOfSyllable, toneTiles } from './scheduler.js'
+import { addBones, buyItem, wearItem, recordRound, claimDaily, dailyView, DAILY_GOAL, markSeen, recommendTrack, dayKey, questionReward, roundBonus, comboBonus, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, activePool, effectiveTier, trackView, applyTrack, toneOfSyllable, toneTiles, buildToneRound } from './scheduler.js'
 import { createStore } from './store.js'
 import { createAudio } from './audio.js'
 import { createFishing } from './fishing.js'
@@ -19,9 +19,9 @@ import { renderCheck } from './check.js'
 
 const SETTINGS_KEY = 'zhuyin-rescue-settings'
 const MEMORY_PAIRS = 5
-// 每個玩法練哪一軌：聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）、詞（連連看、填空、聲調填空）
+// 每個玩法練哪一軌：聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）、詞（連連看、填空）、調（聲調填空）
 // 翻牌只借「聽」那一軌的出題池挑符號，不寫任何紀錄進去
-const TRACK_OF = { fishing: 'listen', whack: 'listen', memory: 'listen', speak: 'read', write: 'write', match: 'word', fill: 'word', tone: 'word' }
+const TRACK_OF = { fishing: 'listen', whack: 'listen', memory: 'listen', speak: 'read', write: 'write', match: 'word', fill: 'word', tone: 'tone' }
 const MATCH_PAIRS = 4
 // 唸給狗狗聽的狀態訊息，寫給旁邊的大人看
 const MIC_MSG = {
@@ -122,7 +122,8 @@ function main () {
     const t = recommendTrack(state, today())
     const odd = Math.floor(Date.now() / 86400000) % 2
     if (t === 'listen') return odd ? 'whack' : 'fishing'
-    if (t === 'word') return ['match', 'fill', 'tone'][Math.floor(Date.now() / 86400000) % 3]
+    if (t === 'word') return odd ? 'fill' : 'match'
+    if (t === 'tone') return 'tone'
     if (t === 'read') return speechAvailable() ? 'speak' : 'match'
     return 'write'
   }
@@ -693,7 +694,8 @@ function main () {
     game = createFillBlank(playArea, { color: profile.color })
     replayBtn.classList.add('hidden')
     const v = wordsOnlyState(currentView())
-    round = buildRound(v, Math.random)
+    // 聲調填空專挑聲調難分辨的詞，空格放在最難的音節
+    round = mode === 'tone' ? buildToneRound(v, Math.random) : buildRound(v, Math.random)
     index = 0
     starTotal = round.length
     setStars()
@@ -703,7 +705,7 @@ function main () {
     const askFill = () => {
       const q = round[index]
       const syls = q.target.split(' ')
-      const bi = Math.floor(Math.random() * syls.length)
+      const bi = mode === 'tone' ? q.blank : Math.floor(Math.random() * syls.length)
       let tiles
       if (mode === 'tone') {
         correct = toneOfSyllable(syls[bi])

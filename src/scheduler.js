@@ -23,9 +23,10 @@ export const TIERS = [
   { options: 6, distract: 'sound', similar: 1, idleHint: 0 },
 ]
 
-// 聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）、詞（連連看、填空、聲調填空）四軌各自記，練的是不同的東西。
-export const TRACKS = ['listen', 'read', 'write', 'word']
-export const TRACK_NAMES = { listen: '聽', read: '讀', write: '寫', word: '詞' }
+// 聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）、詞（連連看、填空）、調（聲調填空）各軌分開記，練的是不同的東西。
+// 調軌也是拿詞出題，但記的是「這個詞的聲調會不會」，所以不跟詞軌共用星星。
+export const TRACKS = ['listen', 'read', 'write', 'word', 'tone']
+export const TRACK_NAMES = { listen: '聽', read: '讀', write: '寫', word: '詞', tone: '調' }
 const TRACK_FIELDS = ['mastery', 'confusions', 'tier', 'recent', 'log']
 export const LOG_CAP = 3000
 
@@ -307,13 +308,54 @@ export function toneOfSyllable (syl) {
   return 'ˊˇˋ'.includes(last) ? last : '1'
 }
 export function stripTone (syl) { return syl.replace(/[ˊˇˋ˙]/g, '') }
-// 可以選的調號：低階兩個、中階三個、高階四個（高階才會把輕聲當干擾項），照一二三四輕的順序排
+// 最容易跟它搞混的調號：二三聲互相混最多；輕聲跟一聲都是平平的；一聲跟四聲都從高的地方開始
+export const TONE_PARTNER = { 'ˊ': 'ˇ', 'ˇ': 'ˊ', '˙': '1', '1': 'ˋ', 'ˋ': '1' }
+// 可以選的調號：低階兩個、中階三個、高階四個，最容易搞混的那個一定在裡面；
+// 輕聲只有答案是輕聲、或到了高階才出現。照一二三四輕的順序排
 export function toneTiles (correct, tier, rng) {
   const count = tier <= 1 ? 2 : tier <= 3 ? 3 : 4
-  const pool = TONE_ORDER.filter(t => t !== correct && (t !== '˙' || tier >= 4))
-  const picked = [correct]
+  const picked = [correct, TONE_PARTNER[correct]]
+  const pool = TONE_ORDER.filter(t => !picked.includes(t) && (t !== '˙' || tier >= 4))
   while (picked.length < count && pool.length) picked.push(pool.splice(Math.floor(rng() * pool.length), 1)[0])
   return TONE_ORDER.filter(t => picked.includes(t))
+}
+
+// 一個詞裡每個音節的聲調有多難分辨（越大越難）：
+// 3 三聲接三聲：前一個唸起來像二聲，寫的卻是三聲（小狗、水果）
+// 2 輕聲、二聲、其他三聲：二三聲最容易混，輕聲聽起來又短又輕
+// 1 一聲；0.5 四聲，最好認
+export function toneHardness (word) {
+  const syls = word.split(' ')
+  return syls.map((s, i) => {
+    const t = toneOfSyllable(s)
+    if (t === 'ˇ' && syls[i + 1] && toneOfSyllable(syls[i + 1]) === 'ˇ') return 3
+    if (t === '˙' || t === 'ˊ' || t === 'ˇ') return 2
+    return t === '1' ? 1 : 0.5
+  })
+}
+
+// 聲調填空的一局：只挑有難分辨音節的詞（至少一個 2 分以上），越難、越不熟的越常出；
+// 空格放在最難的那個音節（一樣難就隨機挑）。回 [{ target, blank, drill }]
+export function buildToneRound (state, rng, size = ROUND_SIZE) {
+  const pool = activePool(state)
+  const hard = pool.filter(w => Math.max(...toneHardness(w)) >= 2)
+  const candidates = hard.length ? hard : pool
+  const weightOf = w => Math.max(...toneHardness(w)) * (6 - stars(state, w))
+  const bag = [...candidates]
+  const round = []
+  while (round.length < size && candidates.length) {
+    if (!bag.length) bag.push(...candidates) // 詞不夠一局就重複
+    const total = bag.reduce((sum, w) => sum + weightOf(w), 0)
+    let r = rng() * total
+    let i = 0
+    while (i < bag.length - 1 && (r -= weightOf(bag[i])) > 0) i++
+    const target = bag.splice(i, 1)[0]
+    const h = toneHardness(target)
+    const top = Math.max(...h)
+    const idx = h.map((v, k) => v === top ? k : -1).filter(k => k >= 0)
+    round.push({ target, blank: idx[Math.floor(rng() * idx.length)], drill: null })
+  }
+  return round
 }
 
 // 翻牌用：從出題池挑 n 個不重複的符號，弱的優先。池子不夠就全給。

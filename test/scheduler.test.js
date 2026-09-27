@@ -5,7 +5,7 @@ import {
   addBones, buyItem, wearItem, withWallet,
   dayKey, dailyView, recordRound, claimDaily, dailyBonus, DAILY_GOAL, markSeen, recommendTrack,
   questionReward, roundBonus, comboBonus,
-  toneOfSyllable, stripTone, toneTiles, TONE_ORDER,
+  toneOfSyllable, stripTone, toneTiles, TONE_ORDER, TONE_PARTNER, toneHardness, buildToneRound,
 } from '../src/scheduler.js';
 import { GROUPS, coreOf } from '../src/data.js';
 
@@ -311,11 +311,11 @@ test('寫字用的狀態：只保留單一符號的組別（前十組裡已解�
   assert.deepEqual(activePool(m), GROUPS[4]);
 });
 
-// ---- 聽、讀、寫、詞四軌分開記 ----
-test('新狀態有四軌，各自空的紀錄；共用的家長設定在外層', () => {
+// ---- 聽、讀、寫、詞、調五軌分開記 ----
+test('新狀態有五軌，各自空的紀錄；共用的家長設定在外層', () => {
   const s = createState();
   assert.equal(s.version, 2);
-  assert.deepEqual(Object.keys(s.tracks).sort(), ['listen', 'read', 'word', 'write']);
+  assert.deepEqual(Object.keys(s.tracks).sort(), ['listen', 'read', 'tone', 'word', 'write']);
   for (const t of Object.values(s.tracks)) {
     assert.deepEqual(t.mastery, {});
     assert.deepEqual(t.confusions, {});
@@ -572,16 +572,17 @@ test('今天推薦：推今天練最少的那一軌，都一樣就照日子輪',
   const at = new Date(2026, 8, 24, 10).getTime()
   const today = dayKey(at)
   const ans = (target, ok = true) => ({ target, ok, picked: target, ms: 1000, at })
-  // 聽練了兩題、讀和詞各練了一題、寫沒練 → 推寫
+  // 聽練了兩題、讀詞調各練了一題、寫沒練 → 推寫
   s = applyTrack(s, 'listen', recordAnswer(trackView(s, 'listen'), ans('ㄚ')))
   s = applyTrack(s, 'listen', recordAnswer(trackView(s, 'listen'), ans('ㄛ')))
   s = applyTrack(s, 'read', recordAnswer(trackView(s, 'read'), ans('ㄚ')))
   s = applyTrack(s, 'word', recordAnswer(trackView(s, 'word'), ans('ㄅㄚˋ ˙ㄅㄚ')))
+  s = applyTrack(s, 'tone', recordAnswer(trackView(s, 'tone'), ans('ㄅㄚˋ ˙ㄅㄚ')))
   assert.equal(recommendTrack(s, today), 'write')
   // 昨天練的不算
   const fresh = createState()
-  const days = ['2026-09-24', '2026-09-25', '2026-09-26', '2026-09-27'].map(d => recommendTrack(fresh, d))
-  assert.equal(new Set(days).size, 4, '四軌都沒練的時候，每天輪一軌')
+  const days = ['2026-09-24', '2026-09-25', '2026-09-26', '2026-09-27', '2026-09-28'].map(d => recommendTrack(fresh, d))
+  assert.equal(new Set(days).size, 5, '五軌都沒練的時候，每天輪一軌')
 })
 
 
@@ -658,5 +659,32 @@ test('聲調磁磚：一定有正確的；低階兩個、中階三個、高階�
   for (let i = 0; i < 20; i++) {
     const r = () => Math.random()
     assert.ok(!toneTiles('ˇ', 3, r).includes('˙'))
+  }
+})
+
+test('聲調磁磚一定有最容易搞混的那個：二三聲一起出、輕聲配一聲', () => {
+  for (let i = 0; i < 20; i++) {
+    const r = () => Math.random()
+    assert.deepEqual(toneTiles('ˇ', 0, r), ['ˊ', 'ˇ'])
+    assert.deepEqual(toneTiles('ˊ', 0, r), ['ˊ', 'ˇ'])
+    assert.deepEqual(toneTiles('˙', 0, r), ['1', '˙'])
+    for (const t of TONE_ORDER) assert.ok(toneTiles(t, 3, r).includes(TONE_PARTNER[t]))
+  }
+})
+
+test('聲調難度：三聲接三聲最難，輕聲、二三聲次之，四聲最好認', () => {
+  assert.deepEqual(toneHardness('ㄒㄧㄠˇ ㄍㄡˇ'), [3, 2]) // 小狗
+  assert.deepEqual(toneHardness('ㄅㄚˋ ˙ㄅㄚ'), [0.5, 2]) // 爸爸
+  assert.deepEqual(toneHardness('ㄈㄟ ㄐㄧ'), [1, 1]) // 飛機
+})
+
+test('聲調填空的一局：只出有難分辨音節的詞，空格放在最難的音節', () => {
+  const s = wordsOnlyState(trackView(createState(), 'word'))
+  const round = buildToneRound(s, Math.random)
+  assert.equal(round.length, 5)
+  for (const q of round) {
+    const h = toneHardness(q.target)
+    assert.ok(Math.max(...h) >= 2, q.target + ' 應該有難分辨的音節')
+    assert.equal(h[q.blank], Math.max(...h), q.target + ' 的空格要在最難的音節')
   }
 })

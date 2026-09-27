@@ -13,7 +13,11 @@ function isValidState (s) {
 
 // 舊存檔（version 1）：紀錄在最外層，全部當成「聽」那一軌
 function migrate (s) {
-  if (s.version === 2) return s.tracks.word ? s : splitWordTrack(s)
+  if (s.version === 2) {
+    const split = s.tracks.word ? s : splitWordTrack(s)
+    // 之後新加的軌（例如調軌），舊存檔沒有就補空的
+    return { ...split, tracks: { ...emptyTracks(), ...split.tracks } }
+  }
   const { mastery, confusions, tier, recent, ...shared } = s
   return {
     ...shared,

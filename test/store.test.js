@@ -124,4 +124,5 @@ test('舊的 version 2 存檔（沒有詞軌）：讀軌裡詞的紀錄搬到詞
   assert.equal(s.tracks.read.tier, 3);
   assert.deepEqual(s.tracks.word.log.map(e => e.s), [word]);
   assert.deepEqual(s.tracks.read.log.map(e => e.s), ['ㄚ']);
+  assert.deepEqual(s.tracks.tone.mastery, {}, '調軌補空的');
 });
