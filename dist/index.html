@@ -681,7 +681,7 @@ svg.syl text { font-weight: 900; fill: currentColor; text-anchor: middle; domina
   </defs>
 </svg>
 <div id="install-hint" hidden>手機請用 Chrome 開，再從選單「加到主畫面」，就會是全螢幕。點這裡關掉。</div>
-<div id="version" aria-hidden="true">v0.3.0 · b49921a · 09/27 22:37</div>
+<div id="version" aria-hidden="true">v0.3.0 · b455ac3 · 09/27 22:43</div>
 <div id="stage">
   <section class="screen" id="screen-profiles"></section>
   <section class="screen" id="screen-home"></section>
@@ -2488,17 +2488,31 @@ function syllableMarkup (sym, inWord) {
   const n = core.length
   let W, H, g, cx, centers, toneX, toneSize
   if (inWord) {
-    W = 80; H = 170; g = 54; cx = 28; toneX = 67; toneSize = 32
+    W = 80; H = 170; g = 54; cx = 28; toneX = 69; toneSize = 30
     centers = [...core].map((_, i) => 85 + (i - (n - 1) / 2) * 54)
   } else {
-    W = 100; H = 100; cx = 50; toneX = 94; toneSize = 40
+    W = 100; H = 100; cx = 50; toneX = 94
     g = n === 1 ? 90 : n === 2 ? 54 : 38
+    toneSize = n === 1 ? 36 : n === 2 ? 30 : 25
     centers = n === 1 ? [50] : n === 2 ? [26, 74] : [17, 50, 83]
   }
   const glyphs = [...core].map((ch, i) => `<text x="${cx}" y="${centers[i]}" font-size="${g}">${ch}</text>`).join('')
-  const toneSvg = tone ? `<text class="tone" x="${toneX}" y="${centers[n - 1] + g * 0.15}" font-size="${toneSize}">${tone}</text>` : ''
-  const lightSvg = light ? `<text class="tone" x="${cx}" y="${centers[0] - g * 0.62}" font-size="${toneSize}">˙</text>` : ''
+  const toneSvg = tone ? toneMark(tone, toneX, centers[n - 1] - g * 0.12, toneSize) : ''
+  const lightSvg = light ? toneMark('˙', cx, centers[0] - g * 0.7, toneSize) : ''
   return `<svg class="syl n${n}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-label="${light ? '˙' : ''}${core}${tone}">${lightSvg}${glyphs}${toneSvg}</svg>`
+}
+
+// 調號自己畫線，不用字型裡的 ˊˇˋ˙：那幾個字元在字型裡只佔字框一小角，跟注音擺在一起顯得太小。
+// (x, y) 是調號中心，size 大約是調號的高度，線寬跟注音的粗細差不多。
+function toneMark (tone, x, y, size) {
+  const h = size / 2
+  const w = size * 0.26
+  const sw = (size * 0.24).toFixed(1)
+  const line = d => `<path class="tone" d="${d}" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`
+  if (tone === 'ˊ') return line(`M${x - w} ${y + h}L${x + w} ${y - h}`)
+  if (tone === 'ˋ') return line(`M${x - w} ${y - h}L${x + w} ${y + h}`)
+  if (tone === 'ˇ') return line(`M${x - w * 1.5} ${y - h * 0.6}L${x} ${y + h * 0.6}L${x + w * 1.5} ${y - h * 0.6}`)
+  return `<circle class="tone" cx="${x}" cy="${y}" r="${(size * 0.17).toFixed(1)}" fill="currentColor"/>`
 }
 
 // 詞的圖：img/words/<國字>.png 有就用，沒有退回表情符號
