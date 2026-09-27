@@ -3,3 +3,4 @@ img/raw/
 releases/
 .claude/
 __pycache__/
+tools/.moe/
