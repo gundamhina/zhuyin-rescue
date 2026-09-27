@@ -251,6 +251,8 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 /* ---- 音節（結合韻、拼讀字）是一張 1em 見方的小 SVG，符號直排；調號畫在框外右邊，所以 overflow 要 visible ---- */
 svg.syl { display: inline-block; width: 1em; height: 1em; overflow: visible; vertical-align: middle; }
 svg.syl text { font-weight: 900; fill: currentColor; text-anchor: middle; dominant-baseline: central; }
+/* 單獨三個符號的音節畫布比較高：上下各超出 0.13em，版面還是當 1em 排 */
+svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 
 /* ---- 寫給狗狗看 ---- */
 .write-dog { left: 40px; top: 300px; width: 300px; height: 346px; }

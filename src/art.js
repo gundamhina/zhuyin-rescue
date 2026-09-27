@@ -15,7 +15,8 @@ export function symbolMarkup (sym) {
 
 // 一個音節畫成一張小 SVG：符號直排、調號在最後一個符號右邊、輕聲點在最上面。
 // 用 SVG 而不用 HTML 文字，是因為手機瀏覽器會自己放大它覺得太小的文字，注音每欄被放大的程度不一樣，排版就亂了；SVG 的字不會被動。
-// 單獨一個音節（泡泡、地鼠、磁磚、牌子）：畫在 100×100 裡，整個音節跟單一符號一樣高。
+// 單獨一個音節（泡泡、地鼠、磁磚、牌子）：兩個和三個符號的音節，每個符號一樣大（46）、間距一樣（42），
+// 跟課本一樣只是多疊一個；所以三個符號的畫布比較高（126），CSS 讓它上下各超出一點，不佔版面。
 // 詞裡的音節：每欄 80×170，符號一律 54，欄裡置中，一個詞的各欄才會對齊、字一樣大。
 function syllableMarkup (sym, inWord) {
   const light = sym.startsWith('˙')
@@ -29,15 +30,17 @@ function syllableMarkup (sym, inWord) {
     W = 80; H = 170; g = 54; cx = 28; toneX = 69; toneSize = 30
     centers = [...core].map((_, i) => 85 + (i - (n - 1) / 2) * 54)
   } else {
-    W = 100; H = 100; cx = 50; toneX = 94
-    g = n === 1 ? 90 : n === 2 ? 54 : 38
-    toneSize = n === 1 ? 36 : n === 2 ? 30 : 25
-    centers = n === 1 ? [50] : n === 2 ? [26, 74] : [17, 50, 83]
+    W = 100; cx = 50
+    H = n === 3 ? 126 : 100
+    g = n === 1 ? 90 : 46
+    toneX = n === 1 ? 94 : 84
+    toneSize = n === 1 ? 36 : 30
+    centers = [...core].map((_, i) => H / 2 + (i - (n - 1) / 2) * 42)
   }
   const glyphs = [...core].map((ch, i) => `<text x="${cx}" y="${centers[i]}" font-size="${g}">${ch}</text>`).join('')
   const toneSvg = tone ? toneMark(tone, toneX, centers[n - 1] - g * 0.12, toneSize) : ''
   const lightSvg = light ? toneMark('˙', cx, centers[0] - g * 0.7, toneSize) : ''
-  return `<svg class="syl n${n}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-label="${light ? '˙' : ''}${core}${tone}">${lightSvg}${glyphs}${toneSvg}</svg>`
+  return `<svg class="syl n${n}${inWord ? '' : ' solo'}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-label="${light ? '˙' : ''}${core}${tone}">${lightSvg}${glyphs}${toneSvg}</svg>`
 }
 
 // 調號自己畫線，不用字型裡的 ˊˇˋ˙：那幾個字元在字型裡只佔字框一小角，跟注音擺在一起顯得太小。
