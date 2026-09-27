@@ -182,6 +182,12 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .ptile-hist { font-size: 14px; color: #5A6B85; }
 .ptile-known { font-size: 15px; }
 .ptile-rep { width: 56px; font-size: 20px; text-align: center; border: 2px solid #C9DDF0; border-radius: 8px; justify-self: end; }
+/* 詞的格：國字比較長，字小一點；注音寫在右下角給大人對照 */
+.ptile.is-word .ptile-sym { font-size: 30px; }
+.ptile-zy { font-size: 13px; color: #5A6B85; justify-self: end; text-align: right; word-break: keep-all; }
+.vol-row { display: inline-flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.vol-row input[type=range] { width: 110px; vertical-align: middle; }
+.vol-val { display: inline-block; min-width: 3.2em; font-variant-numeric: tabular-nums; }
 
 /* ---- 圖片插槽：img/ 有圖就蓋掉向量圖 ---- */
 .art-slot { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }

@@ -773,6 +773,7 @@ function main () {
 
   // ---- 大人面板 ----
   let panelTrack = 'listen'
+  let panelPage = null // 進度格看哪一頁；null 跟著軌道走
   function openPanel () {
     destroyGame()
     renderPanel(panelEl, {
@@ -780,7 +781,20 @@ function main () {
       profiles: store.loadProfiles(),
       state: state ? trackView(state, panelTrack) : null,
       track: panelTrack,
-      onTrack (t) { panelTrack = t; openPanel() },
+      page: panelPage,
+      onTrack (t) { panelTrack = t; panelPage = null; openPanel() },
+      onPage (p) { panelPage = p; openPanel() },
+      // 調完音量放一段聽聽看；背景音樂放三秒
+      onVolumeTest (key) {
+        audio.unlock()
+        if (key === 'voiceVol') audio.say('ㄅ')
+        else if (key === 'sfxVol') audio.ding()
+        else {
+          audio.startMusic()
+          audio.setMusicVolume()
+          setTimeout(() => { if (currentScreen === 'panel') audio.stopMusic() }, 3000)
+        }
+      },
       settings,
       voices: audio.listVoices(),
       onKnownChange (symbol, checked) {

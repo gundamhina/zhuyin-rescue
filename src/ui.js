@@ -1,6 +1,6 @@
 // 選人、首頁、結算、大人面板、舞台縮放。
 
-import { GROUPS, REP_CHAR, GROUP_NAMES } from './data.js'
+import { GROUPS, REP_CHAR, GROUP_NAMES, WORD_TEXT } from './data.js'
 import { stars, activePool, effectiveTier, unlockedCount, lifetimeStats, dailyStats, TIERS, TRACKS, TRACK_NAMES } from './scheduler.js'
 import { dogSvg, confettiHtml, DOG_COLORS, bgHtml, cardArt, boneSvg, SHOP_ICONS, UX_ICONS } from './art.js'
 
@@ -348,7 +348,18 @@ function statsHtml (state) {
       </div>`
 }
 
-export function renderPanel (root, { profile, profiles, state, track = 'listen', onTrack, settings, voices, onKnownChange, onSettings, onStateChange, onExport, onImport, onResetProgress, onRemoveProfile, onClose, onSay, onCheck }) {
+// 進度格分三頁：注音符號（第 1–13 組）、拼讀字、詞。詞的組多，全部擠在一頁太長
+const PAGE_NAMES = { symbols: '注音符號', syllables: '拼讀字', words: '詞' }
+function pageOf (gi, g) {
+  if (gi < 13) return 'symbols'
+  return g[0].includes(' ') ? 'words' : 'syllables'
+}
+const VOLUMES = [['voiceVol', '發音'], ['sfxVol', '音效'], ['musicVol', '背景音樂']]
+const volPct = (settings, key) => Math.round((typeof settings[key] === 'number' ? settings[key] : 1) * 100)
+
+export function renderPanel (root, { profile, profiles, state, track = 'listen', page = null, onTrack, onPage, settings, voices, onKnownChange, onSettings, onVolumeTest, onStateChange, onExport, onImport, onResetProgress, onRemoveProfile, onClose, onSay, onCheck }) {
+  // 沒指定頁：看詞軌就開詞那頁，其他軌開注音符號
+  const curPage = page || (track === 'word' ? 'words' : 'symbols')
   const lifetime = state ? lifetimeStats(state) : { bySymbol: {} }
   const usersHtml = profiles.list.length
     ? profiles.list.map(p => `
@@ -359,7 +370,11 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
       </div>`).join('')
     : '<span>還沒有使用者</span>'
   const pool = state ? activePool(state) : []
-  const groupsHtml = !state ? '' : GROUPS.map((g, gi) => `
+  const pageCounts = {}
+  GROUPS.forEach((g, gi) => { const p = pageOf(gi, g); pageCounts[p] = (pageCounts[p] || 0) + 1 })
+  const pageTabs = `<div class="panel-row panel-pages"><b>進度</b>${Object.keys(PAGE_NAMES).map(p =>
+    `<button class="track-tab ${p === curPage ? 'on' : ''}" data-page="${p}">${PAGE_NAMES[p]}（${pageCounts[p] || 0} 組）</button>`).join('')}</div>`
+  const groupsHtml = !state ? '' : pageTabs + GROUPS.map((g, gi) => pageOf(gi, g) !== curPage ? '' : `
     <div class="pgroup">
       <div class="pgroup-title">第 ${gi + 1} 組${groupName(gi, g)}${g.every(s => pool.includes(s)) ? '' : '（未解鎖）'}</div>
       <div class="ptiles">${g.map(s => {
@@ -367,12 +382,13 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
         const known = state.known.includes(s)
         const hist = (state.mastery[s] && state.mastery[s].history) || []
         const life = lifetime.bySymbol[s]
-        return `<div class="ptile ${starColor(n)}">
-          <button class="ptile-sym" data-say="${s}" title="點一下試聽">${s}</button>
+        const isWord = s.includes(' ')
+        return `<div class="ptile ${starColor(n)}${isWord ? ' is-word' : ''}">
+          <button class="ptile-sym" data-say="${s}" title="${isWord ? s + '　' : ''}點一下試聽">${isWord ? WORD_TEXT[s] || s : s}</button>
           <div class="ptile-stars">${'★'.repeat(n)}${'☆'.repeat(5 - n)}</div>
           <div class="ptile-hist" title="最近 10 次答對／已答">${hist.length ? '近 ' + hist.filter(h => h.ok).length + '/' + hist.length : '沒練過'}${life ? '　累計 ' + life.correct + '/' + life.total : ''}</div>
           <label class="ptile-known"><input type="checkbox" data-known="${s}" ${known ? 'checked' : ''}> 認得</label>
-          <input class="ptile-rep" data-rep="${s}" value="${(settings.repChar && settings.repChar[s]) || REP_CHAR[s]}" maxlength="2" title="唸成什麼字">
+          ${isWord ? `<span class="ptile-zy">${s}</span>` : `<input class="ptile-rep" data-rep="${s}" value="${(settings.repChar && settings.repChar[s]) || REP_CHAR[s]}" maxlength="2" title="唸成什麼字">`}
         </div>`
       }).join('')}</div>
     </div>`).join('')
@@ -436,6 +452,7 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
           <select id="sel-voice"><option value="">自動</option>${voiceOptions}</select>
         </label>
         <label>語速 <input type="range" id="rng-rate" min="0.5" max="1.2" step="0.05" value="${settings.rate || 0.8}"> <span id="rate-val">${settings.rate || 0.8}</span></label>
+        <span class="vol-row">音量${VOLUMES.map(([k, label]) => `<label>${label} <input type="range" id="vol-${k}" data-vol="${k}" min="0" max="100" step="5" value="${volPct(settings, k)}"> <span class="vol-val">${volPct(settings, k)}%</span></label>`).join('')}</span>
         <button id="btn-check">發音檢查${Object.keys(settings.audioIssues || {}).length ? '（' + Object.keys(settings.audioIssues).length + ' 個有問題）' : ''}</button>
         ${profile ? `
         <button id="btn-export">匯出進度</button>
@@ -450,6 +467,16 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
   root.querySelector('#panel-close').onclick = onClose
   root.querySelector('#btn-check').onclick = onCheck
   root.querySelectorAll('[data-track]').forEach(b => { b.onclick = () => onTrack(b.dataset.track) })
+  root.querySelectorAll('[data-page]').forEach(b => { b.onclick = () => onPage(b.dataset.page) })
+  // 音量：拉的時候數字跟著變，放手存起來並放一段聽聽看
+  root.querySelectorAll('[data-vol]').forEach(inp => {
+    const val = inp.parentElement.querySelector('.vol-val')
+    inp.oninput = () => { val.textContent = inp.value + '%' }
+    inp.onchange = () => {
+      onSettings({ ...settings, [inp.dataset.vol]: parseInt(inp.value, 10) / 100 })
+      if (onVolumeTest) onVolumeTest(inp.dataset.vol)
+    }
+  })
   root.querySelectorAll('[data-say]').forEach(b => { b.onclick = () => onSay(b.dataset.say) })
   root.querySelectorAll('[data-known]').forEach(cb => {
     cb.onchange = () => onKnownChange(cb.dataset.known, cb.checked)

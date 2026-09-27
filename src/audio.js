@@ -2,11 +2,23 @@
 
 import { REP_CHAR } from './data.js'
 
-// getSettings 回傳目前設定 { voiceName, rate, repChar }，每次唸都重新拿，面板改了馬上生效。
+// getSettings 回傳目前設定 { voiceName, rate, repChar, voiceVol, sfxVol, musicVol }，每次唸都重新拿，面板改了馬上生效。
+// 三個音量都是 0～1，沒設就是 1：voiceVol 發音（錄音和語音合成）、sfxVol 音效、musicVol 背景音樂。
 export function createAudio (getSettings) {
   let ctx = null
   let voices = []
   const recordingExists = {} // 符號 → true/false，第一次試過就記住
+  let sfxBus = null // 所有音效先經過這一個音量鈕
+
+  function vol (key) {
+    const v = getSettings()[key]
+    return typeof v === 'number' ? Math.min(1, Math.max(0, v)) : 1
+  }
+  function sfxOut () {
+    if (!sfxBus) { sfxBus = ctx.createGain(); sfxBus.connect(ctx.destination) }
+    sfxBus.gain.value = vol('sfxVol')
+    return sfxBus
+  }
 
   function refreshVoices () {
     if (!('speechSynthesis' in window)) return
@@ -50,6 +62,7 @@ export function createAudio (getSettings) {
       const u = new SpeechSynthesisUtterance(text)
       u.lang = 'zh-TW'
       u.rate = getSettings().rate || 0.8
+      u.volume = vol('voiceVol')
       const v = pickVoice()
       if (v) u.voice = v
       let done = false
@@ -68,6 +81,7 @@ export function createAudio (getSettings) {
   function playFile (url, onStart) {
     return new Promise(resolve => {
       const el = new Audio(url)
+      el.volume = vol('voiceVol')
       currentEl = el
       el.onplaying = () => { if (onStart) onStart() }
       el.onended = () => resolve(true)
@@ -133,7 +147,7 @@ export function createAudio (getSettings) {
     g.gain.setValueAtTime(0, ctx.currentTime + start)
     g.gain.linearRampToValueAtTime(gain, ctx.currentTime + start + 0.02)
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur)
-    o.connect(g).connect(ctx.destination)
+    o.connect(g).connect(sfxOut())
     o.start(ctx.currentTime + start)
     o.stop(ctx.currentTime + start + dur + 0.05)
   }
@@ -148,7 +162,7 @@ export function createAudio (getSettings) {
     o.frequency.linearRampToValueAtTime(380, ctx.currentTime + 0.25)
     g.gain.setValueAtTime(0.2, ctx.currentTime)
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35)
-    o.connect(g).connect(ctx.destination)
+    o.connect(g).connect(sfxOut())
     o.start()
     o.stop(ctx.currentTime + 0.4)
   }
@@ -165,7 +179,7 @@ export function createAudio (getSettings) {
     f.frequency.value = 1200
     const g = ctx.createGain()
     g.gain.value = 0.4
-    src.connect(f).connect(g).connect(ctx.destination)
+    src.connect(f).connect(g).connect(sfxOut())
     src.start()
   }
   // 咬餅乾：短短的雜訊
@@ -182,7 +196,7 @@ export function createAudio (getSettings) {
     f.frequency.value = 2200
     const g = ctx.createGain()
     g.gain.value = 0.5
-    src.connect(f).connect(g).connect(ctx.destination)
+    src.connect(f).connect(g).connect(sfxOut())
     src.start()
     tone(180, 0.02, 0.1, 'square', 0.08)
   }
@@ -224,6 +238,7 @@ export function createAudio (getSettings) {
   ]
   const ARP = [0, 1, 2, 3, 2, 1, 2, 1] // 3 是根音高八度
   const EIGHTH = 0.32
+  const MUSIC_LEVEL = 0.06 // 音量 100% 時背景音樂的大小，本來就要很小聲
   let musicGain = null
   let musicTimer = null
   let nextNote = 0
@@ -257,7 +272,7 @@ export function createAudio (getSettings) {
     if (!ctx || musicTimer) return
     musicGain = ctx.createGain()
     musicGain.gain.setValueAtTime(0, ctx.currentTime)
-    musicGain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 1.2)
+    musicGain.gain.linearRampToValueAtTime(MUSIC_LEVEL * vol('musicVol'), ctx.currentTime + 1.2)
     musicGain.connect(ctx.destination)
     nextNote = ctx.currentTime + 0.1
     noteNo = 0
@@ -275,7 +290,13 @@ export function createAudio (getSettings) {
     g.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4)
     setTimeout(() => g.disconnect(), 600)
   }
+  // 面板拉了背景音樂的音量：正在放的音樂馬上跟著變
+  function setMusicVolume () {
+    if (!musicGain) return
+    musicGain.gain.cancelScheduledValues(ctx.currentTime)
+    musicGain.gain.setTargetAtTime(MUSIC_LEVEL * vol('musicVol'), ctx.currentTime, 0.1)
+  }
   function ready () { return !!ctx }
 
-  return { unlock, ready, say, stop, sourceOf, ding, wrong, splash, crunch, flip, cheer, pop, tick, combo, chest, fanfare, startMusic, stopMusic, listVoices: () => { refreshVoices(); return voices } }
+  return { unlock, ready, say, stop, sourceOf, setMusicVolume, ding, wrong, splash, crunch, flip, cheer, pop, tick, combo, chest, fanfare, startMusic, stopMusic, listVoices: () => { refreshVoices(); return voices } }
 }

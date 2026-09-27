@@ -196,6 +196,12 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .ptile-hist { font-size: 14px; color: #5A6B85; }
 .ptile-known { font-size: 15px; }
 .ptile-rep { width: 56px; font-size: 20px; text-align: center; border: 2px solid #C9DDF0; border-radius: 8px; justify-self: end; }
+/* 詞的格：國字比較長，字小一點；注音寫在右下角給大人對照 */
+.ptile.is-word .ptile-sym { font-size: 30px; }
+.ptile-zy { font-size: 13px; color: #5A6B85; justify-self: end; text-align: right; word-break: keep-all; }
+.vol-row { display: inline-flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.vol-row input[type=range] { width: 110px; vertical-align: middle; }
+.vol-val { display: inline-block; min-width: 3.2em; font-variant-numeric: tabular-nums; }
 
 /* ---- 圖片插槽：img/ 有圖就蓋掉向量圖 ---- */
 .art-slot { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
@@ -683,7 +689,7 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
   </defs>
 </svg>
 <div id="install-hint" hidden>手機請用 Chrome 開，再從選單「加到主畫面」，就會是全螢幕。點這裡關掉。</div>
-<div id="version" aria-hidden="true">v0.3.0 · 4172ff2 · 09/27 23:07</div>
+<div id="version" aria-hidden="true">v0.3.0 · ca31bd7 · 09/27 23:10</div>
 <div id="stage">
   <section class="screen" id="screen-profiles"></section>
   <section class="screen" id="screen-home"></section>
@@ -2228,11 +2234,23 @@ function createStore (storage) {
 // 發音與音效。語音合成唸代表字；audio/ 資料夾有錄音就改播錄音；音效全部現場合成。
 
 
-// getSettings 回傳目前設定 { voiceName, rate, repChar }，每次唸都重新拿，面板改了馬上生效。
+// getSettings 回傳目前設定 { voiceName, rate, repChar, voiceVol, sfxVol, musicVol }，每次唸都重新拿，面板改了馬上生效。
+// 三個音量都是 0～1，沒設就是 1：voiceVol 發音（錄音和語音合成）、sfxVol 音效、musicVol 背景音樂。
 function createAudio (getSettings) {
   let ctx = null
   let voices = []
   const recordingExists = {} // 符號 → true/false，第一次試過就記住
+  let sfxBus = null // 所有音效先經過這一個音量鈕
+
+  function vol (key) {
+    const v = getSettings()[key]
+    return typeof v === 'number' ? Math.min(1, Math.max(0, v)) : 1
+  }
+  function sfxOut () {
+    if (!sfxBus) { sfxBus = ctx.createGain(); sfxBus.connect(ctx.destination) }
+    sfxBus.gain.value = vol('sfxVol')
+    return sfxBus
+  }
 
   function refreshVoices () {
     if (!('speechSynthesis' in window)) return
@@ -2276,6 +2294,7 @@ function createAudio (getSettings) {
       const u = new SpeechSynthesisUtterance(text)
       u.lang = 'zh-TW'
       u.rate = getSettings().rate || 0.8
+      u.volume = vol('voiceVol')
       const v = pickVoice()
       if (v) u.voice = v
       let done = false
@@ -2294,6 +2313,7 @@ function createAudio (getSettings) {
   function playFile (url, onStart) {
     return new Promise(resolve => {
       const el = new Audio(url)
+      el.volume = vol('voiceVol')
       currentEl = el
       el.onplaying = () => { if (onStart) onStart() }
       el.onended = () => resolve(true)
@@ -2359,7 +2379,7 @@ function createAudio (getSettings) {
     g.gain.setValueAtTime(0, ctx.currentTime + start)
     g.gain.linearRampToValueAtTime(gain, ctx.currentTime + start + 0.02)
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur)
-    o.connect(g).connect(ctx.destination)
+    o.connect(g).connect(sfxOut())
     o.start(ctx.currentTime + start)
     o.stop(ctx.currentTime + start + dur + 0.05)
   }
@@ -2374,7 +2394,7 @@ function createAudio (getSettings) {
     o.frequency.linearRampToValueAtTime(380, ctx.currentTime + 0.25)
     g.gain.setValueAtTime(0.2, ctx.currentTime)
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35)
-    o.connect(g).connect(ctx.destination)
+    o.connect(g).connect(sfxOut())
     o.start()
     o.stop(ctx.currentTime + 0.4)
   }
@@ -2391,7 +2411,7 @@ function createAudio (getSettings) {
     f.frequency.value = 1200
     const g = ctx.createGain()
     g.gain.value = 0.4
-    src.connect(f).connect(g).connect(ctx.destination)
+    src.connect(f).connect(g).connect(sfxOut())
     src.start()
   }
   // 咬餅乾：短短的雜訊
@@ -2408,7 +2428,7 @@ function createAudio (getSettings) {
     f.frequency.value = 2200
     const g = ctx.createGain()
     g.gain.value = 0.5
-    src.connect(f).connect(g).connect(ctx.destination)
+    src.connect(f).connect(g).connect(sfxOut())
     src.start()
     tone(180, 0.02, 0.1, 'square', 0.08)
   }
@@ -2450,6 +2470,7 @@ function createAudio (getSettings) {
   ]
   const ARP = [0, 1, 2, 3, 2, 1, 2, 1] // 3 是根音高八度
   const EIGHTH = 0.32
+  const MUSIC_LEVEL = 0.06 // 音量 100% 時背景音樂的大小，本來就要很小聲
   let musicGain = null
   let musicTimer = null
   let nextNote = 0
@@ -2483,7 +2504,7 @@ function createAudio (getSettings) {
     if (!ctx || musicTimer) return
     musicGain = ctx.createGain()
     musicGain.gain.setValueAtTime(0, ctx.currentTime)
-    musicGain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 1.2)
+    musicGain.gain.linearRampToValueAtTime(MUSIC_LEVEL * vol('musicVol'), ctx.currentTime + 1.2)
     musicGain.connect(ctx.destination)
     nextNote = ctx.currentTime + 0.1
     noteNo = 0
@@ -2501,9 +2522,15 @@ function createAudio (getSettings) {
     g.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4)
     setTimeout(() => g.disconnect(), 600)
   }
+  // 面板拉了背景音樂的音量：正在放的音樂馬上跟著變
+  function setMusicVolume () {
+    if (!musicGain) return
+    musicGain.gain.cancelScheduledValues(ctx.currentTime)
+    musicGain.gain.setTargetAtTime(MUSIC_LEVEL * vol('musicVol'), ctx.currentTime, 0.1)
+  }
   function ready () { return !!ctx }
 
-  return { unlock, ready, say, stop, sourceOf, ding, wrong, splash, crunch, flip, cheer, pop, tick, combo, chest, fanfare, startMusic, stopMusic, listVoices: () => { refreshVoices(); return voices } }
+  return { unlock, ready, say, stop, sourceOf, setMusicVolume, ding, wrong, splash, crunch, flip, cheer, pop, tick, combo, chest, fanfare, startMusic, stopMusic, listVoices: () => { refreshVoices(); return voices } }
 }
 
 // ===== art.js =====
@@ -4701,7 +4728,18 @@ function statsHtml (state) {
       </div>`
 }
 
-function renderPanel (root, { profile, profiles, state, track = 'listen', onTrack, settings, voices, onKnownChange, onSettings, onStateChange, onExport, onImport, onResetProgress, onRemoveProfile, onClose, onSay, onCheck }) {
+// 進度格分三頁：注音符號（第 1–13 組）、拼讀字、詞。詞的組多，全部擠在一頁太長
+const PAGE_NAMES = { symbols: '注音符號', syllables: '拼讀字', words: '詞' }
+function pageOf (gi, g) {
+  if (gi < 13) return 'symbols'
+  return g[0].includes(' ') ? 'words' : 'syllables'
+}
+const VOLUMES = [['voiceVol', '發音'], ['sfxVol', '音效'], ['musicVol', '背景音樂']]
+const volPct = (settings, key) => Math.round((typeof settings[key] === 'number' ? settings[key] : 1) * 100)
+
+function renderPanel (root, { profile, profiles, state, track = 'listen', page = null, onTrack, onPage, settings, voices, onKnownChange, onSettings, onVolumeTest, onStateChange, onExport, onImport, onResetProgress, onRemoveProfile, onClose, onSay, onCheck }) {
+  // 沒指定頁：看詞軌就開詞那頁，其他軌開注音符號
+  const curPage = page || (track === 'word' ? 'words' : 'symbols')
   const lifetime = state ? lifetimeStats(state) : { bySymbol: {} }
   const usersHtml = profiles.list.length
     ? profiles.list.map(p => `
@@ -4712,7 +4750,11 @@ function renderPanel (root, { profile, profiles, state, track = 'listen', onTrac
       </div>`).join('')
     : '<span>還沒有使用者</span>'
   const pool = state ? activePool(state) : []
-  const groupsHtml = !state ? '' : GROUPS.map((g, gi) => `
+  const pageCounts = {}
+  GROUPS.forEach((g, gi) => { const p = pageOf(gi, g); pageCounts[p] = (pageCounts[p] || 0) + 1 })
+  const pageTabs = `<div class="panel-row panel-pages"><b>進度</b>${Object.keys(PAGE_NAMES).map(p =>
+    `<button class="track-tab ${p === curPage ? 'on' : ''}" data-page="${p}">${PAGE_NAMES[p]}（${pageCounts[p] || 0} 組）</button>`).join('')}</div>`
+  const groupsHtml = !state ? '' : pageTabs + GROUPS.map((g, gi) => pageOf(gi, g) !== curPage ? '' : `
     <div class="pgroup">
       <div class="pgroup-title">第 ${gi + 1} 組${groupName(gi, g)}${g.every(s => pool.includes(s)) ? '' : '（未解鎖）'}</div>
       <div class="ptiles">${g.map(s => {
@@ -4720,12 +4762,13 @@ function renderPanel (root, { profile, profiles, state, track = 'listen', onTrac
         const known = state.known.includes(s)
         const hist = (state.mastery[s] && state.mastery[s].history) || []
         const life = lifetime.bySymbol[s]
-        return `<div class="ptile ${starColor(n)}">
-          <button class="ptile-sym" data-say="${s}" title="點一下試聽">${s}</button>
+        const isWord = s.includes(' ')
+        return `<div class="ptile ${starColor(n)}${isWord ? ' is-word' : ''}">
+          <button class="ptile-sym" data-say="${s}" title="${isWord ? s + '　' : ''}點一下試聽">${isWord ? WORD_TEXT[s] || s : s}</button>
           <div class="ptile-stars">${'★'.repeat(n)}${'☆'.repeat(5 - n)}</div>
           <div class="ptile-hist" title="最近 10 次答對／已答">${hist.length ? '近 ' + hist.filter(h => h.ok).length + '/' + hist.length : '沒練過'}${life ? '　累計 ' + life.correct + '/' + life.total : ''}</div>
           <label class="ptile-known"><input type="checkbox" data-known="${s}" ${known ? 'checked' : ''}> 認得</label>
-          <input class="ptile-rep" data-rep="${s}" value="${(settings.repChar && settings.repChar[s]) || REP_CHAR[s]}" maxlength="2" title="唸成什麼字">
+          ${isWord ? `<span class="ptile-zy">${s}</span>` : `<input class="ptile-rep" data-rep="${s}" value="${(settings.repChar && settings.repChar[s]) || REP_CHAR[s]}" maxlength="2" title="唸成什麼字">`}
         </div>`
       }).join('')}</div>
     </div>`).join('')
@@ -4789,6 +4832,7 @@ function renderPanel (root, { profile, profiles, state, track = 'listen', onTrac
           <select id="sel-voice"><option value="">自動</option>${voiceOptions}</select>
         </label>
         <label>語速 <input type="range" id="rng-rate" min="0.5" max="1.2" step="0.05" value="${settings.rate || 0.8}"> <span id="rate-val">${settings.rate || 0.8}</span></label>
+        <span class="vol-row">音量${VOLUMES.map(([k, label]) => `<label>${label} <input type="range" id="vol-${k}" data-vol="${k}" min="0" max="100" step="5" value="${volPct(settings, k)}"> <span class="vol-val">${volPct(settings, k)}%</span></label>`).join('')}</span>
         <button id="btn-check">發音檢查${Object.keys(settings.audioIssues || {}).length ? '（' + Object.keys(settings.audioIssues).length + ' 個有問題）' : ''}</button>
         ${profile ? `
         <button id="btn-export">匯出進度</button>
@@ -4803,6 +4847,16 @@ function renderPanel (root, { profile, profiles, state, track = 'listen', onTrac
   root.querySelector('#panel-close').onclick = onClose
   root.querySelector('#btn-check').onclick = onCheck
   root.querySelectorAll('[data-track]').forEach(b => { b.onclick = () => onTrack(b.dataset.track) })
+  root.querySelectorAll('[data-page]').forEach(b => { b.onclick = () => onPage(b.dataset.page) })
+  // 音量：拉的時候數字跟著變，放手存起來並放一段聽聽看
+  root.querySelectorAll('[data-vol]').forEach(inp => {
+    const val = inp.parentElement.querySelector('.vol-val')
+    inp.oninput = () => { val.textContent = inp.value + '%' }
+    inp.onchange = () => {
+      onSettings({ ...settings, [inp.dataset.vol]: parseInt(inp.value, 10) / 100 })
+      if (onVolumeTest) onVolumeTest(inp.dataset.vol)
+    }
+  })
   root.querySelectorAll('[data-say]').forEach(b => { b.onclick = () => onSay(b.dataset.say) })
   root.querySelectorAll('[data-known]').forEach(cb => {
     cb.onchange = () => onKnownChange(cb.dataset.known, cb.checked)
@@ -6088,6 +6142,7 @@ function main () {
 
   // ---- 大人面板 ----
   let panelTrack = 'listen'
+  let panelPage = null // 進度格看哪一頁；null 跟著軌道走
   function openPanel () {
     destroyGame()
     renderPanel(panelEl, {
@@ -6095,7 +6150,20 @@ function main () {
       profiles: store.loadProfiles(),
       state: state ? trackView(state, panelTrack) : null,
       track: panelTrack,
-      onTrack (t) { panelTrack = t; openPanel() },
+      page: panelPage,
+      onTrack (t) { panelTrack = t; panelPage = null; openPanel() },
+      onPage (p) { panelPage = p; openPanel() },
+      // 調完音量放一段聽聽看；背景音樂放三秒
+      onVolumeTest (key) {
+        audio.unlock()
+        if (key === 'voiceVol') audio.say('ㄅ')
+        else if (key === 'sfxVol') audio.ding()
+        else {
+          audio.startMusic()
+          audio.setMusicVolume()
+          setTimeout(() => { if (currentScreen === 'panel') audio.stopMusic() }, 3000)
+        }
+      },
       settings,
       voices: audio.listVoices(),
       onKnownChange (symbol, checked) {
