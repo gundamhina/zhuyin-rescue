@@ -1,6 +1,6 @@
 // 把所有模組接起來：使用者、狀態、出題、三種玩法、畫面切換。
 
-import { addBones, buyItem, wearItem, recordRound, claimDaily, dailyView, DAILY_GOAL, markSeen, recommendTrack, dayKey, questionReward, roundBonus, comboBonus, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, activePool, effectiveTier, trackView, applyTrack } from './scheduler.js'
+import { addBones, buyItem, wearItem, recordRound, claimDaily, dailyView, DAILY_GOAL, markSeen, recommendTrack, dayKey, questionReward, roundBonus, comboBonus, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, activePool, effectiveTier, trackView, applyTrack, toneOfSyllable, toneTiles } from './scheduler.js'
 import { createStore } from './store.js'
 import { createAudio } from './audio.js'
 import { createFishing } from './fishing.js'
@@ -19,9 +19,9 @@ import { renderCheck } from './check.js'
 
 const SETTINGS_KEY = 'zhuyin-rescue-settings'
 const MEMORY_PAIRS = 5
-// 每個玩法練哪一軌：聽（釣魚、打地鼠）、讀（連連看、填空、唸給狗狗聽）、寫（寫給狗狗看）
+// 每個玩法練哪一軌：聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）、詞（連連看、填空、聲調填空）
 // 翻牌只借「聽」那一軌的出題池挑符號，不寫任何紀錄進去
-const TRACK_OF = { fishing: 'listen', whack: 'listen', memory: 'listen', speak: 'read', write: 'write', match: 'read', fill: 'read' }
+const TRACK_OF = { fishing: 'listen', whack: 'listen', memory: 'listen', speak: 'read', write: 'write', match: 'word', fill: 'word', tone: 'word' }
 const MATCH_PAIRS = 4
 // 唸給狗狗聽的狀態訊息，寫給旁邊的大人看
 const MIC_MSG = {
@@ -122,7 +122,8 @@ function main () {
     const t = recommendTrack(state, today())
     const odd = Math.floor(Date.now() / 86400000) % 2
     if (t === 'listen') return odd ? 'whack' : 'fishing'
-    if (t === 'read') return odd ? 'fill' : 'match'
+    if (t === 'word') return ['match', 'fill', 'tone'][Math.floor(Date.now() / 86400000) % 3]
+    if (t === 'read') return speechAvailable() ? 'speak' : 'match'
     return 'write'
   }
 
@@ -345,7 +346,8 @@ function main () {
     if (which === 'memory') return runMemory()
     if (which === 'speak') return runSpeak()
     if (which === 'match') return runMatch()
-    if (which === 'fill') return runFill()
+    if (which === 'fill') return runFill('syllable')
+    if (which === 'tone') return runFill('tone')
     runQuestions(which)
   }
 
@@ -472,7 +474,7 @@ function main () {
   }
 
   replayBtn.addEventListener('pointerdown', () => {
-    if (kind === 'memory' || kind === 'speak' || kind === 'match' || kind === 'fill' || !round[index]) return
+    if (kind === 'memory' || kind === 'speak' || kind === 'match' || kind === 'fill' || kind === 'tone' || !round[index]) return
     if (busy) return
     audio.say(round[index].target)
   })
@@ -686,7 +688,8 @@ function main () {
   }
 
   // ---- 填空（讀）：詞少一個音節，拖對的音節進去 ----
-  function runFill () {
+  // 填空（mode 'syllable'）與聲調填空（mode 'tone'）共用：一個挑缺的音節，一個挑缺的調號
+  function runFill (mode) {
     game = createFillBlank(playArea, { color: profile.color })
     replayBtn.classList.add('hidden')
     const v = wordsOnlyState(currentView())
@@ -701,14 +704,20 @@ function main () {
       const q = round[index]
       const syls = q.target.split(' ')
       const bi = Math.floor(Math.random() * syls.length)
-      correct = syls[bi]
-      const others = allSyllables.filter(s => s !== correct && !syls.includes(s))
-      const tiles = [correct]
-      while (tiles.length < 3 && others.length) tiles.push(others.splice(Math.floor(Math.random() * others.length), 1)[0])
-      tiles.sort(() => Math.random() - 0.5)
+      let tiles
+      if (mode === 'tone') {
+        correct = toneOfSyllable(syls[bi])
+        tiles = toneTiles(correct, effectiveTier(currentView()), Math.random)
+      } else {
+        correct = syls[bi]
+        const others = allSyllables.filter(s => s !== correct && !syls.includes(s))
+        tiles = [correct]
+        while (tiles.length < 3 && others.length) tiles.push(others.splice(Math.floor(Math.random() * others.length), 1)[0])
+        tiles.sort(() => Math.random() - 0.5)
+      }
       firstAttempt = true
       busy = true
-      game.start(q, { blankIndex: bi, tiles })
+      game.start(q, { blankIndex: bi, tiles, mode })
       setTimeout(() => { if (game) { game.unlock(); busy = false } }, 350)
     }
     game.onPicTap(() => { if (!busy && round[index]) audio.say(round[index].target) })
@@ -786,7 +795,7 @@ function main () {
         saveSettings(settings)
         openPanel()
       },
-      // 階級、最近答題是這一軌的；其他（鎖階、範圔、跳級）三軌共用
+      // 階級、最近答題是這一軌的；其他（鎖階、範圍、跳級）各軌共用
       onStateChange (partial) {
         const trackKeys = ['tier', 'recent']
         if (Object.keys(partial).some(k => trackKeys.includes(k))) {

@@ -101,3 +101,27 @@ test('舊版存檔（version 1，紀錄在最外層）載入時搬進「聽」�
   assert.equal(s.lockTier, 3);
   assert.equal(s.unlockedUpTo, 2);
 });
+
+
+test('舊的 version 2 存檔（沒有詞軌）：讀軌裡詞的紀錄搬到詞軌，單一符號留在讀軌', () => {
+  const storage = fakeStorage();
+  const word = 'ㄏㄨㄛˇ ㄔㄜ';
+  const read = {
+    mastery: { [word]: { history: [{ ok: true, ms: 0 }] }, 'ㄚ': { history: [{ ok: true, ms: 0 }] } },
+    confusions: { ['ㄏㄨㄛˇ ㄐㄧㄢˋ|' + word]: { streak: 0 }, 'ㄅ|ㄆ': { streak: 1 } },
+    tier: 3, recent: [true, true],
+    log: [{ at: 1, s: word, ok: true }, { at: 2, s: 'ㄚ', ok: true }],
+  };
+  const empty = { mastery: {}, confusions: {}, tier: 0, recent: [], log: [] };
+  const old = { version: 2, known: [], groups: null, lockTier: null, rangeGroups: null, unlockedUpTo: null, tracks: { listen: empty, read, write: empty } };
+  storage.setItem('zhuyin-rescue:p1', JSON.stringify(old));
+  const s = createStore(storage).load('p1');
+  assert.deepEqual(Object.keys(s.tracks.word.mastery), [word]);
+  assert.deepEqual(Object.keys(s.tracks.read.mastery), ['ㄚ']);
+  assert.deepEqual(Object.keys(s.tracks.word.confusions), ['ㄏㄨㄛˇ ㄐㄧㄢˋ|' + word]);
+  assert.deepEqual(Object.keys(s.tracks.read.confusions), ['ㄅ|ㄆ']);
+  assert.equal(s.tracks.word.tier, 3, '詞軌從讀軌的階級起步');
+  assert.equal(s.tracks.read.tier, 3);
+  assert.deepEqual(s.tracks.word.log.map(e => e.s), [word]);
+  assert.deepEqual(s.tracks.read.log.map(e => e.s), ['ㄚ']);
+});

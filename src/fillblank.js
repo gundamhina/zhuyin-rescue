@@ -1,7 +1,9 @@
 // 填空。左邊一張圖，牌子上詞的注音少一個音節（空格），下面幾塊音節，拖對的進空格（點一下也行）。
-// 介面：start(q, { blankIndex, tiles })、lock/unlock、onAnswer(fn(syllable))、onPicTap(fn(word))、fill()、bounce(syllable)、celebrate、sad、layout、destroy。
+// 聲調填空（mode: 'tone'）也用這個畫面：音節都在，只有一個音節的調號是空格，下面幾塊是調號。
+// 介面：start(q, { blankIndex, tiles, mode })、lock/unlock、onAnswer(fn(syllable))、onPicTap(fn(word))、fill()、bounce(syllable)、celebrate、sad、layout、destroy。
 
-import { dogSvg, bgHtml, symbolMarkup, wordPicMarkup } from './art.js'
+import { dogSvg, bgHtml, symbolMarkup, wordPicMarkup, wordSyllableMarkup, toneTileMarkup } from './art.js'
+import { stripTone } from './scheduler.js'
 import { STAGE, mountBgs, stagePoint, framePoint } from './ui.js'
 
 // 橫的：磁磚中心點（1200×800 frame 座標）
@@ -33,13 +35,17 @@ export function createFillBlank (root, { color = 0 } = {}) {
   let locked = true
   let current = null
   let blankIndex = 0
+  let mode = 'syllable'
   let drag = null
 
+  // 每個音節畫成詞的一欄，跟連連看一樣大；空格那欄：填音節的是虛線框，填聲調的是音節加調號位置的虛線框
   function renderWord (filled = null) {
     const syls = current.target.split(' ')
-    wordEl.innerHTML = `<span class="word w${syls.length}">${syls.map((s, i) => i === blankIndex
-      ? (filled ? symbolMarkup(filled) : '<span class="blank"></span>')
-      : symbolMarkup(s)).join('')}</span>`
+    const blankCell = s => {
+      if (mode === 'tone') return filled ? wordSyllableMarkup(s) : wordSyllableMarkup(stripTone(s), { toneBlank: true })
+      return filled ? wordSyllableMarkup(filled) : '<span class="blank"></span>'
+    }
+    wordEl.innerHTML = `<span class="word w${syls.length}">${syls.map((s, i) => i === blankIndex ? blankCell(s) : wordSyllableMarkup(s)).join('')}</span>`
   }
 
   picEl.addEventListener('pointerdown', () => { if (current && picTapFn) picTapFn(current.target) })
@@ -67,7 +73,7 @@ export function createFillBlank (root, { color = 0 } = {}) {
     drag = null
     t.classList.remove('dragging')
     // 放到空格上（或沒拖動、點一下）都算選這塊
-    const blank = wordEl.querySelector('.blank')
+    const blank = wordEl.querySelector('.blank, .blank-tone')
     let hit = !moved
     if (moved && blank) {
       // 空格中心換成舞台座標，放手的點離它夠近就算放進去
@@ -104,9 +110,10 @@ export function createFillBlank (root, { color = 0 } = {}) {
     })
   }
 
-  function start (question, { blankIndex: bi, tiles }) {
+  function start (question, { blankIndex: bi, tiles, mode: m = 'syllable' }) {
     current = question
     blankIndex = bi
+    mode = m
     locked = true
     picEl.className = 'fill-pic'
     picEl.innerHTML = wordPicMarkup(question.target)
@@ -117,7 +124,7 @@ export function createFillBlank (root, { color = 0 } = {}) {
       const t = document.createElement('div')
       t.className = 'tile'
       t.dataset.syllable = syl
-      t.innerHTML = `<span>${symbolMarkup(syl)}</span>`
+      t.innerHTML = `<span>${mode === 'tone' ? toneTileMarkup(syl) : symbolMarkup(syl)}</span>`
       tilesEl.appendChild(t)
     })
     placeTiles()
@@ -125,7 +132,7 @@ export function createFillBlank (root, { color = 0 } = {}) {
   function tileOf (syl) { return tilesEl.querySelector(`.tile[data-syllable="${syl}"]`) }
   function unlock () { locked = false }
   function lock () { locked = true }
-  // 對了：音節填進空格，那塊磁磚消失
+  // 對了：音節（或調號）填進空格，那塊磁磚消失
   function fill (syl) {
     renderWord(syl)
     const t = tileOf(syl)

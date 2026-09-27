@@ -683,7 +683,7 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
   </defs>
 </svg>
 <div id="install-hint" hidden>手機請用 Chrome 開，再從選單「加到主畫面」，就會是全螢幕。點這裡關掉。</div>
-<div id="version" aria-hidden="true">v0.3.0 · 8b86ff4 · 09/27 22:57</div>
+<div id="version" aria-hidden="true">v0.3.0 · 4172ff2 · 09/27 23:07</div>
 <div id="stage">
   <section class="screen" id="screen-profiles"></section>
   <section class="screen" id="screen-home"></section>
@@ -1647,17 +1647,20 @@ const TIERS = [
   { options: 6, distract: 'sound', similar: 1, idleHint: 0 },
 ]
 
-// 聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）三軌各自記，練的是不同的東西。
-const TRACKS = ['listen', 'read', 'write']
-const TRACK_NAMES = { listen: '聽', read: '讀', write: '寫' }
+// 聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）、詞（連連看、填空、聲調填空）四軌各自記，練的是不同的東西。
+const TRACKS = ['listen', 'read', 'write', 'word']
+const TRACK_NAMES = { listen: '聽', read: '讀', write: '寫', word: '詞' }
 const TRACK_FIELDS = ['mastery', 'confusions', 'tier', 'recent', 'log']
 const LOG_CAP = 3000
 
 function emptyTrack () {
   return { mastery: {}, confusions: {}, tier: 0, recent: [], log: [] }
 }
+function emptyTracks () {
+  return Object.fromEntries(TRACKS.map(t => [t, emptyTrack()]))
+}
 
-// version 2：家長設定在外層共用，練習紀錄分三軌。
+// version 2：家長設定在外層共用，練習紀錄分軌記。
 function createState ({ known = [], groups = null } = {}) {
   return {
     version: 2,
@@ -1666,12 +1669,12 @@ function createState ({ known = [], groups = null } = {}) {
     lockTier: null, // 家長鎖定的階級；null 表示自動
     rangeGroups: null, // 家長指定的練習組別索引；null 或空表示自動解鎖
     unlockedUpTo: null, // 家長手動跳級：至少解鎖到第幾組（1 起算）；null 表示不干預
-    tracks: { listen: emptyTrack(), read: emptyTrack(), write: emptyTrack() },
+    tracks: emptyTracks(),
     ...emptyWallet(),
   }
 }
 
-// 骨頭（積分）與商店：三軌共用。bones 現在有幾根、bonesTotal 累計賺過幾根、owned 買過的配件、worn 每個部位戴著哪一件
+// 骨頭（積分）與商店：各軌共用。bones 現在有幾根、bonesTotal 累計賺過幾根、owned 買過的配件、worn 每個部位戴著哪一件
 function emptyWallet () {
   return { bones: 0, bonesTotal: 0, owned: [], worn: {}, daily: null, streak: { last: null, count: 0 }, seen: {} }
 }
@@ -1731,11 +1734,11 @@ function unlockedCount (state) {
   return Math.min(groups.length, Math.max(n, manual))
 }
 
-// 清除練習紀錄：三軌的星星、混淆對、階級、最近答題全部歸零。名字、認得、難度鎖、範圍都保留。
+// 清除練習紀錄：每一軌的星星、混淆對、階級、最近答題全部歸零。名字、認得、難度鎖、範圍都保留。
 // 傳攤平的一軌進來就只清那一軌。
 function resetProgress (state) {
   if (state.tracks) {
-    return { ...state, tracks: { listen: emptyTrack(), read: emptyTrack(), write: emptyTrack() } }
+    return { ...state, tracks: emptyTracks() }
   }
   return { ...state, ...emptyTrack() }
 }
@@ -1917,6 +1920,24 @@ function wordsOnlyState (state) {
   }
   if (!chosen.length) chosen = wordIdx
   return { ...state, rangeGroups: chosen }
+}
+
+// ---- 聲調填空 ----
+// 聲調的代號：'1' 一聲（課本不標）、ˊ 二聲、ˇ 三聲、ˋ 四聲、˙ 輕聲
+const TONE_ORDER = ['1', 'ˊ', 'ˇ', 'ˋ', '˙']
+function toneOfSyllable (syl) {
+  if (syl.startsWith('˙')) return '˙'
+  const last = syl.slice(-1)
+  return 'ˊˇˋ'.includes(last) ? last : '1'
+}
+function stripTone (syl) { return syl.replace(/[ˊˇˋ˙]/g, '') }
+// 可以選的調號：低階兩個、中階三個、高階四個（高階才會把輕聲當干擾項），照一二三四輕的順序排
+function toneTiles (correct, tier, rng) {
+  const count = tier <= 1 ? 2 : tier <= 3 ? 3 : 4
+  const pool = TONE_ORDER.filter(t => t !== correct && (t !== '˙' || tier >= 4))
+  const picked = [correct]
+  while (picked.length < count && pool.length) picked.push(pool.splice(Math.floor(rng() * pool.length), 1)[0])
+  return TONE_ORDER.filter(t => picked.includes(t))
 }
 
 // 翻牌用：從出題池挑 n 個不重複的符號，弱的優先。池子不夠就全給。
@@ -2108,7 +2129,7 @@ function isValidState (s) {
 
 // 舊存檔（version 1）：紀錄在最外層，全部當成「聽」那一軌
 function migrate (s) {
-  if (s.version === 2) return s
+  if (s.version === 2) return s.tracks.word ? s : splitWordTrack(s)
   const { mastery, confusions, tier, recent, ...shared } = s
   return {
     ...shared,
@@ -2116,8 +2137,31 @@ function migrate (s) {
     lockTier: shared.lockTier == null ? null : shared.lockTier,
     rangeGroups: shared.rangeGroups == null ? null : shared.rangeGroups,
     unlockedUpTo: shared.unlockedUpTo == null ? null : shared.unlockedUpTo,
-    tracks: { listen: { mastery, confusions, tier, recent }, read: emptyTrack(), write: emptyTrack() },
+    tracks: { ...emptyTracks(), listen: { mastery, confusions, tier, recent } },
   }
+}
+
+// 2026-09-27 之前連連看、填空記在「讀」：詞的紀錄（音節之間有空白）搬到新的「詞」軌，讀軌留單一符號和拼讀字。
+// 讀軌的階級一起帶過去當詞軌的起點，最近答題分不出是哪個玩法的，詞軌從空的開始。
+function splitWordTrack (s) {
+  const read = { ...emptyTrack(), ...s.tracks.read }
+  const isWord = k => k.includes(' ')
+  const pick = (obj, keep) => Object.fromEntries(Object.entries(obj || {}).filter(([k]) => keep(k)))
+  const pairHasWord = k => k.split('|').some(isWord)
+  const word = {
+    ...emptyTrack(),
+    mastery: pick(read.mastery, isWord),
+    confusions: pick(read.confusions, pairHasWord),
+    tier: read.tier,
+    log: (read.log || []).filter(e => isWord(e.s)),
+  }
+  const rest = {
+    ...read,
+    mastery: pick(read.mastery, k => !isWord(k)),
+    confusions: pick(read.confusions, k => !pairHasWord(k)),
+    log: (read.log || []).filter(e => !isWord(e.s)),
+  }
+  return { ...s, tracks: { ...s.tracks, read: rest, word } }
 }
 
 function readJson (storage, key, fallback) {
@@ -2477,12 +2521,25 @@ function symbolMarkup (sym) {
   return syllableMarkup(sym, false)
 }
 
+// 詞裡的一個音節（一欄）。toneBlank：調號的位置畫一個虛線空格，聲調填空用
+function wordSyllableMarkup (syl, { toneBlank = false } = {}) {
+  return syllableMarkup(syl, true, toneBlank)
+}
+
+// 聲調填空的磁磚：一個大大的調號；一聲課本不標，磁磚上畫一條橫線（ˉ）
+function toneTileMarkup (tone) {
+  const mark = tone === '1'
+    ? '<path class="tone" d="M28 50H72" fill="none" stroke="currentColor" stroke-width="10"/>'
+    : toneMark(tone, 50, 50, 64)
+  return `<svg class="syl tone-tile" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-label="${tone === '1' ? '一聲' : tone}">${mark}</svg>`
+}
+
 // 一個音節畫成一張小 SVG：符號直排、調號在最後一個符號右邊、輕聲點在最上面。
 // 用 SVG 而不用 HTML 文字，是因為手機瀏覽器會自己放大它覺得太小的文字，注音每欄被放大的程度不一樣，排版就亂了；SVG 的字不會被動。
 // 單獨一個音節（泡泡、地鼠、磁磚、牌子）：兩個和三個符號的音節，每個符號一樣大（46）、間距一樣（42），
 // 跟課本一樣只是多疊一個；所以三個符號的畫布比較高（126），CSS 讓它上下各超出一點，不佔版面。
 // 詞裡的音節：每欄 80×170，符號一律 54，欄裡置中，一個詞的各欄才會對齊、字一樣大。
-function syllableMarkup (sym, inWord) {
+function syllableMarkup (sym, inWord, toneBlank = false) {
   const light = sym.startsWith('˙')
   if (light) sym = sym.slice(1)
   const tone = (sym.match(/[ˊˇˋ]$/) || [''])[0]
@@ -2502,7 +2559,10 @@ function syllableMarkup (sym, inWord) {
     centers = [...core].map((_, i) => H / 2 + (i - (n - 1) / 2) * 42)
   }
   const glyphs = [...core].map((ch, i) => `<text x="${cx}" y="${centers[i]}" font-size="${g}">${ch}</text>`).join('')
-  const toneSvg = tone ? toneMark(tone, toneX, centers[n - 1] - g * 0.12, toneSize) : ''
+  const toneY = centers[n - 1] - g * 0.12
+  const toneSvg = toneBlank
+    ? `<rect class="blank-tone" x="${toneX - 11}" y="${toneY - 18}" width="22" height="36" rx="5" fill="rgba(224,149,91,0.1)" stroke="#E0955B" stroke-width="3.5" stroke-dasharray="6 4"/>`
+    : tone ? toneMark(tone, toneX, toneY, toneSize) : ''
   const lightSvg = light ? toneMark('˙', cx, centers[0] - g * 0.7, toneSize) : ''
   return `<svg class="syl n${n}${inWord ? '' : ' solo'}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-label="${light ? '˙' : ''}${core}${tone}">${lightSvg}${glyphs}${toneSvg}</svg>`
 }
@@ -2814,6 +2874,22 @@ function cardArt (kind) {
   <text x="95" y="310" text-anchor="middle" font-size="40" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄍ</text>
   <text x="205" y="310" text-anchor="middle" font-size="40" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄨ</text>
   <path d="M215 250 q10 -40 10 -70" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="6 6"/>
+</svg>`
+  }
+  if (kind === 'tone') {
+    return `<img class="art-slot" src="img/card-tone.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="400" fill="#F3E4C2"/>
+  <text x="70" y="150" text-anchor="middle" font-size="80">\u{1F434}</text>
+  <rect x="140" y="50" width="130" height="160" rx="18" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <text x="190" y="102" text-anchor="middle" font-size="46" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄇ</text>
+  <text x="190" y="160" text-anchor="middle" font-size="46" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄚ</text>
+  <rect x="222" y="112" width="30" height="40" rx="7" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="8 6"/>
+  <rect x="60" y="260" width="70" height="70" rx="14" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <rect x="170" y="260" width="70" height="70" rx="14" fill="#FFF3B0" stroke="#E0955B" stroke-width="6"/>
+  <path d="M85 312 L105 280" stroke="#2B3A4A" stroke-width="7" fill="none"/>
+  <path d="M190 284 L205 306 L220 284" stroke="#2B3A4A" stroke-width="7" fill="none"/>
+  <path d="M215 250 q10 -40 22 -90" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="6 6"/>
 </svg>`
   }
   if (kind === 'speak') {
@@ -4108,7 +4184,8 @@ function createMatchLine (root, { color = 0 } = {}) {
 
 // ===== fillblank.js =====
 // 填空。左邊一張圖，牌子上詞的注音少一個音節（空格），下面幾塊音節，拖對的進空格（點一下也行）。
-// 介面：start(q, { blankIndex, tiles })、lock/unlock、onAnswer(fn(syllable))、onPicTap(fn(word))、fill()、bounce(syllable)、celebrate、sad、layout、destroy。
+// 聲調填空（mode: 'tone'）也用這個畫面：音節都在，只有一個音節的調號是空格，下面幾塊是調號。
+// 介面：start(q, { blankIndex, tiles, mode })、lock/unlock、onAnswer(fn(syllable))、onPicTap(fn(word))、fill()、bounce(syllable)、celebrate、sad、layout、destroy。
 
 
 // 橫的：磁磚中心點（1200×800 frame 座標）
@@ -4140,13 +4217,17 @@ function createFillBlank (root, { color = 0 } = {}) {
   let locked = true
   let current = null
   let blankIndex = 0
+  let mode = 'syllable'
   let drag = null
 
+  // 每個音節畫成詞的一欄，跟連連看一樣大；空格那欄：填音節的是虛線框，填聲調的是音節加調號位置的虛線框
   function renderWord (filled = null) {
     const syls = current.target.split(' ')
-    wordEl.innerHTML = `<span class="word w${syls.length}">${syls.map((s, i) => i === blankIndex
-      ? (filled ? symbolMarkup(filled) : '<span class="blank"></span>')
-      : symbolMarkup(s)).join('')}</span>`
+    const blankCell = s => {
+      if (mode === 'tone') return filled ? wordSyllableMarkup(s) : wordSyllableMarkup(stripTone(s), { toneBlank: true })
+      return filled ? wordSyllableMarkup(filled) : '<span class="blank"></span>'
+    }
+    wordEl.innerHTML = `<span class="word w${syls.length}">${syls.map((s, i) => i === blankIndex ? blankCell(s) : wordSyllableMarkup(s)).join('')}</span>`
   }
 
   picEl.addEventListener('pointerdown', () => { if (current && picTapFn) picTapFn(current.target) })
@@ -4174,7 +4255,7 @@ function createFillBlank (root, { color = 0 } = {}) {
     drag = null
     t.classList.remove('dragging')
     // 放到空格上（或沒拖動、點一下）都算選這塊
-    const blank = wordEl.querySelector('.blank')
+    const blank = wordEl.querySelector('.blank, .blank-tone')
     let hit = !moved
     if (moved && blank) {
       // 空格中心換成舞台座標，放手的點離它夠近就算放進去
@@ -4211,9 +4292,10 @@ function createFillBlank (root, { color = 0 } = {}) {
     })
   }
 
-  function start (question, { blankIndex: bi, tiles }) {
+  function start (question, { blankIndex: bi, tiles, mode: m = 'syllable' }) {
     current = question
     blankIndex = bi
+    mode = m
     locked = true
     picEl.className = 'fill-pic'
     picEl.innerHTML = wordPicMarkup(question.target)
@@ -4224,7 +4306,7 @@ function createFillBlank (root, { color = 0 } = {}) {
       const t = document.createElement('div')
       t.className = 'tile'
       t.dataset.syllable = syl
-      t.innerHTML = `<span>${symbolMarkup(syl)}</span>`
+      t.innerHTML = `<span>${mode === 'tone' ? toneTileMarkup(syl) : symbolMarkup(syl)}</span>`
       tilesEl.appendChild(t)
     })
     placeTiles()
@@ -4232,7 +4314,7 @@ function createFillBlank (root, { color = 0 } = {}) {
   function tileOf (syl) { return tilesEl.querySelector(`.tile[data-syllable="${syl}"]`) }
   function unlock () { locked = false }
   function lock () { locked = true }
-  // 對了：音節填進空格，那塊磁磚消失
+  // 對了：音節（或調號）填進空格，那塊磁磚消失
   function fill (syl) {
     renderWord(syl)
     const t = tileOf(syl)
@@ -4467,6 +4549,9 @@ function renderHome (root, { profile, speech = true, bones = 0, mates = [], dail
       <button class="card" data-game="fill" aria-label="填空">
         <div class="card-pic">${cardArt('fill')}</div>
       </button>
+      <button class="card" data-game="tone" aria-label="聲調填空">
+        <div class="card-pic">${cardArt('tone')}</div>
+      </button>
       <button class="card" data-game="write" aria-label="寫給狗狗看">
         <div class="card-pic">${cardArt('write')}</div>
       </button>
@@ -4546,9 +4631,11 @@ function playResult (root, earned, { onTick = () => {}, onPerfect = () => {}, on
 }
 
 // 第 14 組起有名字（聲母組＋韻類），前面的組顯示符號本身
+// 組太長時顯示組名：第 11–13 組是結合韻，第 14 組起用 syllables.js 產生的組名；都沒有就列出全部符號
+const COMPOUND_NAMES = { 10: 'ㄧ結合韻', 11: 'ㄨ結合韻', 12: 'ㄩ結合韻' }
 function groupName (i, g) {
-  const n = GROUP_NAMES[i - 13]
-  return n ? ' ' + n + '（' + g.length + ' 字）' : ''
+  const n = i >= 13 ? GROUP_NAMES[i - 13] : COMPOUND_NAMES[i]
+  return ' ' + (n ? n + '（' + g.length + ' 個）' : g.join(''))
 }
 
 function starColor (n) {
@@ -4660,7 +4747,7 @@ function renderPanel (root, { profile, profiles, state, track = 'listen', onTrac
       <div class="panel-row panel-tracks">
         <b>看哪一軌</b>
         ${TRACKS.map(t => `<button class="track-tab ${t === track ? 'on' : ''}" data-track="${t}">${TRACK_NAMES[t]}</button>`).join('')}
-        <span class="panel-hint-inline">聽＝釣魚、打地鼠；讀＝連連看、填空、唸給狗狗聽；寫＝寫給狗狗看。翻牌是純遊玩，不算進任何一軌。星星、混淆、階級、解鎖各軌分開算，下面的設定三軌共用。</span>
+        <span class="panel-hint-inline">聽＝釣魚、打地鼠；讀＝唸給狗狗聽；寫＝寫給狗狗看；詞＝連連看、填空、聲調填空。翻牌是純遊玩，不算進任何一軌。星星、混淆、階級、解鎖各軌分開算，下面的設定各軌共用。</span>
       </div>
       <div class="panel-row">
         <div>「${TRACK_NAMES[track]}」目前出題階級：<b>${effectiveTier(state) + 1}</b> / 6（${tierLabel(TIERS[effectiveTier(state)])}）</div>
@@ -4706,7 +4793,7 @@ function renderPanel (root, { profile, profiles, state, track = 'listen', onTrac
         ${profile ? `
         <button id="btn-export">匯出進度</button>
         <label class="file-btn">匯入進度<input type="file" id="file-import" accept=".json"></label>
-        <button id="btn-reset" class="danger">清除練習紀錄（三軌）</button>` : ''}
+        <button id="btn-reset" class="danger">清除練習紀錄（全部四軌）</button>` : ''}
         <span id="panel-msg" class="panel-msg"></span>
       </div>
       <p class="panel-hint">點符號可以試聽。「認得」勾起來的符號從 3 星起算並直接進入出題。每格右下方的字是語音合成實際唸的代表字，唸得怪可以改。</p>
@@ -4937,6 +5024,20 @@ const SCENES = {
     <text x="325" y="304" font-size="56" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄧ</text></g>
     <rect x="435" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#F6F3E6" stroke-width="5"/>
     <text x="475" y="304" font-size="56" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄨ</text>
+    ${sparks('tut-fill-s', 371, 132)}
+    ${hand('tut-fill-hand')}`,
+
+  // 把調號拖進音節右邊的空格（跟填空同一套動畫，位置對齊）
+  tone: `
+    <text x="80" y="130" font-size="90" text-anchor="middle" dominant-baseline="central">🐴</text>
+    <rect x="200" y="40" width="240" height="160" rx="24" fill="#FFFDF7" stroke="${WOOD}" stroke-width="8"/>
+    <text x="310" y="90" font-size="58" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄇ</text>
+    <text x="310" y="148" font-size="58" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄚ</text>
+    <rect class="tut-fill-blank" x="351" y="106" width="40" height="52" rx="8" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="8 6"/>
+    <g class="tut-fill-tile"><rect x="285" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#F6F3E6" stroke-width="5"/>
+    <path d="M309 292 L325 314 L341 292" stroke="${INK}" stroke-width="7" fill="none"/></g>
+    <rect x="435" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#F6F3E6" stroke-width="5"/>
+    <path d="M465 316 L485 288" stroke="${INK}" stroke-width="7" fill="none"/>
     ${sparks('tut-fill-s', 371, 132)}
     ${hand('tut-fill-hand')}`,
 
@@ -5233,9 +5334,9 @@ function renderCheck (root, { audio, settings, onSettings, onClose }) {
 
 const SETTINGS_KEY = 'zhuyin-rescue-settings'
 const MEMORY_PAIRS = 5
-// 每個玩法練哪一軌：聽（釣魚、打地鼠）、讀（連連看、填空、唸給狗狗聽）、寫（寫給狗狗看）
+// 每個玩法練哪一軌：聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）、詞（連連看、填空、聲調填空）
 // 翻牌只借「聽」那一軌的出題池挑符號，不寫任何紀錄進去
-const TRACK_OF = { fishing: 'listen', whack: 'listen', memory: 'listen', speak: 'read', write: 'write', match: 'read', fill: 'read' }
+const TRACK_OF = { fishing: 'listen', whack: 'listen', memory: 'listen', speak: 'read', write: 'write', match: 'word', fill: 'word', tone: 'word' }
 const MATCH_PAIRS = 4
 // 唸給狗狗聽的狀態訊息，寫給旁邊的大人看
 const MIC_MSG = {
@@ -5336,7 +5437,8 @@ function main () {
     const t = recommendTrack(state, today())
     const odd = Math.floor(Date.now() / 86400000) % 2
     if (t === 'listen') return odd ? 'whack' : 'fishing'
-    if (t === 'read') return odd ? 'fill' : 'match'
+    if (t === 'word') return ['match', 'fill', 'tone'][Math.floor(Date.now() / 86400000) % 3]
+    if (t === 'read') return speechAvailable() ? 'speak' : 'match'
     return 'write'
   }
 
@@ -5559,7 +5661,8 @@ function main () {
     if (which === 'memory') return runMemory()
     if (which === 'speak') return runSpeak()
     if (which === 'match') return runMatch()
-    if (which === 'fill') return runFill()
+    if (which === 'fill') return runFill('syllable')
+    if (which === 'tone') return runFill('tone')
     runQuestions(which)
   }
 
@@ -5686,7 +5789,7 @@ function main () {
   }
 
   replayBtn.addEventListener('pointerdown', () => {
-    if (kind === 'memory' || kind === 'speak' || kind === 'match' || kind === 'fill' || !round[index]) return
+    if (kind === 'memory' || kind === 'speak' || kind === 'match' || kind === 'fill' || kind === 'tone' || !round[index]) return
     if (busy) return
     audio.say(round[index].target)
   })
@@ -5900,7 +6003,8 @@ function main () {
   }
 
   // ---- 填空（讀）：詞少一個音節，拖對的音節進去 ----
-  function runFill () {
+  // 填空（mode 'syllable'）與聲調填空（mode 'tone'）共用：一個挑缺的音節，一個挑缺的調號
+  function runFill (mode) {
     game = createFillBlank(playArea, { color: profile.color })
     replayBtn.classList.add('hidden')
     const v = wordsOnlyState(currentView())
@@ -5915,14 +6019,20 @@ function main () {
       const q = round[index]
       const syls = q.target.split(' ')
       const bi = Math.floor(Math.random() * syls.length)
-      correct = syls[bi]
-      const others = allSyllables.filter(s => s !== correct && !syls.includes(s))
-      const tiles = [correct]
-      while (tiles.length < 3 && others.length) tiles.push(others.splice(Math.floor(Math.random() * others.length), 1)[0])
-      tiles.sort(() => Math.random() - 0.5)
+      let tiles
+      if (mode === 'tone') {
+        correct = toneOfSyllable(syls[bi])
+        tiles = toneTiles(correct, effectiveTier(currentView()), Math.random)
+      } else {
+        correct = syls[bi]
+        const others = allSyllables.filter(s => s !== correct && !syls.includes(s))
+        tiles = [correct]
+        while (tiles.length < 3 && others.length) tiles.push(others.splice(Math.floor(Math.random() * others.length), 1)[0])
+        tiles.sort(() => Math.random() - 0.5)
+      }
       firstAttempt = true
       busy = true
-      game.start(q, { blankIndex: bi, tiles })
+      game.start(q, { blankIndex: bi, tiles, mode })
       setTimeout(() => { if (game) { game.unlock(); busy = false } }, 350)
     }
     game.onPicTap(() => { if (!busy && round[index]) audio.say(round[index].target) })
@@ -6000,7 +6110,7 @@ function main () {
         saveSettings(settings)
         openPanel()
       },
-      // 階級、最近答題是這一軌的；其他（鎖階、範圔、跳級）三軌共用
+      // 階級、最近答題是這一軌的；其他（鎖階、範圍、跳級）各軌共用
       onStateChange (partial) {
         const trackKeys = ['tier', 'recent']
         if (Object.keys(partial).some(k => trackKeys.includes(k))) {

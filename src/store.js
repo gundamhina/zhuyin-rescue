@@ -1,6 +1,6 @@
 // 進度存取：多位使用者、每人一份進度、匯出匯入。storage 用參數傳進來，測試時換成假的。
 
-import { createState, withWallet, emptyTrack } from './scheduler.js'
+import { createState, withWallet, emptyTrack, emptyTracks } from './scheduler.js'
 
 const PREFIX = 'zhuyin-rescue:'
 const PROFILES_KEY = 'zhuyin-rescue-profiles'
@@ -13,7 +13,7 @@ function isValidState (s) {
 
 // 舊存檔（version 1）：紀錄在最外層，全部當成「聽」那一軌
 function migrate (s) {
-  if (s.version === 2) return s
+  if (s.version === 2) return s.tracks.word ? s : splitWordTrack(s)
   const { mastery, confusions, tier, recent, ...shared } = s
   return {
     ...shared,
@@ -21,8 +21,31 @@ function migrate (s) {
     lockTier: shared.lockTier == null ? null : shared.lockTier,
     rangeGroups: shared.rangeGroups == null ? null : shared.rangeGroups,
     unlockedUpTo: shared.unlockedUpTo == null ? null : shared.unlockedUpTo,
-    tracks: { listen: { mastery, confusions, tier, recent }, read: emptyTrack(), write: emptyTrack() },
+    tracks: { ...emptyTracks(), listen: { mastery, confusions, tier, recent } },
   }
+}
+
+// 2026-09-27 之前連連看、填空記在「讀」：詞的紀錄（音節之間有空白）搬到新的「詞」軌，讀軌留單一符號和拼讀字。
+// 讀軌的階級一起帶過去當詞軌的起點，最近答題分不出是哪個玩法的，詞軌從空的開始。
+export function splitWordTrack (s) {
+  const read = { ...emptyTrack(), ...s.tracks.read }
+  const isWord = k => k.includes(' ')
+  const pick = (obj, keep) => Object.fromEntries(Object.entries(obj || {}).filter(([k]) => keep(k)))
+  const pairHasWord = k => k.split('|').some(isWord)
+  const word = {
+    ...emptyTrack(),
+    mastery: pick(read.mastery, isWord),
+    confusions: pick(read.confusions, pairHasWord),
+    tier: read.tier,
+    log: (read.log || []).filter(e => isWord(e.s)),
+  }
+  const rest = {
+    ...read,
+    mastery: pick(read.mastery, k => !isWord(k)),
+    confusions: pick(read.confusions, k => !pairHasWord(k)),
+    log: (read.log || []).filter(e => !isWord(e.s)),
+  }
+  return { ...s, tracks: { ...s.tracks, read: rest, word } }
 }
 
 function readJson (storage, key, fallback) {

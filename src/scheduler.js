@@ -23,17 +23,20 @@ export const TIERS = [
   { options: 6, distract: 'sound', similar: 1, idleHint: 0 },
 ]
 
-// 聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）三軌各自記，練的是不同的東西。
-export const TRACKS = ['listen', 'read', 'write']
-export const TRACK_NAMES = { listen: '聽', read: '讀', write: '寫' }
+// 聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）、詞（連連看、填空、聲調填空）四軌各自記，練的是不同的東西。
+export const TRACKS = ['listen', 'read', 'write', 'word']
+export const TRACK_NAMES = { listen: '聽', read: '讀', write: '寫', word: '詞' }
 const TRACK_FIELDS = ['mastery', 'confusions', 'tier', 'recent', 'log']
 export const LOG_CAP = 3000
 
 export function emptyTrack () {
   return { mastery: {}, confusions: {}, tier: 0, recent: [], log: [] }
 }
+export function emptyTracks () {
+  return Object.fromEntries(TRACKS.map(t => [t, emptyTrack()]))
+}
 
-// version 2：家長設定在外層共用，練習紀錄分三軌。
+// version 2：家長設定在外層共用，練習紀錄分軌記。
 export function createState ({ known = [], groups = null } = {}) {
   return {
     version: 2,
@@ -42,12 +45,12 @@ export function createState ({ known = [], groups = null } = {}) {
     lockTier: null, // 家長鎖定的階級；null 表示自動
     rangeGroups: null, // 家長指定的練習組別索引；null 或空表示自動解鎖
     unlockedUpTo: null, // 家長手動跳級：至少解鎖到第幾組（1 起算）；null 表示不干預
-    tracks: { listen: emptyTrack(), read: emptyTrack(), write: emptyTrack() },
+    tracks: emptyTracks(),
     ...emptyWallet(),
   }
 }
 
-// 骨頭（積分）與商店：三軌共用。bones 現在有幾根、bonesTotal 累計賺過幾根、owned 買過的配件、worn 每個部位戴著哪一件
+// 骨頭（積分）與商店：各軌共用。bones 現在有幾根、bonesTotal 累計賺過幾根、owned 買過的配件、worn 每個部位戴著哪一件
 export function emptyWallet () {
   return { bones: 0, bonesTotal: 0, owned: [], worn: {}, daily: null, streak: { last: null, count: 0 }, seen: {} }
 }
@@ -107,11 +110,11 @@ export function unlockedCount (state) {
   return Math.min(groups.length, Math.max(n, manual))
 }
 
-// 清除練習紀錄：三軌的星星、混淆對、階級、最近答題全部歸零。名字、認得、難度鎖、範圍都保留。
+// 清除練習紀錄：每一軌的星星、混淆對、階級、最近答題全部歸零。名字、認得、難度鎖、範圍都保留。
 // 傳攤平的一軌進來就只清那一軌。
 export function resetProgress (state) {
   if (state.tracks) {
-    return { ...state, tracks: { listen: emptyTrack(), read: emptyTrack(), write: emptyTrack() } }
+    return { ...state, tracks: emptyTracks() }
   }
   return { ...state, ...emptyTrack() }
 }
@@ -293,6 +296,24 @@ export function wordsOnlyState (state) {
   }
   if (!chosen.length) chosen = wordIdx
   return { ...state, rangeGroups: chosen }
+}
+
+// ---- 聲調填空 ----
+// 聲調的代號：'1' 一聲（課本不標）、ˊ 二聲、ˇ 三聲、ˋ 四聲、˙ 輕聲
+export const TONE_ORDER = ['1', 'ˊ', 'ˇ', 'ˋ', '˙']
+export function toneOfSyllable (syl) {
+  if (syl.startsWith('˙')) return '˙'
+  const last = syl.slice(-1)
+  return 'ˊˇˋ'.includes(last) ? last : '1'
+}
+export function stripTone (syl) { return syl.replace(/[ˊˇˋ˙]/g, '') }
+// 可以選的調號：低階兩個、中階三個、高階四個（高階才會把輕聲當干擾項），照一二三四輕的順序排
+export function toneTiles (correct, tier, rng) {
+  const count = tier <= 1 ? 2 : tier <= 3 ? 3 : 4
+  const pool = TONE_ORDER.filter(t => t !== correct && (t !== '˙' || tier >= 4))
+  const picked = [correct]
+  while (picked.length < count && pool.length) picked.push(pool.splice(Math.floor(rng() * pool.length), 1)[0])
+  return TONE_ORDER.filter(t => picked.includes(t))
 }
 
 // 翻牌用：從出題池挑 n 個不重複的符號，弱的優先。池子不夠就全給。

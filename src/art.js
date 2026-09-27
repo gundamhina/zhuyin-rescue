@@ -13,12 +13,25 @@ export function symbolMarkup (sym) {
   return syllableMarkup(sym, false)
 }
 
+// 詞裡的一個音節（一欄）。toneBlank：調號的位置畫一個虛線空格，聲調填空用
+export function wordSyllableMarkup (syl, { toneBlank = false } = {}) {
+  return syllableMarkup(syl, true, toneBlank)
+}
+
+// 聲調填空的磁磚：一個大大的調號；一聲課本不標，磁磚上畫一條橫線（ˉ）
+export function toneTileMarkup (tone) {
+  const mark = tone === '1'
+    ? '<path class="tone" d="M28 50H72" fill="none" stroke="currentColor" stroke-width="10"/>'
+    : toneMark(tone, 50, 50, 64)
+  return `<svg class="syl tone-tile" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-label="${tone === '1' ? '一聲' : tone}">${mark}</svg>`
+}
+
 // 一個音節畫成一張小 SVG：符號直排、調號在最後一個符號右邊、輕聲點在最上面。
 // 用 SVG 而不用 HTML 文字，是因為手機瀏覽器會自己放大它覺得太小的文字，注音每欄被放大的程度不一樣，排版就亂了；SVG 的字不會被動。
 // 單獨一個音節（泡泡、地鼠、磁磚、牌子）：兩個和三個符號的音節，每個符號一樣大（46）、間距一樣（42），
 // 跟課本一樣只是多疊一個；所以三個符號的畫布比較高（126），CSS 讓它上下各超出一點，不佔版面。
 // 詞裡的音節：每欄 80×170，符號一律 54，欄裡置中，一個詞的各欄才會對齊、字一樣大。
-function syllableMarkup (sym, inWord) {
+function syllableMarkup (sym, inWord, toneBlank = false) {
   const light = sym.startsWith('˙')
   if (light) sym = sym.slice(1)
   const tone = (sym.match(/[ˊˇˋ]$/) || [''])[0]
@@ -38,7 +51,10 @@ function syllableMarkup (sym, inWord) {
     centers = [...core].map((_, i) => H / 2 + (i - (n - 1) / 2) * 42)
   }
   const glyphs = [...core].map((ch, i) => `<text x="${cx}" y="${centers[i]}" font-size="${g}">${ch}</text>`).join('')
-  const toneSvg = tone ? toneMark(tone, toneX, centers[n - 1] - g * 0.12, toneSize) : ''
+  const toneY = centers[n - 1] - g * 0.12
+  const toneSvg = toneBlank
+    ? `<rect class="blank-tone" x="${toneX - 11}" y="${toneY - 18}" width="22" height="36" rx="5" fill="rgba(224,149,91,0.1)" stroke="#E0955B" stroke-width="3.5" stroke-dasharray="6 4"/>`
+    : tone ? toneMark(tone, toneX, toneY, toneSize) : ''
   const lightSvg = light ? toneMark('˙', cx, centers[0] - g * 0.7, toneSize) : ''
   return `<svg class="syl n${n}${inWord ? '' : ' solo'}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-label="${light ? '˙' : ''}${core}${tone}">${lightSvg}${glyphs}${toneSvg}</svg>`
 }
@@ -350,6 +366,22 @@ export function cardArt (kind) {
   <text x="95" y="310" text-anchor="middle" font-size="40" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄍ</text>
   <text x="205" y="310" text-anchor="middle" font-size="40" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄨ</text>
   <path d="M215 250 q10 -40 10 -70" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="6 6"/>
+</svg>`
+  }
+  if (kind === 'tone') {
+    return `<img class="art-slot" src="img/card-tone.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="400" fill="#F3E4C2"/>
+  <text x="70" y="150" text-anchor="middle" font-size="80">\u{1F434}</text>
+  <rect x="140" y="50" width="130" height="160" rx="18" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <text x="190" y="102" text-anchor="middle" font-size="46" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄇ</text>
+  <text x="190" y="160" text-anchor="middle" font-size="46" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄚ</text>
+  <rect x="222" y="112" width="30" height="40" rx="7" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="8 6"/>
+  <rect x="60" y="260" width="70" height="70" rx="14" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <rect x="170" y="260" width="70" height="70" rx="14" fill="#FFF3B0" stroke="#E0955B" stroke-width="6"/>
+  <path d="M85 312 L105 280" stroke="#2B3A4A" stroke-width="7" fill="none"/>
+  <path d="M190 284 L205 306 L220 284" stroke="#2B3A4A" stroke-width="7" fill="none"/>
+  <path d="M215 250 q10 -40 22 -90" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="6 6"/>
 </svg>`
   }
   if (kind === 'speak') {

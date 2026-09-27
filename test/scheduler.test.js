@@ -5,6 +5,7 @@ import {
   addBones, buyItem, wearItem, withWallet,
   dayKey, dailyView, recordRound, claimDaily, dailyBonus, DAILY_GOAL, markSeen, recommendTrack,
   questionReward, roundBonus, comboBonus,
+  toneOfSyllable, stripTone, toneTiles, TONE_ORDER,
 } from '../src/scheduler.js';
 import { GROUPS, coreOf } from '../src/data.js';
 
@@ -310,11 +311,11 @@ test('寫字用的狀態：只保留單一符號的組別（前十組裡已解�
   assert.deepEqual(activePool(m), GROUPS[4]);
 });
 
-// ---- 聽、讀、寫三軌分開記 ----
-test('新狀態有三軌，各自空的紀錄；共用的家長設定在外層', () => {
+// ---- 聽、讀、寫、詞四軌分開記 ----
+test('新狀態有四軌，各自空的紀錄；共用的家長設定在外層', () => {
   const s = createState();
   assert.equal(s.version, 2);
-  assert.deepEqual(Object.keys(s.tracks).sort(), ['listen', 'read', 'write']);
+  assert.deepEqual(Object.keys(s.tracks).sort(), ['listen', 'read', 'word', 'write']);
   for (const t of Object.values(s.tracks)) {
     assert.deepEqual(t.mastery, {});
     assert.deepEqual(t.confusions, {});
@@ -571,15 +572,16 @@ test('今天推薦：推今天練最少的那一軌，都一樣就照日子輪',
   const at = new Date(2026, 8, 24, 10).getTime()
   const today = dayKey(at)
   const ans = (target, ok = true) => ({ target, ok, picked: target, ms: 1000, at })
-  // 聽練了兩題、讀練了一題、寫沒練 → 推寫
+  // 聽練了兩題、讀和詞各練了一題、寫沒練 → 推寫
   s = applyTrack(s, 'listen', recordAnswer(trackView(s, 'listen'), ans('ㄚ')))
   s = applyTrack(s, 'listen', recordAnswer(trackView(s, 'listen'), ans('ㄛ')))
   s = applyTrack(s, 'read', recordAnswer(trackView(s, 'read'), ans('ㄚ')))
+  s = applyTrack(s, 'word', recordAnswer(trackView(s, 'word'), ans('ㄅㄚˋ ˙ㄅㄚ')))
   assert.equal(recommendTrack(s, today), 'write')
   // 昨天練的不算
   const fresh = createState()
-  const days = ['2026-09-24', '2026-09-25', '2026-09-26'].map(d => recommendTrack(fresh, d))
-  assert.equal(new Set(days).size, 3, '三軌都沒練的時候，每天輪一軌')
+  const days = ['2026-09-24', '2026-09-25', '2026-09-26', '2026-09-27'].map(d => recommendTrack(fresh, d))
+  assert.equal(new Set(days).size, 4, '四軌都沒練的時候，每天輪一軌')
 })
 
 
@@ -627,4 +629,34 @@ test('連對獎勵照階級：連 3 題多 1～3 根、連 5 題多 2～4 根，
   assert.deepEqual([0, 2, 5].map(t => comboBonus(v(t), 5)), [2, 3, 4])
   assert.equal(comboBonus(v(5), 2), 0)
   assert.equal(comboBonus(v(5), 4), 0)
+})
+
+
+// ---- 聲調填空 ----
+test('音節的聲調：一聲不標、二三四聲在尾巴、輕聲點在前面', () => {
+  assert.equal(toneOfSyllable('ㄇㄠ'), '1')
+  assert.equal(toneOfSyllable('ㄇㄚˇ'), 'ˇ')
+  assert.equal(toneOfSyllable('ㄏㄨㄥˊ'), 'ˊ')
+  assert.equal(toneOfSyllable('ㄉㄚˋ'), 'ˋ')
+  assert.equal(toneOfSyllable('˙ㄅㄚ'), '˙')
+  assert.equal(stripTone('˙ㄅㄚ'), 'ㄅㄚ')
+  assert.equal(stripTone('ㄒㄧㄠˇ'), 'ㄒㄧㄠ')
+})
+
+test('聲調磁磚：一定有正確的；低階兩個、中階三個、高階四個；照一二三四輕排好', () => {
+  const rng = () => 0.5
+  for (const [tier, n] of [[0, 2], [1, 2], [2, 3], [3, 3], [4, 4], [5, 4]]) {
+    for (const correct of TONE_ORDER) {
+      const tiles = toneTiles(correct, tier, rng)
+      assert.equal(tiles.length, n)
+      assert.ok(tiles.includes(correct))
+      assert.deepEqual(tiles, TONE_ORDER.filter(t => tiles.includes(t)), '照順序排')
+      assert.equal(new Set(tiles).size, n)
+    }
+  }
+  // 低中階不拿輕聲當干擾項（答案本身是輕聲才出現）
+  for (let i = 0; i < 20; i++) {
+    const r = () => Math.random()
+    assert.ok(!toneTiles('ˇ', 3, r).includes('˙'))
+  }
 })

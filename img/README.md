@@ -122,6 +122,14 @@ a small cork board with two picture cards pinned on it, one of a cat and one of 
 a wooden jigsaw puzzle board with one piece missing and that puzzle piece floating just above the gap with a soft glow, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
 ```
 
+### `card-tone`　聲調填空
+
+600×800，直的 3:4。參考圖：`img/home.jpg`。
+
+```
+a row of four little wooden music bells on a windowsill, each a different height like steps going up and down, a small songbird perched on the tallest one, soft morning light, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
+```
+
 ### `card-write`　寫給狗狗看
 
 600×800，直的 3:4。參考圖：`img/home.jpg`。

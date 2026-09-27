@@ -196,6 +196,9 @@ export function renderHome (root, { profile, speech = true, bones = 0, mates = [
       <button class="card" data-game="fill" aria-label="填空">
         <div class="card-pic">${cardArt('fill')}</div>
       </button>
+      <button class="card" data-game="tone" aria-label="聲調填空">
+        <div class="card-pic">${cardArt('tone')}</div>
+      </button>
       <button class="card" data-game="write" aria-label="寫給狗狗看">
         <div class="card-pic">${cardArt('write')}</div>
       </button>
@@ -275,9 +278,11 @@ export function playResult (root, earned, { onTick = () => {}, onPerfect = () =>
 }
 
 // 第 14 組起有名字（聲母組＋韻類），前面的組顯示符號本身
+// 組太長時顯示組名：第 11–13 組是結合韻，第 14 組起用 syllables.js 產生的組名；都沒有就列出全部符號
+const COMPOUND_NAMES = { 10: 'ㄧ結合韻', 11: 'ㄨ結合韻', 12: 'ㄩ結合韻' }
 function groupName (i, g) {
-  const n = GROUP_NAMES[i - 13]
-  return n ? ' ' + n + '（' + g.length + ' 字）' : ''
+  const n = i >= 13 ? GROUP_NAMES[i - 13] : COMPOUND_NAMES[i]
+  return ' ' + (n ? n + '（' + g.length + ' 個）' : g.join(''))
 }
 
 function starColor (n) {
@@ -389,7 +394,7 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
       <div class="panel-row panel-tracks">
         <b>看哪一軌</b>
         ${TRACKS.map(t => `<button class="track-tab ${t === track ? 'on' : ''}" data-track="${t}">${TRACK_NAMES[t]}</button>`).join('')}
-        <span class="panel-hint-inline">聽＝釣魚、打地鼠；讀＝連連看、填空、唸給狗狗聽；寫＝寫給狗狗看。翻牌是純遊玩，不算進任何一軌。星星、混淆、階級、解鎖各軌分開算，下面的設定三軌共用。</span>
+        <span class="panel-hint-inline">聽＝釣魚、打地鼠；讀＝唸給狗狗聽；寫＝寫給狗狗看；詞＝連連看、填空、聲調填空。翻牌是純遊玩，不算進任何一軌。星星、混淆、階級、解鎖各軌分開算，下面的設定各軌共用。</span>
       </div>
       <div class="panel-row">
         <div>「${TRACK_NAMES[track]}」目前出題階級：<b>${effectiveTier(state) + 1}</b> / 6（${tierLabel(TIERS[effectiveTier(state)])}）</div>
@@ -435,7 +440,7 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
         ${profile ? `
         <button id="btn-export">匯出進度</button>
         <label class="file-btn">匯入進度<input type="file" id="file-import" accept=".json"></label>
-        <button id="btn-reset" class="danger">清除練習紀錄（三軌）</button>` : ''}
+        <button id="btn-reset" class="danger">清除練習紀錄（全部四軌）</button>` : ''}
         <span id="panel-msg" class="panel-msg"></span>
       </div>
       <p class="panel-hint">點符號可以試聽。「認得」勾起來的符號從 3 星起算並直接進入出題。每格右下方的字是語音合成實際唸的代表字，唸得怪可以改。</p>

@@ -79,6 +79,20 @@ const SCENES = {
     ${sparks('tut-fill-s', 371, 132)}
     ${hand('tut-fill-hand')}`,
 
+  // 把調號拖進音節右邊的空格（跟填空同一套動畫，位置對齊）
+  tone: `
+    <text x="80" y="130" font-size="90" text-anchor="middle" dominant-baseline="central">🐴</text>
+    <rect x="200" y="40" width="240" height="160" rx="24" fill="#FFFDF7" stroke="${WOOD}" stroke-width="8"/>
+    <text x="310" y="90" font-size="58" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄇ</text>
+    <text x="310" y="148" font-size="58" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄚ</text>
+    <rect class="tut-fill-blank" x="351" y="106" width="40" height="52" rx="8" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="8 6"/>
+    <g class="tut-fill-tile"><rect x="285" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#F6F3E6" stroke-width="5"/>
+    <path d="M309 292 L325 314 L341 292" stroke="${INK}" stroke-width="7" fill="none"/></g>
+    <rect x="435" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#F6F3E6" stroke-width="5"/>
+    <path d="M465 316 L485 288" stroke="${INK}" stroke-width="7" fill="none"/>
+    ${sparks('tut-fill-s', 371, 132)}
+    ${hand('tut-fill-hand')}`,
+
   // 在板子上寫
   write: `
     <rect x="170" y="70" width="300" height="280" rx="26" fill="#FFFDF7" stroke="${WOOD}" stroke-width="8"/>
