@@ -1,4 +1,5 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; } /* 程式用 el.hidden 藏東西，別被各元件自己的 display 蓋掉 */
 html, body { width: 100%; height: 100%; height: 100dvh; overflow: hidden; background: #26647E; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: none; text-size-adjust: none; } /* 手機 Chrome 會自己把它覺得太小的字放大（font boosting），注音的排版會被弄亂，關掉 */
 body { font-family: "Microsoft JhengHei", "Noto Sans TC", "PingFang TC", sans-serif; }
 button { font-family: inherit; border: 0; background: none; cursor: pointer; touch-action: manipulation; }
@@ -269,10 +270,11 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 .pad-wrap.shake { animation: shake .45s ease-in-out; }
 .pad-wrap.glow { box-shadow: 0 0 0 18px rgba(232,200,106,0.75), 0 12px 0 #8E6D4C; }
 .pad { position: absolute; left: 0; top: 0; width: 540px; height: 540px; touch-action: none; cursor: crosshair; border-radius: 26px; }
-.pad-template { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: 0; transition: opacity .3s; }
-.pad-template.show { opacity: 1; }
+/* 描寫的淡色範本：教育部字形，跟答案同一個位置 */
+.pad-tpl { position: absolute; left: 30px; top: 30px; width: 480px; height: 480px; pointer-events: none; }
+.pad-tpl.flash { animation: tplFlash 1.5s ease-in-out; }
 /* 答錯時照筆順寫出正確答案（strokeplay.js）；疊在她的筆跡上面，不擋她重寫 */
-.pad-strokes { position: absolute; left: 30px; top: 30px; width: 480px; height: 480px; pointer-events: none; opacity: 0; transition: opacity .2s; }
+.pad-strokes { position: absolute; left: 30px; top: 30px; width: 480px; height: 480px; pointer-events: none; opacity: 0; }
 .pad-strokes.show { opacity: 0.85; }
 .stroke-svg { width: 100%; height: 100%; display: block; }
 @keyframes strokeDraw { to { stroke-dashoffset: 0; } }
@@ -314,9 +316,7 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 .learn-overlay { position: absolute; inset: 0; z-index: 30; }
 .learn-backdrop { position: absolute; inset: 0; background: rgba(43,58,74,0.55); }
 .learn-close { position: absolute; left: 280px; top: 130px; background: #B32B37; }
-.pad-template.flash { animation: tplFlash 1.5s ease-in-out; }
 @keyframes tplFlash { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
-.pad-template span { font-size: 400px; font-weight: 900; color: #D5DEE8; line-height: 1; }
 .pad-ok { position: absolute; right: -70px; bottom: -30px; width: 130px; height: 130px; border-radius: 50%; background: #6B9E6B; border: 8px solid #F6F3E6; box-shadow: 0 10px 0 #4E7A4E, 0 16px 26px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; }
 .pad-ok:active { transform: translateY(6px); box-shadow: 0 4px 0 #4E7A4E; }
 .pad-undo { position: absolute; right: -50px; top: -20px; width: 84px; height: 84px; border-radius: 50%; background: #E0955B; border: 6px solid #F6F3E6; box-shadow: 0 8px 0 #B07242; display: flex; align-items: center; justify-content: center; }
@@ -327,8 +327,6 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 .track-tab.on { background: #1B2B4B !important; color: #fff; }
 .panel-hint-inline { color: #5A6B85; font-size: 15px; }
 
-.pad-template.good span { color: rgba(107,158,107,0.55); }
-.pad-template.bad span { color: rgba(224,149,91,0.6); }
 
 .heard.warn { color: #B32B37; font-size: 24px; line-height: 1.3; }
 .mic-btn.disabled { background: #A9BFCF; box-shadow: 0 12px 0 #8A9DAB; cursor: default; }

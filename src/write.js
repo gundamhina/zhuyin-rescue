@@ -7,6 +7,7 @@ import { stagePoint, stageOffset, mountBgs } from './ui.js'
 import { normalizePoints, rasterize, coverage, bestMatch } from './ink.js'
 import { SIMILAR_SHAPE } from './data.js'
 import { strokeSvg } from './strokeplay.js'
+import { STROKES } from './strokes.js'
 
 const PAD = 560 // 板子邊長（舞台座標）
 const GRID = 64 // 比對用小圖邊長
@@ -20,7 +21,7 @@ const LEARN_BTN_SVG = `<svg viewBox="0 0 24 24" width="52" height="52" fill="#ff
 const UNDO_SVG = `<svg viewBox="0 0 24 24" width="44" height="44" fill="#fff"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>`
 
 const glyphCache = {}
-// 用遊戲字型把符號畫出來，轉成比對用的小圖。同一個符號只算一次。
+// 把符號畫成比對用的小圖。用教育部筆順的字形（跟板子上給她看的範本同一個），沒有筆順資料才退回字型。同一個符號只算一次。
 function glyphBitmap (symbol) {
   if (glyphCache[symbol]) return glyphCache[symbol]
   const c = document.createElement('canvas')
@@ -28,10 +29,16 @@ function glyphBitmap (symbol) {
   c.height = 256
   const ctx = c.getContext('2d')
   ctx.fillStyle = '#000'
-  ctx.font = '900 190px "Microsoft JhengHei", "Noto Sans TC", sans-serif'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText(symbol, 128, 136)
+  if (STROKES[symbol]) {
+    ctx.setTransform(256 / 2048, 0, 0, 256 / 2048, 0, 0)
+    for (const s of STROKES[symbol]) ctx.fill(new Path2D(s.d))
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
+  } else {
+    ctx.font = '900 190px "Microsoft JhengHei", "Noto Sans TC", sans-serif'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(symbol, 128, 136)
+  }
   const data = ctx.getImageData(0, 0, 256, 256).data
   const pts = []
   for (let y = 0; y < 256; y += 2) {
@@ -54,7 +61,7 @@ export function createWrite (root, { color = 0 } = {}) {
   root.innerHTML = bgHtml('room') + '<div class="frame">' +
     '<div class="dog-wrap write-dog">' + dogSvg(color) + '</div>' +
     `<div class="pad-wrap">
-       <div class="pad-template"><span></span></div>
+       <div class="pad-tpl hidden"></div>
        <div class="pad-strokes"></div>
        <canvas class="pad" width="${PAD}" height="${PAD}"></canvas>
        <button class="pad-undo" aria-label="重寫">${UNDO_SVG}</button>
@@ -66,8 +73,7 @@ export function createWrite (root, { color = 0 } = {}) {
   const padWrap = root.querySelector('.pad-wrap')
   const canvas = root.querySelector('.pad')
   const ctx = canvas.getContext('2d')
-  const tplEl = root.querySelector('.pad-template')
-  const tplText = tplEl.querySelector('span')
+  const tplEl = root.querySelector('.pad-tpl') // 描寫的淡色範本（教育部字形）
   const strokesEl = root.querySelector('.pad-strokes')
   const learnBtn = root.querySelector('.pad-learn')
   let learnFn = null
@@ -156,12 +162,13 @@ export function createWrite (root, { color = 0 } = {}) {
     handler(verdict, null)
   })
 
-  // 對答案：把正確符號疊在她寫的字上。對的：綠色的字；錯的：照教育部的筆順一筆一筆用橘色寫出來
+  // 對答案：把正確符號疊在她寫的字上。對的：整個字淡綠色；錯的：照教育部的筆順一筆一筆用橘色寫出來
+  // 範本、答案都用教育部筆順網的字形，板子上只有一種字
   function reveal (ok) {
-    tplEl.classList.remove('good', 'bad')
-    if (ok) { tplEl.classList.add('show', 'good'); return }
-    tplEl.classList.remove('show')
-    strokesEl.innerHTML = strokeSvg(current.target).svg
+    tplEl.classList.add('hidden')
+    strokesEl.innerHTML = ok
+      ? strokeSvg(current.target, { animate: false, color: 'rgba(107,158,107,0.7)', ghost: null }).svg
+      : strokeSvg(current.target).svg
     strokesEl.classList.add('show')
   }
 
@@ -177,11 +184,12 @@ export function createWrite (root, { color = 0 } = {}) {
     trace = isTrace
     locked = true
     clearInk()
-    tplText.textContent = question.target
-    tplEl.classList.remove('good', 'bad', 'flash')
-    tplEl.classList.toggle('show', trace)
+    // 先把上一題的答案整個拿掉（不淡出），再放這一題的範本，換題時才不會閃到答案
     strokesEl.innerHTML = ''
     strokesEl.classList.remove('show')
+    tplEl.classList.remove('flash')
+    tplEl.innerHTML = strokeSvg(question.target, { animate: false, color: '#D5DEE8', ghost: null }).svg
+    tplEl.classList.toggle('hidden', !trace)
     learnBtn.classList.add('hidden')
     learnFn = null
     padWrap.classList.remove('shake', 'glow')
@@ -190,8 +198,9 @@ export function createWrite (root, { color = 0 } = {}) {
   function lock () { locked = true }
   // 提示：閃一下範本
   function hint () {
-    tplEl.classList.add('show', 'flash')
-    setTimeout(() => { tplEl.classList.remove('flash'); if (!trace) tplEl.classList.remove('show') }, 1500)
+    tplEl.classList.remove('hidden')
+    tplEl.classList.add('flash')
+    setTimeout(() => { tplEl.classList.remove('flash'); if (!trace) tplEl.classList.add('hidden') }, 1500)
   }
   function shake () { shakePad() }
   function celebrate () {
