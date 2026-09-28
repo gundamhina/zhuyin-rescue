@@ -76,10 +76,19 @@ function toneMark (tone, x, y, size) {
 // 詞的圖：img/words/<國字>.png 有就用，沒有退回表情符號
 // 沒有圖的詞（只聽不看圖）：放一個大喇叭，點了再唸一次
 const SPEAKER_PIC = '<svg class="pic-speaker" viewBox="0 0 100 100" width="150" height="150"><path d="M18 38h18l24-20v64L36 62H18z" fill="#E0955B"/><path d="M70 36q10 14 0 28M80 26q18 24 0 48" stroke="#E0955B" stroke-width="7" fill="none" stroke-linecap="round"/></svg>'
+// Twemoji 的檔名：碼位轉小寫十六進位用「-」接；沒有 ZWJ（200D）的拿掉 FE0F。跟 tools/fetch_twemoji.py 同一套
+export function twemojiName (emoji) {
+  const s = emoji.includes('\u200d') ? emoji : emoji.replace(/\ufe0f/g, '')
+  return [...s].map(c => c.codePointAt(0).toString(16)).join('-')
+}
+// 詞的圖：手繪的 img/words/<國字>.png 優先；沒有就用 Twemoji 圖檔（img/emoji/，每台裝置長得一樣、Windows 10 也看得到）；
+// 圖檔也載不到才退回系統字型畫的表情符號
 export function wordPicMarkup (word) {
   if (!WORD_ICON[word]) return SPEAKER_PIC
   const text = WORD_TEXT[word] || ''
-  return `<img class="art-slot" src="img/words/${text}.png" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()"><span class="emoji">${WORD_ICON[word] || '❓'}</span>`
+  const icon = WORD_ICON[word]
+  return `<img class="art-slot" src="img/words/${text}.png" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">` +
+    `<img class="emoji emoji-img" src="img/emoji/${twemojiName(icon)}.svg" alt="${icon}" onerror="this.outerHTML='<span class=&quot;emoji&quot;>${icon}</span>'">`
 }
 
 // 背景層：整個舞台大小，裡面一層天空填色、一層 1200×800 的場景圖（ui.js 的 layoutBg 會依舞台大小縮放定位）。

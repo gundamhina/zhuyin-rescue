@@ -85,5 +85,13 @@ if (existsSync(imgDir)) {
     wordFiles = readdirSync(wordsDir).filter(f => /\.(png|jpg|jpeg|webp)$/i.test(f))
     for (const f of wordFiles) copyFileSync(join(wordsDir, f), join(root, 'dist', 'img', 'words', f))
   }
-  console.log('dist/img/', files.length, 'files,', wordFiles.length, 'word pictures')
+  // 詞的圖的表情符號（Twemoji SVG，tools/fetch_twemoji.py 下載）在 img/emoji/
+  const emojiDir = join(imgDir, 'emoji')
+  let emojiFiles = []
+  if (existsSync(emojiDir)) {
+    mkdirSync(join(root, 'dist', 'img', 'emoji'), { recursive: true })
+    emojiFiles = readdirSync(emojiDir).filter(f => /\.svg$/i.test(f))
+    for (const f of emojiFiles) copyFileSync(join(emojiDir, f), join(root, 'dist', 'img', 'emoji', f))
+  }
+  console.log('dist/img/', files.length, 'files,', wordFiles.length, 'word pictures,', emojiFiles.length, 'emoji')
 }

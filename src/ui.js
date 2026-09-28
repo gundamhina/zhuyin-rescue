@@ -522,7 +522,7 @@ function renderTeacherPanel (root, { profile, profiles, state, settings, voices,
           <button class="danger" data-remove="${p.id}">刪除</button>
         </div>`).join('')}
       </div>
-      <p class="panel-hint">資料來源：發音為教育部《國語注音符號手冊》錄音（CC BY 4.0）；讀音照教育部《國語辭典簡編本》；筆順為教育部《國字標準字體筆順學習網》（CC BY-NC-ND 3.0 臺灣）。</p>
+      <p class="panel-hint">資料來源：發音為教育部《國語注音符號手冊》錄音（CC BY 4.0）；讀音照教育部《國語辭典簡編本》；筆順為教育部《國字標準字體筆順學習網》（CC BY-NC-ND 3.0 臺灣）；詞的圖為 Twemoji（CC BY 4.0）。</p>
     </div>`
   root.querySelector('#panel-close').onclick = onClose
   root.querySelector('#btn-check').onclick = onCheck
@@ -652,7 +652,7 @@ function renderFamilyPanel (root, { profile, profiles, state, track = 'listen', 
         <button id="btn-reset" class="danger">清除練習紀錄（全部五軌）</button>` : ''}
         <span id="panel-msg" class="panel-msg"></span>
       </div>
-      <p class="panel-hint">資料來源：發音為教育部《國語注音符號手冊》錄音（CC BY 4.0）；讀音照教育部《國語辭典簡編本》；筆順為教育部《國字標準字體筆順學習網》（CC BY-NC-ND 3.0 臺灣）。</p>
+      <p class="panel-hint">資料來源：發音為教育部《國語注音符號手冊》錄音（CC BY 4.0）；讀音照教育部《國語辭典簡編本》；筆順為教育部《國字標準字體筆順學習網》（CC BY-NC-ND 3.0 臺灣）；詞的圖為 Twemoji（CC BY 4.0）。</p>
       <p class="panel-hint">點符號可以試聽。「認得」勾起來的符號從 3 星起算並直接進入出題。每格右下方的字是語音合成實際唸的代表字，唸得怪可以改。</p>
       ${profile ? groupsHtml : '<p class="panel-hint">先回選人畫面選一個人，才看得到進度。</p>'}
     </div>`

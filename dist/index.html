@@ -389,6 +389,7 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 .mword.matched { opacity: 0.55; border-color: #6B9E6B; box-shadow: 0 8px 0 #4E7A4E; cursor: default; }
 .mpic { position: absolute; left: 740px; width: 160px; height: 160px; border-radius: 28px; background: linear-gradient(#FFFDF7, #F1ECDC); border: 8px solid #fff; box-shadow: 0 8px 0 #A9BFCF, 0 14px 22px rgba(20,60,110,0.16); display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; }
 .mpic .emoji { font-size: 100px; line-height: 1; pointer-events: none; }
+.mpic .emoji-img { width: 110px; height: 110px; }
 .mpic .art-slot, .fill-pic .art-slot { object-fit: contain; padding: 8px; box-sizing: border-box; }
 .has-art > .emoji { display: none; }
 .emoji { font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif; }
@@ -401,6 +402,8 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 .fill-dog .dog-slot .art-slot { width: 220px; height: 254px; }
 .fill-pic { position: absolute; left: 120px; top: 120px; width: 240px; height: 240px; border-radius: 40px; background: linear-gradient(#FFFDF7, #F1ECDC); border: 8px solid #fff; box-shadow: 0 10px 0 #A9BFCF, 0 14px 22px rgba(20,60,110,0.16); display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; }
 .fill-pic .emoji { font-size: 150px; line-height: 1; pointer-events: none; }
+.fill-pic .emoji-img { width: 160px; height: 160px; }
+.emoji-img { display: block; object-fit: contain; }
 .fill-sign { left: 420px; top: 90px; width: 700px; }
 .fill-sign .sign-board { width: 700px; height: 300px; }
 .fill-sign .sign-board span.fill-word { font-size: 150px; }
@@ -732,7 +735,7 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
   </defs>
 </svg>
 <div id="install-hint" hidden>手機請用 Chrome 開，再從選單「加到主畫面」，就會是全螢幕。點這裡關掉。</div>
-<div id="version" aria-hidden="true">v0.3.0 · 3190e9b · 09/28 18:48</div>
+<div id="version" aria-hidden="true">v0.3.0 · 08d7f28 · 09/28 19:01</div>
 <div id="stage">
   <section class="screen" id="screen-profiles"></section>
   <section class="screen" id="screen-home"></section>
@@ -1184,6 +1187,9 @@ const WORD_GROUPS = [
   { name: '人物三', items: ['ㄍㄨㄟˇ ㄏㄨㄣˊ', 'ㄨㄟˋ ㄅㄧㄥ', 'ㄈㄟ ㄒㄧㄥˊ ㄩㄢˊ', 'ㄈㄚˇ ㄍㄨㄢ', 'ㄒㄩㄝˊ ㄕㄥ', 'ㄌㄠˇ ㄖㄣˊ', 'ㄒㄧㄣ ㄋㄧㄤˊ', 'ㄒㄧㄣ ㄌㄤˊ'] },
   { name: '動作和身體', items: ['ㄗㄡˇ ㄌㄨˋ', 'ㄐㄩˇ ㄕㄡˇ', 'ㄐㄩˊ ㄍㄨㄥ', 'ㄒㄧㄝˇ ㄗˋ', 'ㄨㄛˋ ㄕㄡˇ', 'ㄑㄧˊ ㄉㄠˇ', 'ㄆㄢ ㄧㄢˊ', 'ㄐㄧ ㄖㄡˋ', 'ㄕㄜˊ ˙ㄊㄡ', 'ㄉㄚˋ ㄋㄠˇ', 'ㄍㄨˊ ˙ㄊㄡ'] },
   { name: '遊戲和獎品', items: ['ㄆㄨ ㄎㄜˋ ㄆㄞˊ', 'ㄅㄠˇ ㄌㄧㄥˊ ㄑㄧㄡˊ', 'ㄐㄧㄤˇ ㄆㄞˊ', 'ㄐㄧㄣ ㄆㄞˊ', 'ㄅㄧㄢ ㄆㄠˋ', 'ㄉㄧㄢˋ ㄧㄥˇ', 'ㄇㄣˊ ㄆㄧㄠˋ', 'ㄍㄨㄛˊ ㄑㄧˊ'] },
+  { name: '更多動物二', items: ['ㄕㄨㄟˇ ㄇㄨˇ', 'ㄏㄞˇ ㄅㄠˋ', 'ㄕㄢ ㄏㄨˊ', 'ㄓㄤ ㄌㄤˊ', 'ㄑㄧㄡ ㄧㄣˇ', 'ㄐㄧㄚˇ ㄔㄨㄥˊ', 'ㄨ ㄧㄚ', 'ㄌㄩˊ ˙ㄗ', 'ㄍㄡˇ ㄒㄩㄥˊ'] },
+  { name: '家裡三', items: ['ㄔㄚˊ ㄏㄨˊ', 'ㄐㄧㄥˋ ˙ㄗ', 'ㄔㄨㄤ ㄏㄨˋ', 'ㄧㄚˊ ㄕㄨㄚ', 'ㄕㄨ ˙ㄗ', 'ㄕㄢˋ ˙ㄗ', 'ㄊㄨㄛ ㄒㄧㄝˊ', 'ㄊㄧ ˙ㄗ', 'ㄐㄩˋ ˙ㄗ', 'ㄆㄣˊ ㄗㄞ'] },
+  { name: '東西和點心', items: ['ㄕˊ ˙ㄊㄡ', 'ㄇㄨˋ ˙ㄊㄡ', 'ㄋㄞˇ ㄔㄚˊ', 'ㄧㄥˋ ㄅㄧˋ', 'ㄐㄧㄡˋ ㄕㄥ ㄑㄩㄢ', 'ㄆㄠ ㄆㄠ', 'ㄩˇ ㄇㄠˊ', 'ㄔˋ ㄅㄤˇ', 'ㄕㄡˇ ㄈㄥ ㄑㄧㄣˊ', 'ㄍㄢˇ ㄌㄢˇ'] },
 ]
 
 // 只聽不看圖的詞：只給聲調填空用，接在有圖的詞後面
@@ -1606,6 +1612,35 @@ const WORD_TEXT = {
   'ㄉㄧㄢˋ ㄧㄥˇ': '電影',
   'ㄇㄣˊ ㄆㄧㄠˋ': '門票',
   'ㄍㄨㄛˊ ㄑㄧˊ': '國旗',
+  'ㄕㄨㄟˇ ㄇㄨˇ': '水母',
+  'ㄏㄞˇ ㄅㄠˋ': '海豹',
+  'ㄕㄢ ㄏㄨˊ': '珊瑚',
+  'ㄓㄤ ㄌㄤˊ': '蟑螂',
+  'ㄑㄧㄡ ㄧㄣˇ': '蚯蚓',
+  'ㄐㄧㄚˇ ㄔㄨㄥˊ': '甲蟲',
+  'ㄨ ㄧㄚ': '烏鴉',
+  'ㄌㄩˊ ˙ㄗ': '驢子',
+  'ㄍㄡˇ ㄒㄩㄥˊ': '狗熊',
+  'ㄔㄚˊ ㄏㄨˊ': '茶壺',
+  'ㄐㄧㄥˋ ˙ㄗ': '鏡子',
+  'ㄔㄨㄤ ㄏㄨˋ': '窗戶',
+  'ㄧㄚˊ ㄕㄨㄚ': '牙刷',
+  'ㄕㄨ ˙ㄗ': '梳子',
+  'ㄕㄢˋ ˙ㄗ': '扇子',
+  'ㄊㄨㄛ ㄒㄧㄝˊ': '拖鞋',
+  'ㄊㄧ ˙ㄗ': '梯子',
+  'ㄐㄩˋ ˙ㄗ': '鋸子',
+  'ㄆㄣˊ ㄗㄞ': '盆栽',
+  'ㄕˊ ˙ㄊㄡ': '石頭',
+  'ㄇㄨˋ ˙ㄊㄡ': '木頭',
+  'ㄋㄞˇ ㄔㄚˊ': '奶茶',
+  'ㄧㄥˋ ㄅㄧˋ': '硬幣',
+  'ㄐㄧㄡˋ ㄕㄥ ㄑㄩㄢ': '救生圈',
+  'ㄆㄠ ㄆㄠ': '泡泡',
+  'ㄩˇ ㄇㄠˊ': '羽毛',
+  'ㄔˋ ㄅㄤˇ': '翅膀',
+  'ㄕㄡˇ ㄈㄥ ㄑㄧㄣˊ': '手風琴',
+  'ㄍㄢˇ ㄌㄢˇ': '橄欖',
   'ㄗㄠˇ ㄢ': '早安',
   'ㄨㄢˇ ㄢ': '晚安',
   'ㄉㄨㄟˋ ㄅㄨˋ ㄑㄧˇ': '對不起',
@@ -2083,6 +2118,35 @@ const WORD_ICON = {
   'ㄉㄧㄢˋ ㄧㄥˇ': '🎬',
   'ㄇㄣˊ ㄆㄧㄠˋ': '🎫',
   'ㄍㄨㄛˊ ㄑㄧˊ': '🎌',
+  'ㄕㄨㄟˇ ㄇㄨˇ': '🪼',
+  'ㄏㄞˇ ㄅㄠˋ': '🦭',
+  'ㄕㄢ ㄏㄨˊ': '🪸',
+  'ㄓㄤ ㄌㄤˊ': '🪳',
+  'ㄑㄧㄡ ㄧㄣˇ': '🪱',
+  'ㄐㄧㄚˇ ㄔㄨㄥˊ': '🪲',
+  'ㄨ ㄧㄚ': '🐦‍⬛',
+  'ㄌㄩˊ ˙ㄗ': '🫏',
+  'ㄍㄡˇ ㄒㄩㄥˊ': '🐻',
+  'ㄔㄚˊ ㄏㄨˊ': '🫖',
+  'ㄐㄧㄥˋ ˙ㄗ': '🪞',
+  'ㄔㄨㄤ ㄏㄨˋ': '🪟',
+  'ㄧㄚˊ ㄕㄨㄚ': '🪥',
+  'ㄕㄨ ˙ㄗ': '🪮',
+  'ㄕㄢˋ ˙ㄗ': '🪭',
+  'ㄊㄨㄛ ㄒㄧㄝˊ': '🩴',
+  'ㄊㄧ ˙ㄗ': '🪜',
+  'ㄐㄩˋ ˙ㄗ': '🪚',
+  'ㄆㄣˊ ㄗㄞ': '🪴',
+  'ㄕˊ ˙ㄊㄡ': '🪨',
+  'ㄇㄨˋ ˙ㄊㄡ': '🪵',
+  'ㄋㄞˇ ㄔㄚˊ': '🧋',
+  'ㄧㄥˋ ㄅㄧˋ': '🪙',
+  'ㄐㄧㄡˋ ㄕㄥ ㄑㄩㄢ': '🛟',
+  'ㄆㄠ ㄆㄠ': '🫧',
+  'ㄩˇ ㄇㄠˊ': '🪶',
+  'ㄔˋ ㄅㄤˇ': '🪽',
+  'ㄕㄡˇ ㄈㄥ ㄑㄧㄣˊ': '🪗',
+  'ㄍㄢˇ ㄌㄢˇ': '🫒',
 }
 
 // ===== data.js =====
@@ -3236,10 +3300,19 @@ function toneMark (tone, x, y, size) {
 // 詞的圖：img/words/<國字>.png 有就用，沒有退回表情符號
 // 沒有圖的詞（只聽不看圖）：放一個大喇叭，點了再唸一次
 const SPEAKER_PIC = '<svg class="pic-speaker" viewBox="0 0 100 100" width="150" height="150"><path d="M18 38h18l24-20v64L36 62H18z" fill="#E0955B"/><path d="M70 36q10 14 0 28M80 26q18 24 0 48" stroke="#E0955B" stroke-width="7" fill="none" stroke-linecap="round"/></svg>'
+// Twemoji 的檔名：碼位轉小寫十六進位用「-」接；沒有 ZWJ（200D）的拿掉 FE0F。跟 tools/fetch_twemoji.py 同一套
+function twemojiName (emoji) {
+  const s = emoji.includes('\u200d') ? emoji : emoji.replace(/\ufe0f/g, '')
+  return [...s].map(c => c.codePointAt(0).toString(16)).join('-')
+}
+// 詞的圖：手繪的 img/words/<國字>.png 優先；沒有就用 Twemoji 圖檔（img/emoji/，每台裝置長得一樣、Windows 10 也看得到）；
+// 圖檔也載不到才退回系統字型畫的表情符號
 function wordPicMarkup (word) {
   if (!WORD_ICON[word]) return SPEAKER_PIC
   const text = WORD_TEXT[word] || ''
-  return `<img class="art-slot" src="img/words/${text}.png" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()"><span class="emoji">${WORD_ICON[word] || '❓'}</span>`
+  const icon = WORD_ICON[word]
+  return `<img class="art-slot" src="img/words/${text}.png" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">` +
+    `<img class="emoji emoji-img" src="img/emoji/${twemojiName(icon)}.svg" alt="${icon}" onerror="this.outerHTML='<span class=&quot;emoji&quot;>${icon}</span>'">`
 }
 
 // 背景層：整個舞台大小，裡面一層天空填色、一層 1200×800 的場景圖（ui.js 的 layoutBg 會依舞台大小縮放定位）。
@@ -6036,7 +6109,7 @@ function renderTeacherPanel (root, { profile, profiles, state, settings, voices,
           <button class="danger" data-remove="${p.id}">刪除</button>
         </div>`).join('')}
       </div>
-      <p class="panel-hint">資料來源：發音為教育部《國語注音符號手冊》錄音（CC BY 4.0）；讀音照教育部《國語辭典簡編本》；筆順為教育部《國字標準字體筆順學習網》（CC BY-NC-ND 3.0 臺灣）。</p>
+      <p class="panel-hint">資料來源：發音為教育部《國語注音符號手冊》錄音（CC BY 4.0）；讀音照教育部《國語辭典簡編本》；筆順為教育部《國字標準字體筆順學習網》（CC BY-NC-ND 3.0 臺灣）；詞的圖為 Twemoji（CC BY 4.0）。</p>
     </div>`
   root.querySelector('#panel-close').onclick = onClose
   root.querySelector('#btn-check').onclick = onCheck
@@ -6166,7 +6239,7 @@ function renderFamilyPanel (root, { profile, profiles, state, track = 'listen', 
         <button id="btn-reset" class="danger">清除練習紀錄（全部五軌）</button>` : ''}
         <span id="panel-msg" class="panel-msg"></span>
       </div>
-      <p class="panel-hint">資料來源：發音為教育部《國語注音符號手冊》錄音（CC BY 4.0）；讀音照教育部《國語辭典簡編本》；筆順為教育部《國字標準字體筆順學習網》（CC BY-NC-ND 3.0 臺灣）。</p>
+      <p class="panel-hint">資料來源：發音為教育部《國語注音符號手冊》錄音（CC BY 4.0）；讀音照教育部《國語辭典簡編本》；筆順為教育部《國字標準字體筆順學習網》（CC BY-NC-ND 3.0 臺灣）；詞的圖為 Twemoji（CC BY 4.0）。</p>
       <p class="panel-hint">點符號可以試聽。「認得」勾起來的符號從 3 星起算並直接進入出題。每格右下方的字是語音合成實際唸的代表字，唸得怪可以改。</p>
       ${profile ? groupsHtml : '<p class="panel-hint">先回選人畫面選一個人，才看得到進度。</p>'}
     </div>`
