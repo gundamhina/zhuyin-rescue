@@ -16,7 +16,7 @@ import { setOutfit, boneSvg, ownedMates, bgHtml, UX_ICONS } from './art.js'
 import { burstAt, flyBones, bump, buzz } from './fx.js'
 import { showTutorial, hasTutorial } from './tutorial.js'
 import { WORD_ICON } from './data.js'
-import { fitStage, layoutBg, mountBgs, goFullscreenOnPhone, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage } from './ui.js'
+import { fitStage, layoutBg, mountBgs, goFullscreenOnPhone, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage, openRangePicker } from './ui.js'
 import { renderCheck } from './check.js'
 
 const SETTINGS_KEY = 'zhuyin-rescue-settings'
@@ -117,6 +117,13 @@ function main () {
     if (!profile) return goProfiles()
     store.setCurrent(id)
     state = store.load(id)
+    // 老師帳號：一定鎖難度、一定指定範圍，第一次進來先給第 3 階、第 1 組
+    if (profile.adult) {
+      if (state.lockTier == null || !(state.rangeGroups && state.rangeGroups.length)) {
+        state = { ...state, lockTier: state.lockTier == null ? 2 : state.lockTier, rangeGroups: state.rangeGroups && state.rangeGroups.length ? state.rangeGroups : [0] }
+        store.save(id, state)
+      }
+    }
     setOutfit(profile.color, state.worn)
     goHome()
   }
@@ -136,9 +143,21 @@ function main () {
   function goHome () {
     destroyGame()
     const daily = { ...dailyView(state, today()), goal: DAILY_GOAL }
-    renderHome(homeEl, { profile, speech: speechAvailable(), bones: state.bones, mates: ownedMates(state), daily, recommend: recommendGame(), musicOn: !settings.musicOff })
+    const teacher = isTeacher() ? { tier: state.lockTier, range: state.rangeGroups || [] } : null
+    renderHome(homeEl, { profile, speech: speechAvailable(), bones: state.bones, mates: ownedMates(state), daily, recommend: recommendGame(), musicOn: !settings.musicOff, teacher })
     homeEl.querySelector('#btn-who').addEventListener('pointerdown', goProfiles)
     homeEl.querySelector('#btn-chest').addEventListener('pointerdown', openChest)
+    // 老師：點難度直接換；點範圍打開挑選
+    homeEl.querySelectorAll('[data-tier]').forEach(b => b.addEventListener('pointerdown', () => {
+      state = { ...state, lockTier: parseInt(b.dataset.tier, 10) }
+      store.save(profile.id, state)
+      goHome()
+    }))
+    const rangeBtn = homeEl.querySelector('#btn-range')
+    if (rangeBtn) rangeBtn.addEventListener('pointerdown', () => openRangePicker(homeEl, {
+      range: state.rangeGroups || [],
+      onDone (range) { state = { ...state, rangeGroups: range }; store.save(profile.id, state); goHome() },
+    }))
     homeEl.querySelector('#btn-music').addEventListener('pointerdown', e => {
       settings = { ...settings, musicOff: !settings.musicOff }
       saveSettings(settings)
@@ -147,7 +166,8 @@ function main () {
       b.innerHTML = settings.musicOff ? UX_ICONS.musicOff : UX_ICONS.musicOn
       updateMusic()
     })
-    homeEl.querySelector('#btn-shop').addEventListener('pointerdown', () => { audio.unlock(); openShop() })
+    const shopBtn = homeEl.querySelector('#btn-shop')
+    if (shopBtn) shopBtn.addEventListener('pointerdown', () => { audio.unlock(); openShop() })
     homeEl.querySelectorAll('[data-game]').forEach(card => {
       card.addEventListener('pointerdown', () => { audio.unlock(); startGame(card.dataset.game) })
     })
@@ -225,8 +245,11 @@ function main () {
     setTimeout(() => f.remove(), 1200)
   }
   // 存檔馬上存；畫面上的數字等骨頭飛到了才加。fromEl 是骨頭飛出來的地方（答對的泡泡、地鼠…）
+  // 老師帳號（教室投影）：難度、範圍由老師指定，不記紀錄、不自動升降，也沒有骨頭
+  function isTeacher () { return !!(profile && profile.adult) }
+
   function gain (n, fromEl = null) {
-    if (!n) return
+    if (!n || isTeacher()) return
     state = addBones(state, n)
     store.save(profile.id, state)
     roundBones += n
@@ -329,6 +352,7 @@ function main () {
 
   function startGame (which) {
     destroyGame()
+    bonesEl.hidden = isTeacher() // 老師帳號沒有骨頭
     kind = which
     earned = []
     roundBones = 0
@@ -337,7 +361,7 @@ function main () {
     showBones()
     show('game')
     // 第一次玩這個遊戲：先看小手示範，按播放鍵才開始
-    if (hasTutorial(which) && !(state.seen && state.seen[which])) {
+    if (hasTutorial(which) && !isTeacher() && !(state.seen && state.seen[which])) {
       playArea.innerHTML = bgHtml({ fishing: 'scene', whack: 'garden' }[which] || 'room')
       mountBgs(playArea)
       showTutorial(gameEl, which, () => {
@@ -374,6 +398,7 @@ function main () {
 
   // 記到目前玩法那一軌
   function commit (answer) {
+    if (isTeacher()) return
     const track = TRACK_OF[kind]
     state = applyTrack(state, track, recordAnswer(trackView(state, track), answer))
     store.save(profile.id, state)
@@ -401,14 +426,14 @@ function main () {
     setCombo(0)
     // 翻牌、學寫字是純練習：沒有玩完的骨頭，也不算今天的腳印
     let daily = null
-    if (!PRACTICE_KINDS.includes(kind)) {
+    if (!PRACTICE_KINDS.includes(kind) && !isTeacher()) {
       gain(roundBonus(currentView()))
       state = recordRound(state, today())
       store.save(profile.id, state)
       daily = { ...dailyView(state, today()), goal: DAILY_GOAL }
     }
     const perfect = !PRACTICE_KINDS.includes(kind) && earned.length > 0 && earned.every(Boolean)
-    renderResult(resultEl, profile.color, { roundBones, bones: state.bones, mates: ownedMates(state), daily, perfect })
+    renderResult(resultEl, profile.color, { roundBones, bones: state.bones, mates: isTeacher() ? [] : ownedMates(state), daily, perfect, teacher: isTeacher() })
     resultEl.querySelector('#btn-again').addEventListener('pointerdown', () => startGame(kind))
     resultEl.querySelector('#btn-home').addEventListener('pointerdown', goHome)
     show('result')

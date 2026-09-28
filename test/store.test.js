@@ -126,3 +126,12 @@ test('舊的 version 2 存檔（沒有詞軌）：讀軌裡詞的紀錄搬到詞
   assert.deepEqual(s.tracks.read.log.map(e => e.s), ['ㄚ']);
   assert.deepEqual(s.tracks.tone.mastery, {}, '調軌補空的');
 });
+
+test('老師帳號：建立時帶 adult 旗子，小孩帳號沒有', () => {
+  const store = createStore(fakeStorage());
+  const kid = store.addProfile({ name: '小芽', color: 1 });
+  const t = store.addProfile({ name: '王老師', color: 2, adult: true });
+  const list = store.loadProfiles().list;
+  assert.equal(list.find(p => p.id === kid.id).adult, undefined);
+  assert.equal(list.find(p => p.id === t.id).adult, true);
+});

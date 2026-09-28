@@ -120,9 +120,10 @@ export function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
     ${bgHtml('home')}
     <div class="profiles">
       ${profiles.list.map(p => `
-        <button class="profile-card" data-id="${p.id}" aria-label="${p.name}">
+        <button class="profile-card ${p.adult ? 'adult' : ''}" data-id="${p.id}" aria-label="${p.name}">
           <div class="profile-avatar" style="background:${DOG_COLORS[p.color % DOG_COLORS.length].main}22">${dogSvg(p.color)}</div>
           <div class="profile-name">${escapeHtml(p.name)}</div>
+          ${p.adult ? '<div class="profile-badge">老師</div>' : ''}
         </button>`).join('')}
       <button class="profile-card add" id="btn-add-profile" aria-label="新增">
         <div class="profile-plus">＋</div>
@@ -134,6 +135,10 @@ export function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
           <button class="color-dot ${i === 0 ? 'on' : ''}" data-color="${i}" style="background:${c.main}"></button>`).join('')}
         </div>
         <input id="profile-name" maxlength="6" placeholder="名字">
+        <div class="kind-pick">
+          <button class="kind-btn on" data-kind="kid">小孩</button>
+          <button class="kind-btn" data-kind="adult">老師（投影）</button>
+        </div>
         <div class="profile-form-actions">
           <button id="profile-cancel">取消</button>
           <button id="profile-ok" class="primary">好</button>
@@ -143,8 +148,27 @@ export function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
     <button class="gear" id="btn-gear" aria-label="大人面板">${GEAR_SVG}</button>`
   mountBgs(root)
 
+  // 老師帳號要 2 秒內連點三下才進得去，免得小孩自己點進去改難度；每點一下顯示還差幾下
+  const taps = {}
   root.querySelectorAll('.profile-card[data-id]').forEach(b => {
-    b.addEventListener('pointerdown', () => onPick(b.dataset.id))
+    b.addEventListener('pointerdown', () => {
+      if (!b.classList.contains('adult')) { onPick(b.dataset.id); return }
+      const now = Date.now()
+      taps[b.dataset.id] = (taps[b.dataset.id] || []).filter(t => now - t < 2000).concat(now)
+      const left = 3 - taps[b.dataset.id].length
+      if (left <= 0) { taps[b.dataset.id] = []; onPick(b.dataset.id); return }
+      const badge = b.querySelector('.profile-badge')
+      badge.textContent = '再點 ' + left + ' 下'
+      clearTimeout(b._hint)
+      b._hint = setTimeout(() => { badge.textContent = '老師' }, 2000)
+    })
+  })
+  let adult = false
+  root.querySelectorAll('.kind-btn').forEach(k => {
+    k.onclick = () => {
+      adult = k.dataset.kind === 'adult'
+      root.querySelectorAll('.kind-btn').forEach(x => x.classList.toggle('on', x === k))
+    }
   })
   const form = root.querySelector('#profile-form')
   let color = 0
@@ -162,14 +186,15 @@ export function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
   root.querySelector('#profile-ok').onclick = () => {
     const name = root.querySelector('#profile-name').value.trim()
     if (!name) return
-    onAdd({ name, color })
+    onAdd({ name, color, adult })
   }
   root.querySelector('#btn-gear').addEventListener('pointerdown', onGear)
 }
 
 // 首頁：目前使用者的狗狗、三張玩法卡
 // daily = { rounds, claimed, streak, goal }；recommend = 推薦的玩法；musicOn = 背景音樂開著沒
-export function renderHome (root, { profile, speech = true, bones = 0, mates = [], daily = null, recommend = null, musicOn = true }) {
+// teacher = { tier, range }：老師帳號，首頁上方換成難度和範圍，沒有骨頭、寶箱、商店、隊員
+export function renderHome (root, { profile, speech = true, bones = 0, mates = [], daily = null, recommend = null, musicOn = true, teacher = null }) {
   const d = daily || { rounds: 0, claimed: false, streak: 0, goal: 3 }
   const chestState = d.claimed ? 'claimed' : d.rounds >= d.goal ? 'ready' : 'locked'
   const paws = Array.from({ length: d.goal }, (_, i) => `<span class="paw ${i < d.rounds ? 'on' : ''}">${UX_ICONS.paw}</span>`).join('')
@@ -179,8 +204,8 @@ export function renderHome (root, { profile, speech = true, bones = 0, mates = [
       <div class="who-avatar">${dogSvg(profile.color)}</div>
       <div class="who-name">${escapeHtml(profile.name)}</div>
     </button>
-    <button class="shop-btn" id="btn-shop" aria-label="狗狗商店"><span class="bone-ic">${boneSvg()}</span><b>${bones}</b><span class="shop-word">${SHOP_ICONS.bag}</span></button>
-    <div class="daily" id="daily">
+    ${teacher ? teacherBarHtml(teacher) : `<button class="shop-btn" id="btn-shop" aria-label="狗狗商店"><span class="bone-ic">${boneSvg()}</span><b>${bones}</b><span class="shop-word">${SHOP_ICONS.bag}</span></button>`}
+    <div class="daily ${teacher ? 'hidden' : ''}" id="daily">
       <div class="streak ${d.streak ? '' : 'cold'}" title="連續 ${d.streak} 天">${UX_ICONS.flame}<b>${d.streak}</b></div>
       <div class="paws" title="今天玩了 ${Math.min(d.rounds, d.goal)} 局">${paws}</div>
       <button class="chest ${chestState}" id="btn-chest" aria-label="寶箱" ${chestState === 'ready' ? '' : 'disabled'}>${UX_ICONS.chest}</button>
@@ -215,11 +240,11 @@ export function renderHome (root, { profile, speech = true, bones = 0, mates = [
         <div class="card-pic">${cardArt('speak')}</div>
       </button>
     </div>
-    <div class="mates home-mates">${mates.map(c => `<div class="mate">${dogSvg(c, { mate: true })}</div>`).join('')}</div>
+    <div class="mates home-mates">${teacher ? '' : mates.map(c => `<div class="mate">${dogSvg(c, { mate: true })}</div>`).join('')}</div>
     <button class="gear" id="btn-gear" aria-label="大人面板">${GEAR_SVG}</button>`
   mountBgs(root)
   // 今天推薦：那張卡發光、角落蓋一個腳印
-  const rec = recommend && root.querySelector(`.card[data-game="${recommend}"]:not(.hidden)`)
+  const rec = !teacher && recommend && root.querySelector(`.card[data-game="${recommend}"]:not(.hidden)`)
   if (rec) {
     rec.classList.add('recommend')
     const badge = document.createElement('span')
@@ -229,14 +254,14 @@ export function renderHome (root, { profile, speech = true, bones = 0, mates = [
   }
 }
 
-export function renderResult (root, color = 0, { roundBones = 0, bones = 0, mates = [], daily = null, perfect = false } = {}) {
+export function renderResult (root, color = 0, { roundBones = 0, bones = 0, mates = [], daily = null, perfect = false, teacher = false } = {}) {
   root.innerHTML = `
     ${bgHtml('home')}
     <div class="result-burst"></div>
     <div class="confetti-wrap">${confettiHtml()}</div>
     <div class="result-dogs ${mates.length >= 3 ? 'many' : ''}">${dogSvg(color)}${mates.map(c => dogSvg(c, { mate: true })).join('')}</div>
     <div class="result-stars">${'<span class="star">★</span>'.repeat(5)}</div>
-    <div class="result-bones" id="result-bones" data-gain="${roundBones}" data-total="${bones}"><span class="bone-ic">${boneSvg()}</span> +<b class="rb-gain">0</b>　<small>共 <span class="rb-total">${bones - roundBones}</span></small></div>
+    ${teacher ? '' : `<div class="result-bones" id="result-bones" data-gain="${roundBones}" data-total="${bones}"><span class="bone-ic">${boneSvg()}</span> +<b class="rb-gain">0</b>　<small>共 <span class="rb-total">${bones - roundBones}</span></small></div>`}
     ${perfect ? `<div class="result-crown" id="result-crown">${UX_ICONS.crown}</div>` : ''}
     ${daily ? `<div class="result-daily">${Array.from({ length: daily.goal }, (_, i) => `<span class="paw ${i < daily.rounds - 1 ? 'on' : ''} ${i === daily.rounds - 1 ? 'new' : ''}">${UX_ICONS.paw}</span>`).join('')}${daily.rounds >= daily.goal && !daily.claimed ? `<span class="chest ready">${UX_ICONS.chest}</span>` : ''}</div>` : ''}
     <div class="result-actions hidden" id="result-actions">
@@ -287,6 +312,48 @@ export function playResult (root, earned, { onTick = () => {}, onPerfect = () =>
 }
 
 // 第 14 組起有名字（聲母組＋韻類），前面的組顯示符號本身
+// ---- 老師帳號：首頁上方的難度和範圍 ----
+function groupLabel (i, g) { return g.length > 8 || i >= 10 ? groupName(i, g).trim() : g.join('') }
+function rangeSummary (range) {
+  if (!range.length) return '還沒選'
+  const names = range.slice(0, 2).map(i => groupLabel(i, GROUPS[i]))
+  return names.join('、') + (range.length > 2 ? ` 等 ${range.length} 組` : '')
+}
+function teacherBarHtml ({ tier, range }) {
+  return `<div class="teacher-bar">
+    <span class="tb-label">難度</span>
+    ${[0, 1, 2, 3, 4, 5].map(t => `<button class="tier-btn ${t === tier ? 'on' : ''}" data-tier="${t}" title="${tierLabel(TIERS[t])}">${t + 1}</button>`).join('')}
+    <button class="range-btn" id="btn-range"><span class="tb-label">範圍</span> ${escapeHtml(rangeSummary(range))}</button>
+  </div>`
+}
+
+// 範圍挑選：跟家長區一樣分三頁，勾好按「好」。回呼 onDone(索引陣列)
+export function openRangePicker (root, { range = [], onDone }) {
+  let page = 'symbols'
+  const picked = new Set(range)
+  const wrap = document.createElement('div')
+  wrap.className = 'range-picker'
+  root.appendChild(wrap)
+  const draw = () => {
+    wrap.innerHTML = `<div class="rp-box">
+      <div class="rp-tabs">${Object.keys(PAGE_NAMES).map(p => `<button class="track-tab ${p === page ? 'on' : ''}" data-page="${p}">${PAGE_NAMES[p]}</button>`).join('')}
+        <button class="rp-clear" id="rp-clear">這頁全不選</button><button class="rp-all" id="rp-all">這頁全選</button></div>
+      <div class="rp-groups">${GROUPS.map((g, i) => pageOf(i, g) !== page ? '' : `
+        <label class="rp-group ${picked.has(i) ? 'on' : ''}"><input type="checkbox" data-g="${i}" ${picked.has(i) ? 'checked' : ''}> ${i + 1}. ${escapeHtml(groupLabel(i, g))}</label>`).join('')}</div>
+      <div class="rp-foot"><span>已選 ${picked.size} 組</span><button class="primary" id="rp-ok" ${picked.size ? '' : 'disabled'}>好</button></div>
+    </div>`
+    wrap.querySelectorAll('[data-page]').forEach(b => { b.onclick = () => { page = b.dataset.page; draw() } })
+    wrap.querySelectorAll('[data-g]').forEach(cb => {
+      cb.onchange = () => { const i = parseInt(cb.dataset.g, 10); if (cb.checked) picked.add(i); else picked.delete(i); draw() }
+    })
+    const onPage = () => GROUPS.map((g, i) => i).filter(i => pageOf(i, GROUPS[i]) === page)
+    wrap.querySelector('#rp-all').onclick = () => { onPage().forEach(i => picked.add(i)); draw() }
+    wrap.querySelector('#rp-clear').onclick = () => { onPage().forEach(i => picked.delete(i)); draw() }
+    wrap.querySelector('#rp-ok').onclick = () => { wrap.remove(); onDone([...picked].sort((a, b) => a - b)) }
+  }
+  draw()
+}
+
 // 組太長時顯示組名：第 11–13 組是結合韻，第 14 組起用 syllables.js 產生的組名；都沒有就列出全部符號
 const COMPOUND_NAMES = { 10: 'ㄧ結合韻', 11: 'ㄨ結合韻', 12: 'ㄩ結合韻' }
 function groupName (i, g) {

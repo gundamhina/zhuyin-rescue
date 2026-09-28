@@ -89,9 +89,11 @@ export function createStore (storage) {
     },
 
     loadProfiles,
-    addProfile ({ name, color }) {
+    // adult：老師帳號（教室投影用），不自動升降、不記紀錄、沒有骨頭商店
+    addProfile ({ name, color, adult = false }) {
       const p = loadProfiles()
       const profile = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, color }
+      if (adult) profile.adult = true
       p.list.push(profile)
       p.current = profile.id
       saveProfiles(p)

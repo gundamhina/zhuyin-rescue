@@ -275,6 +275,32 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 .pad-strokes.show { opacity: 0.85; }
 .stroke-svg { width: 100%; height: 100%; display: block; }
 @keyframes strokeDraw { to { stroke-dashoffset: 0; } }
+/* ---- 老師帳號 ---- */
+.kind-pick { display: flex; gap: 10px; justify-content: center; }
+.kind-btn { padding: 10px 18px; border-radius: 14px; background: #EEF3F7; color: #2B3A4A; font-size: 22px; font-weight: 700; border: 3px solid transparent; }
+.kind-btn.on { background: #FFF3B0; border-color: #D9AA1B; }
+.profile-card.adult { position: relative; border-color: #4A6FA5; }
+.profile-badge { position: absolute; top: 10px; right: 10px; padding: 4px 12px; border-radius: 20px; background: #4A6FA5; color: #fff; font-size: 18px; font-weight: 700; }
+.teacher-bar { position: absolute; left: 50%; top: 18px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 44px; background: rgba(255,253,247,.95); box-shadow: 0 6px 0 #A9BFCF; z-index: 3; white-space: nowrap; }
+.teacher-bar .tb-label { font-size: 20px; font-weight: 700; color: #5A6B85; margin-right: 2px; }
+.tier-btn { width: 50px; height: 50px; border-radius: 50%; background: #EEF3F7; font-size: 24px; font-weight: 900; color: #2B3A4A; }
+.tier-btn.on { background: #4A6FA5; color: #fff; }
+.range-btn { margin-left: 10px; max-width: 420px; overflow: hidden; text-overflow: ellipsis; padding: 10px 18px; border-radius: 30px; background: #FFF3B0; font-size: 22px; font-weight: 700; color: #2B3A4A; box-shadow: 0 4px 0 #D9AA1B; }
+#stage.portrait .teacher-bar { top: 110px; flex-wrap: wrap; justify-content: center; max-width: 760px; white-space: normal; }
+.range-picker { position: absolute; inset: 0; z-index: 40; background: rgba(43,58,74,.55); display: flex; align-items: center; justify-content: center; }
+.rp-box { width: min(1100px, calc(var(--W) - 60px)); max-height: calc(var(--H) - 80px); display: flex; flex-direction: column; gap: 14px; background: #FFFDF7; border-radius: 28px; padding: 22px; box-shadow: 0 20px 40px rgba(0,0,0,.25); }
+.rp-tabs { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.rp-tabs .track-tab { font-size: 22px; padding: 10px 20px; }
+.rp-all, .rp-clear { margin-left: auto; padding: 8px 14px; border-radius: 12px; background: #EEF3F7; font-size: 18px; }
+.rp-clear { margin-left: auto; }
+.rp-all { margin-left: 0; }
+.rp-groups { overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+.rp-group { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-radius: 14px; background: #EEF3F7; font-size: 20px; color: #2B3A4A; cursor: pointer; }
+.rp-group.on { background: #FFF3B0; }
+.rp-group input { width: 24px; height: 24px; }
+.rp-foot { display: flex; align-items: center; justify-content: space-between; font-size: 20px; color: #5A6B85; }
+.rp-foot .primary { padding: 12px 40px; border-radius: 16px; background: #6B9E6B; color: #fff; font-size: 24px; font-weight: 900; }
+.rp-foot .primary[disabled] { opacity: .4; }
 /* 寫錯後的「教我寫」按鈕：板子左下角 */
 .pad-learn { position: absolute; left: -40px; bottom: -30px; width: 110px; height: 110px; border-radius: 50%; background: #4A6FA5; border: 8px solid #F6F3E6; box-shadow: 0 10px 0 #34507A, 0 16px 26px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; animation: pop .4s; }
 .pad-learn:active { transform: translateY(6px); box-shadow: 0 4px 0 #34507A; }
