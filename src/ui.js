@@ -269,6 +269,7 @@ export function renderHome (root, { profile, speech = true, bones = 0, mates = [
     <button class="gear" id="btn-gear" aria-label="大人面板">${GEAR_SVG}</button>`
   mountBgs(root)
   // 今天推薦：那張卡發光、角落蓋一個腳印
+  if (teacher) (teacher.hidden || []).forEach(k => { const c = root.querySelector(`.card[data-game="${k}"]`); if (c) c.classList.add('hidden') })
   const rec = !teacher && recommend && root.querySelector(`.card[data-game="${recommend}"]:not(.hidden)`)
   if (rec) {
     rec.classList.add('recommend')
@@ -457,8 +458,98 @@ function pageOf (gi, g) {
 }
 const VOLUMES = [['voiceVol', '發音'], ['sfxVol', '音效'], ['musicVol', '背景音樂']]
 const volPct = (settings, key) => Math.round((typeof settings[key] === 'number' ? settings[key] : 1) * 100)
+// 音量那一列：家長區、老師後台都放在最上面
+function volumeRowHtml (settings) {
+  return `<div class="panel-row panel-volume"><b>音量</b><span class="vol-row">${VOLUMES.map(([k, label]) => `<label>${label} <input type="range" id="vol-${k}" data-vol="${k}" min="0" max="100" step="5" value="${volPct(settings, k)}"> <span class="vol-val">${volPct(settings, k)}%</span></label>`).join('')}</span></div>`
+}
+// 音量：拉的時候數字跟著變，放手存起來並放一段聽聽看
+function bindVolume (root, settings, onSettings, onVolumeTest) {
+  root.querySelectorAll('[data-vol]').forEach(inp => {
+    const val = inp.parentElement.querySelector('.vol-val')
+    inp.oninput = () => { val.textContent = inp.value + '%' }
+    inp.onchange = () => {
+      onSettings({ ...settings, [inp.dataset.vol]: parseInt(inp.value, 10) / 100 })
+      if (onVolumeTest) onVolumeTest(inp.dataset.vol)
+    }
+  })
+}
+// 首頁的玩法卡，老師後台可以挑上課要顯示哪幾個
+export const GAME_NAMES = { fishing: '釣魚', whack: '打地鼠', memory: '翻牌', match: '連連看', fill: '填空', tone: '聲調填空', write: '寫給狗狗看', learn: '學寫字', speak: '唸給狗狗聽' }
 
-export function renderPanel (root, { profile, profiles, state, track = 'listen', page = null, onTrack, onPage, settings, voices, onKnownChange, onSettings, onVolumeTest, onStateChange, onExport, onImport, onResetProgress, onRemoveProfile, onClose, onSay, onCheck }) {
+export function renderPanel (root, opts) {
+  if (opts.profile && opts.profile.adult) return renderTeacherPanel(root, opts)
+  return renderFamilyPanel(root, opts)
+}
+
+// 老師後台：老師帳號不記紀錄、沒有骨頭，只放上課要調的東西
+function renderTeacherPanel (root, { profile, profiles, state, settings, voices, onSettings, onVolumeTest, onStateChange, onRemoveProfile, onClose, onCheck }) {
+  const hidden = state.hiddenGames || []
+  const range = state.rangeGroups || []
+  const voiceOptions = voices.map(v =>
+    `<option value="${v.name}" ${settings.voiceName === v.name ? 'selected' : ''}>${v.name} (${v.lang})</option>`).join('')
+  root.innerHTML = `
+    <div class="panel">
+      <div class="panel-head">
+        <h2>老師後台　<small>目前：${escapeHtml(profile.name)}</small></h2>
+        <button class="panel-close" id="panel-close">關閉</button>
+      </div>
+      ${volumeRowHtml(settings)}
+      <div class="panel-row">
+        <b>上課設定</b>
+        <label>難度
+          <select id="t-tier">${TIERS.map((t, i) => `<option value="${i}" ${state.lockTier === i ? 'selected' : ''}>第 ${i + 1} 階：${tierLabel(t)}</option>`).join('')}</select>
+        </label>
+        <span>範圍：${escapeHtml(rangeSummary(range))}</span>
+        <button id="t-range">選範圍</button>
+        <span class="panel-hint-inline">首頁上方也可以直接換。老師帳號不記練習紀錄，不會自動升降級。</span>
+      </div>
+      <div class="panel-row">
+        <b>首頁顯示的玩法</b>
+        ${Object.entries(GAME_NAMES).map(([k, name]) => `<label class="game-toggle"><input type="checkbox" data-game-show="${k}" ${hidden.includes(k) ? '' : 'checked'}> ${name}</label>`).join('')}
+      </div>
+      <div class="panel-row">
+        <label>語音
+          <select id="sel-voice"><option value="">自動</option>${voiceOptions}</select>
+        </label>
+        <label>語速 <input type="range" id="rng-rate" min="0.5" max="1.2" step="0.05" value="${settings.rate || 0.8}"> <span id="rate-val">${settings.rate || 0.8}</span></label>
+        <button id="btn-check">發音檢查</button>
+      </div>
+      <div class="panel-row panel-users">
+        <b>使用者</b>${profiles.list.map(p => `
+        <div class="puser">
+          <span class="puser-dot" style="background:${DOG_COLORS[p.color % DOG_COLORS.length].main}"></span>
+          <span class="puser-name">${escapeHtml(p.name)}${p.adult ? '（老師）' : ''}${profile.id === p.id ? '（目前）' : ''}</span>
+          <button class="danger" data-remove="${p.id}">刪除</button>
+        </div>`).join('')}
+      </div>
+      <p class="panel-hint">資料來源：發音為教育部《國語注音符號手冊》錄音（CC BY 4.0）；讀音照教育部《國語辭典簡編本》；筆順為教育部《國字標準字體筆順學習網》（CC BY-NC-ND 3.0 臺灣）。</p>
+    </div>`
+  root.querySelector('#panel-close').onclick = onClose
+  root.querySelector('#btn-check').onclick = onCheck
+  bindVolume(root, settings, onSettings, onVolumeTest)
+  root.querySelector('#t-tier').onchange = e => onStateChange({ lockTier: parseInt(e.target.value, 10) })
+  root.querySelector('#t-range').onclick = () => {
+    root.scrollTop = 0
+    openRangePicker(root, { range, onDone: r => onStateChange({ rangeGroups: r }) })
+  }
+  root.querySelectorAll('[data-game-show]').forEach(cb => {
+    cb.onchange = () => {
+      const off = [...root.querySelectorAll('[data-game-show]')].filter(x => !x.checked).map(x => x.dataset.gameShow)
+      // 至少留一個玩法
+      if (off.length >= Object.keys(GAME_NAMES).length) { cb.checked = true; return }
+      onStateChange({ hiddenGames: off })
+    }
+  })
+  root.querySelector('#sel-voice').onchange = e => onSettings({ ...settings, voiceName: e.target.value })
+  const rng = root.querySelector('#rng-rate')
+  rng.oninput = () => { root.querySelector('#rate-val').textContent = rng.value }
+  rng.onchange = () => onSettings({ ...settings, rate: parseFloat(rng.value) })
+  root.querySelectorAll('[data-remove]').forEach(btn => {
+    armButton(btn, '確定刪除？連進度一起刪', () => onRemoveProfile(btn.dataset.remove))
+  })
+}
+
+function renderFamilyPanel (root, { profile, profiles, state, track = 'listen', page = null, onTrack, onPage, settings, voices, onKnownChange, onSettings, onVolumeTest, onStateChange, onExport, onImport, onResetProgress, onRemoveProfile, onClose, onSay, onCheck }) {
   // 沒指定頁：看詞軌、調軌就開詞那頁，其他軌開注音符號
   const curPage = page || (track === 'word' || track === 'tone' ? 'words' : 'symbols')
   const lifetime = state ? lifetimeStats(state) : { bySymbol: {} }
@@ -504,6 +595,7 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
         <h2>大人面板　<small>${profile ? '目前：' + escapeHtml(profile.name) : '尚未選人'}</small></h2>
         <button class="panel-close" id="panel-close">關閉</button>
       </div>
+      ${volumeRowHtml(settings)}
       <div class="panel-row panel-users">
         <b>使用者</b>${usersHtml}
       </div>
@@ -553,7 +645,6 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
           <select id="sel-voice"><option value="">自動</option>${voiceOptions}</select>
         </label>
         <label>語速 <input type="range" id="rng-rate" min="0.5" max="1.2" step="0.05" value="${settings.rate || 0.8}"> <span id="rate-val">${settings.rate || 0.8}</span></label>
-        <span class="vol-row">音量${VOLUMES.map(([k, label]) => `<label>${label} <input type="range" id="vol-${k}" data-vol="${k}" min="0" max="100" step="5" value="${volPct(settings, k)}"> <span class="vol-val">${volPct(settings, k)}%</span></label>`).join('')}</span>
         <button id="btn-check">發音檢查${Object.keys(settings.audioIssues || {}).length ? '（' + Object.keys(settings.audioIssues).length + ' 個有問題）' : ''}</button>
         ${profile ? `
         <button id="btn-export">匯出進度</button>
@@ -570,15 +661,7 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
   root.querySelector('#btn-check').onclick = onCheck
   root.querySelectorAll('[data-track]').forEach(b => { b.onclick = () => onTrack(b.dataset.track) })
   root.querySelectorAll('[data-page]').forEach(b => { b.onclick = () => onPage(b.dataset.page) })
-  // 音量：拉的時候數字跟著變，放手存起來並放一段聽聽看
-  root.querySelectorAll('[data-vol]').forEach(inp => {
-    const val = inp.parentElement.querySelector('.vol-val')
-    inp.oninput = () => { val.textContent = inp.value + '%' }
-    inp.onchange = () => {
-      onSettings({ ...settings, [inp.dataset.vol]: parseInt(inp.value, 10) / 100 })
-      if (onVolumeTest) onVolumeTest(inp.dataset.vol)
-    }
-  })
+  bindVolume(root, settings, onSettings, onVolumeTest)
   root.querySelectorAll('[data-say]').forEach(b => { b.onclick = () => onSay(b.dataset.say) })
   root.querySelectorAll('[data-known]').forEach(cb => {
     cb.onchange = () => onKnownChange(cb.dataset.known, cb.checked)

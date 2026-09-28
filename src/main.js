@@ -144,7 +144,7 @@ function main () {
   function goHome () {
     destroyGame()
     const daily = { ...dailyView(state, today()), goal: DAILY_GOAL }
-    const teacher = isTeacher() ? { tier: state.lockTier, range: state.rangeGroups || [] } : null
+    const teacher = isTeacher() ? { tier: state.lockTier, range: state.rangeGroups || [], hidden: state.hiddenGames || [] } : null
     renderHome(homeEl, { profile, speech: speechAvailable(), bones: state.bones, mates: ownedMates(state), daily, recommend: recommendGame(), musicOn: !settings.musicOff, teacher })
     homeEl.querySelector('#btn-who').addEventListener('pointerdown', goProfiles)
     homeEl.querySelector('#btn-chest').addEventListener('pointerdown', openChest)
