@@ -84,7 +84,13 @@ export function framePoint (e, frame) {
 export function stageOffset (el) {
   let x = 0
   let y = 0
-  for (let n = el; n && n.id !== 'stage'; n = n.offsetParent) { x += n.offsetLeft; y += n.offsetTop }
+  // offsetLeft 是從外層的框線裡面算起，所以每往外一層要把那層的框線（clientLeft／clientTop）加回去
+  for (let n = el; n && n.id !== 'stage'; n = n.offsetParent) {
+    x += n.offsetLeft
+    y += n.offsetTop
+    const p = n.offsetParent
+    if (p && p.id !== 'stage') { x += p.clientLeft; y += p.clientTop }
+  }
   return [x, y]
 }
 
@@ -201,6 +207,9 @@ export function renderHome (root, { profile, speech = true, bones = 0, mates = [
       </button>
       <button class="card" data-game="write" aria-label="寫給狗狗看">
         <div class="card-pic">${cardArt('write')}</div>
+      </button>
+      <button class="card" data-game="learn" aria-label="學寫字">
+        <div class="card-pic">${cardArt('learn')}</div>
       </button>
       <button class="card ${speech ? '' : 'hidden'}" data-game="speak" aria-label="唸給狗狗聽">
         <div class="card-pic">${cardArt('speak')}</div>
@@ -410,7 +419,7 @@ export function renderPanel (root, { profile, profiles, state, track = 'listen',
       <div class="panel-row panel-tracks">
         <b>看哪一軌</b>
         ${TRACKS.map(t => `<button class="track-tab ${t === track ? 'on' : ''}" data-track="${t}">${TRACK_NAMES[t]}</button>`).join('')}
-        <span class="panel-hint-inline">聽＝釣魚、打地鼠；讀＝唸給狗狗聽；寫＝寫給狗狗看；詞＝連連看、填空；調＝聲調填空。翻牌是純遊玩，不算進任何一軌。星星、混淆、階級、解鎖各軌分開算，下面的設定各軌共用。</span>
+        <span class="panel-hint-inline">聽＝釣魚、打地鼠；讀＝唸給狗狗聽；寫＝寫給狗狗看；詞＝連連看、填空；調＝聲調填空。翻牌、學寫字是純練習，不算進任何一軌。星星、混淆、階級、解鎖各軌分開算，下面的設定各軌共用。</span>
       </div>
       <div class="panel-row">
         <div>「${TRACK_NAMES[track]}」目前出題階級：<b>${effectiveTier(state) + 1}</b> / 6（${tierLabel(TIERS[effectiveTier(state)])}）</div>

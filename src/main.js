@@ -8,6 +8,7 @@ import { createWhack } from './whack.js'
 import { createMemory } from './memory.js'
 import { createSpeak, speechAvailable, createListener, matchesSymbol, openMicMeter } from './speak.js'
 import { createWrite } from './write.js'
+import { createLearn } from './learn.js'
 import { createMatchLine } from './matchline.js'
 import { createFillBlank } from './fillblank.js'
 import { renderShop } from './shop.js'
@@ -22,7 +23,10 @@ const SETTINGS_KEY = 'zhuyin-rescue-settings'
 const MEMORY_PAIRS = 5
 // 每個玩法練哪一軌：聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）、詞（連連看、填空）、調（聲調填空）
 // 翻牌只借「聽」那一軌的出題池挑符號，不寫任何紀錄進去
-const TRACK_OF = { fishing: 'listen', whack: 'listen', memory: 'listen', speak: 'read', write: 'write', match: 'word', fill: 'word', tone: 'tone' }
+const TRACK_OF = { fishing: 'listen', whack: 'listen', memory: 'listen', speak: 'read', write: 'write', match: 'word', fill: 'word', tone: 'tone', learn: 'write' }
+// 純練習的玩法：不記進度、沒有玩完的骨頭、不算今天的腳印
+const PRACTICE_KINDS = ['memory', 'learn']
+const LEARN_SYMBOLS = 3 // 學寫字一局教幾個符號
 const MATCH_PAIRS = 4
 // 唸給狗狗聽的狀態訊息，寫給旁邊的大人看
 const MIC_MSG = {
@@ -297,6 +301,7 @@ function main () {
   const starsEl = gameEl.querySelector('.progress-stars')
   const replayBtn = gameEl.querySelector('#btn-replay')
   let game = null
+  let learnOverlay = null // 「寫給狗狗看」上面疊的學寫字
   let kind = null
   let earned = []
   let starTotal = 5
@@ -313,6 +318,7 @@ function main () {
 
   function destroyGame () {
     clearIdle()
+    if (learnOverlay) { learnOverlay.destroy(); learnOverlay = null }
     if (game) game.destroy()
     game = null
     if (listener) { listener.stop(); listener = null }
@@ -346,6 +352,7 @@ function main () {
 
   function runGame (which) {
     if (which === 'memory') return runMemory()
+    if (which === 'learn') return runLearn()
     if (which === 'speak') return runSpeak()
     if (which === 'match') return runMatch()
     if (which === 'fill') return runFill('syllable')
@@ -392,15 +399,15 @@ function main () {
   function finishRound () {
     destroyGame()
     setCombo(0)
-    // 翻牌是純遊玩：沒有玩完的骨頭，也不算今天的腳印
+    // 翻牌、學寫字是純練習：沒有玩完的骨頭，也不算今天的腳印
     let daily = null
-    if (kind !== 'memory') {
+    if (!PRACTICE_KINDS.includes(kind)) {
       gain(roundBonus(currentView()))
       state = recordRound(state, today())
       store.save(profile.id, state)
       daily = { ...dailyView(state, today()), goal: DAILY_GOAL }
     }
-    const perfect = kind !== 'memory' && earned.length > 0 && earned.every(Boolean)
+    const perfect = !PRACTICE_KINDS.includes(kind) && earned.length > 0 && earned.every(Boolean)
     renderResult(resultEl, profile.color, { roundBones, bones: state.bones, mates: ownedMates(state), daily, perfect })
     resultEl.querySelector('#btn-again').addEventListener('pointerdown', () => startGame(kind))
     resultEl.querySelector('#btn-home').addEventListener('pointerdown', goHome)
@@ -476,7 +483,7 @@ function main () {
   }
 
   replayBtn.addEventListener('pointerdown', () => {
-    if (kind === 'memory' || kind === 'speak' || kind === 'match' || kind === 'fill' || kind === 'tone' || !round[index]) return
+    if (kind === 'memory' || kind === 'learn' || kind === 'speak' || kind === 'match' || kind === 'fill' || kind === 'tone' || !round[index]) return
     if (busy) return
     audio.say(round[index].target)
   })
@@ -486,12 +493,13 @@ function main () {
     const q = round[index]
     const ms = Date.now() - askedAt
     // 描寫沒蓋好：不算錯，晃一下讓她再寫
-    if (symbol === '__miss__') { audio.wrong(); game.shake(); game.sad(); return }
+    if (symbol === '__miss__') { audio.wrong(); game.shake(); game.sad(); game.offerLearn(() => openLearnOverlay(q)); return }
     // 聽寫辨識不出是哪個：算錯但不記混淆對，答案會顯示在板子上讓她照著寫
     if (symbol === '__unknown__') {
       if (firstAttempt) { commit({ target: q.target, ok: false, picked: null, ms, drill: q.drill }); firstAttempt = false }
       rewardWrong()
       audio.wrong(); game.shake(); game.sad()
+      if (kind === 'write') game.offerLearn(() => openLearnOverlay(q))
       const myIndex = index; const myGame = game
       setTimeout(async () => { if (index !== myIndex || game !== myGame) return; await audio.say(q.target) }, 500)
       return
@@ -524,6 +532,7 @@ function main () {
     audio.wrong()
     game.shake(symbol)
     game.sad()
+    if (kind === 'write') game.offerLearn(() => openLearnOverlay(q))
     const myIndex = index
     const myGame = game
     setTimeout(async () => {
@@ -778,6 +787,59 @@ function main () {
     })
     game.onDone(finishRound)
     game.start(symbols)
+  }
+
+  // ---- 學寫字：純練習。從「寫」軌最不熟的單一符號開始，照教育部筆順一筆一筆教，寫完一個給 1 根 ----
+  async function runLearn () {
+    game = createLearn(playArea, { color: profile.color })
+    replayBtn.classList.add('hidden')
+    const symbols = pickSymbols(singleSymbolState(trackView(state, 'write')), Math.random, LEARN_SYMBOLS)
+    starTotal = symbols.length
+    setStars()
+    const myGame = game
+    for (const sym of symbols) {
+      audio.say(sym)
+      await game.teach(sym)
+      if (game !== myGame) return
+      earned.push(true)
+      setStars()
+      gain(1, game.pad)
+      audio.ding()
+      await wait(300)
+      if (game !== myGame) return
+    }
+    finishRound()
+  }
+
+  // 「寫給狗狗看」寫錯後按「教我寫」：學寫字疊在上面教這個符號，教完回到同一題再寫一次。
+  // 這題已經記成錯了，回來再寫對只拿重試的骨頭。
+  function openLearnOverlay (q) {
+    if (learnOverlay || !game) return
+    clearIdle()
+    busy = true
+    game.lock()
+    audio.stop()
+    const myGame = game
+    const el = document.createElement('div')
+    el.className = 'learn-overlay'
+    playArea.appendChild(el)
+    let closed = false
+    const close = () => {
+      if (closed) return
+      closed = true
+      if (learnOverlay) learnOverlay.destroy()
+      learnOverlay = null
+      el.remove()
+      if (game !== myGame) return
+      game.start(q, { isTrace: effectiveTier(currentView()) <= 1 })
+      game.unlock()
+      busy = false
+      audio.say(q.target)
+      armIdle(q, index, myGame)
+    }
+    learnOverlay = createLearn(el, { color: profile.color, overlay: true, onClose: close })
+    audio.say(q.target)
+    learnOverlay.teach(q.target).then(close)
   }
 
   // ---- 大人面板 ----

@@ -275,6 +275,18 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 .pad-strokes.show { opacity: 0.85; }
 .stroke-svg { width: 100%; height: 100%; display: block; }
 @keyframes strokeDraw { to { stroke-dashoffset: 0; } }
+/* 寫錯後的「教我寫」按鈕：板子左下角 */
+.pad-learn { position: absolute; left: -40px; bottom: -30px; width: 110px; height: 110px; border-radius: 50%; background: #4A6FA5; border: 8px solid #F6F3E6; box-shadow: 0 10px 0 #34507A, 0 16px 26px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; animation: pop .4s; }
+.pad-learn:active { transform: translateY(6px); box-shadow: 0 4px 0 #34507A; }
+/* 學寫字：板子上的範本（筆順資料 2048 座標縮成 480×480） */
+.learn-guide { position: absolute; left: 30px; top: 30px; width: 480px; height: 480px; pointer-events: none; }
+.learn-pad .pad { cursor: crosshair; }
+.lesson-dot { transform-box: fill-box; transform-origin: center; animation: lessonDot 1s ease-in-out infinite; }
+@keyframes lessonDot { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
+/* 疊在「寫給狗狗看」上面的學寫字 */
+.learn-overlay { position: absolute; inset: 0; z-index: 30; }
+.learn-backdrop { position: absolute; inset: 0; background: rgba(43,58,74,0.55); }
+.learn-close { position: absolute; left: 280px; top: 130px; background: #B32B37; }
 .pad-template.flash { animation: tplFlash 1.5s ease-in-out; }
 @keyframes tplFlash { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
 .pad-template span { font-size: 400px; font-weight: 900; color: #D5DEE8; line-height: 1; }

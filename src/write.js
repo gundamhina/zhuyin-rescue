@@ -15,6 +15,8 @@ const INK_WIDTH = 24
 const ACCEPT_DISTANCE = 8
 const KNOWN_DISTANCE = 12 // 最像的那個要夠像才算「她寫成別的」，否則算認不出來
 const CHECK_SVG = `<svg viewBox="0 0 24 24" width="70" height="70" fill="#fff"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>`
+// 「教我寫」：一枝筆加一個播放三角形
+const LEARN_BTN_SVG = `<svg viewBox="0 0 24 24" width="52" height="52" fill="#fff"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75z"/><path d="M20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75z"/><path d="M14 15v6l5-3z"/></svg>`
 const UNDO_SVG = `<svg viewBox="0 0 24 24" width="44" height="44" fill="#fff"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>`
 
 const glyphCache = {}
@@ -57,6 +59,7 @@ export function createWrite (root, { color = 0 } = {}) {
        <canvas class="pad" width="${PAD}" height="${PAD}"></canvas>
        <button class="pad-undo" aria-label="重寫">${UNDO_SVG}</button>
        <button class="pad-ok" aria-label="好了">${CHECK_SVG}</button>
+       <button class="pad-learn hidden" aria-label="教我寫">${LEARN_BTN_SVG}</button>
      </div></div>`
   mountBgs(root)
   const dogWrap = root.querySelector('.write-dog')
@@ -66,6 +69,9 @@ export function createWrite (root, { color = 0 } = {}) {
   const tplEl = root.querySelector('.pad-template')
   const tplText = tplEl.querySelector('span')
   const strokesEl = root.querySelector('.pad-strokes')
+  const learnBtn = root.querySelector('.pad-learn')
+  let learnFn = null
+  learnBtn.addEventListener('pointerdown', e => { e.stopPropagation(); if (learnFn) learnFn() })
   let handler = null
   let locked = true
   let current = null
@@ -176,6 +182,8 @@ export function createWrite (root, { color = 0 } = {}) {
     tplEl.classList.toggle('show', trace)
     strokesEl.innerHTML = ''
     strokesEl.classList.remove('show')
+    learnBtn.classList.add('hidden')
+    learnFn = null
     padWrap.classList.remove('shake', 'glow')
   }
   function unlock () { locked = false }
@@ -200,8 +208,13 @@ export function createWrite (root, { color = 0 } = {}) {
     void dogWrap.offsetWidth
     dogWrap.classList.add('tilt')
   }
+  // 寫錯之後出現「教我寫」按鈕
+  function offerLearn (fn) {
+    learnFn = fn
+    learnBtn.classList.remove('hidden')
+  }
   function onAnswer (fn) { handler = fn }
-  function destroy () { root.innerHTML = ''; handler = null }
+  function destroy () { root.innerHTML = ''; handler = null; learnFn = null }
 
-  return { start, unlock, lock, hint, shake, celebrate, sad, onAnswer, destroy }
+  return { start, unlock, lock, hint, shake, celebrate, sad, offerLearn, onAnswer, destroy }
 }

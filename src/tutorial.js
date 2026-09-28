@@ -100,6 +100,16 @@ const SCENES = {
     <g class="tut-write-ok"><circle cx="470" cy="340" r="36" fill="#6B9E6B" stroke="#F6F3E6" stroke-width="5"/><path d="M454 340 l11 11 l20 -22" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
     ${hand('tut-write-hand')}`,
 
+  // 學寫字：板子上一筆淡淡的，起點有圓點，小手從圓點照箭頭寫過去
+  learn: `
+    <rect x="170" y="70" width="300" height="280" rx="26" fill="#FFFDF7" stroke="${WOOD}" stroke-width="8"/>
+    <path d="M250 130 L250 280 L400 280" stroke="#F3D3B8" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path class="tut-write-ink" d="M250 130 L250 280 L400 280" stroke="#E0955B" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-dasharray="300" stroke-dashoffset="300"/>
+    <path d="M236 168 L250 190 L264 168 Z" fill="#E0955B"/>
+    <circle cx="250" cy="130" r="16" fill="#E0955B" stroke="#FFFDF7" stroke-width="5"/>
+    <g class="tut-write-ok"><circle cx="470" cy="340" r="36" fill="#6B9E6B" stroke="#F6F3E6" stroke-width="5"/><path d="M454 340 l11 11 l20 -22" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+    ${hand('tut-write-hand')}`,
+
   // 看牌子、按麥克風、唸出來
   speak: `
     <rect x="245" y="40" width="150" height="150" rx="22" fill="#FFFDF7" stroke="${WOOD}" stroke-width="8"/>

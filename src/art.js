@@ -387,6 +387,19 @@ export function cardArt (kind) {
   <path d="M215 250 q10 -40 22 -90" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="6 6"/>
 </svg>`
   }
+  if (kind === 'learn') {
+    return `<img class="art-slot" src="img/card-learn.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="400" fill="#F3E4C2"/>
+  <rect x="40" y="60" width="220" height="220" rx="22" fill="#FFFDF7" stroke="#B08A63" stroke-width="7"/>
+  <path d="M95 130 L205 130 L205 235" stroke="#F3D3B8" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M95 130 L180 130" stroke="#E0955B" stroke-width="16" stroke-linecap="round" fill="none"/>
+  <circle cx="95" cy="130" r="15" fill="#E0955B" stroke="#FFFDF7" stroke-width="5"/>
+  <path d="M190 118 L210 130 L190 142 Z" fill="#E0955B"/>
+  <rect x="150" y="300" width="110" height="26" rx="8" fill="#E8C86A" transform="rotate(-20 205 313)"/>
+  <path d="M100 330 l8 16 18 2 -13 12 3 18 -16 -9 -16 9 3 -18 -13 -12 18 -2z" fill="#E8C86A"/>
+</svg>`
+  }
   if (kind === 'speak') {
     return `<img class="art-slot" src="img/card-speak.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
