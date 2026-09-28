@@ -1,11 +1,11 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; height: 100%; height: 100dvh; overflow: hidden; background: #26647E; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-text-size-adjust: none; text-size-adjust: none; } /* 手機 Chrome 會自己把它覺得太小的字放大（font boosting），注音的排版會被弄亂，關掉 */
+html, body { width: 100%; height: 100%; height: 100dvh; overflow: hidden; background: #26647E; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: none; text-size-adjust: none; } /* 手機 Chrome 會自己把它覺得太小的字放大（font boosting），注音的排版會被弄亂，關掉 */
 body { font-family: "Microsoft JhengHei", "Noto Sans TC", "PingFang TC", sans-serif; }
 button { font-family: inherit; border: 0; background: none; cursor: pointer; touch-action: manipulation; }
 .hidden { display: none !important; }
 
 /* 舞台：大小由 fitStage 依螢幕比例決定（橫 1200～1800×800、直 800×1100～1800），等比縮放置中 */
-#stage { position: absolute; left: 0; top: 0; width: 1200px; height: 800px; --W: 1200px; --H: 800px; transform-origin: 0 0; overflow: hidden; }
+#stage { position: absolute; left: 0; top: 0; width: 1200px; height: 800px; background: #CFE3EC; --W: 1200px; --H: 800px; transform-origin: 0 0; overflow: hidden; }
 /* 背景層鋪滿舞台：上面天空填色，1200×800 的場景圖由 layoutBg 縮放貼底 */
 .bg { position: absolute; inset: 0; overflow: hidden; }
 .bg-fill { position: absolute; inset: 0; }
@@ -16,7 +16,8 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 .frame { position: absolute; left: calc((var(--W) - 1200px) / 2); top: 0; width: 1200px; height: 800px; }
 #stage.portrait .frame { left: 0; width: 800px; height: var(--H); }
 .screen { position: absolute; inset: 0; display: none; }
-.screen.active { display: block; }
+.screen.active { display: block; z-index: 1; }
+.screen.leaving { display: block; z-index: 0; } /* 換畫面時舊畫面留在底下，等新畫面淡入完 */
 .scene { position: absolute; left: 0; top: 0; }
 
 /* 雲慢慢飄、太陽光慢慢轉 */

@@ -16,7 +16,7 @@ import { setOutfit, boneSvg, ownedMates, bgHtml, UX_ICONS } from './art.js'
 import { burstAt, flyBones, bump, buzz } from './fx.js'
 import { showTutorial, hasTutorial } from './tutorial.js'
 import { WORD_ICON } from './data.js'
-import { fitStage, layoutBg, mountBgs, goFullscreenOnPhone, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage, openRangePicker } from './ui.js'
+import { fitStage, layoutBg, mountBgs, goFullscreenOnPhone, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage, openRangePicker, watchArtSlots } from './ui.js'
 import { renderCheck } from './check.js'
 
 const SETTINGS_KEY = 'zhuyin-rescue-settings'
@@ -61,6 +61,7 @@ function main () {
   if (window.visualViewport) window.visualViewport.addEventListener('resize', relayout)
   // 手機上碰畫面就進全螢幕並鎖橫向（只在真的點下去時有效；退出全螢幕後再點會再進）
   document.addEventListener('pointerdown', goFullscreenOnPhone)
+  watchArtSlots()
   showInstallHint()
 
   const store = createStore(localStorage)

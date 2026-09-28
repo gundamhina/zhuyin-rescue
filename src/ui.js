@@ -106,10 +106,35 @@ export function goFullscreenOnPhone () {
   }).catch(() => {}).finally(() => { fullscreenPending = false })
 }
 
+// 換畫面：新畫面疊在舊畫面上面淡入，舊的等淡入完才藏起來。以前是從全透明淡入，中間會露出後面的深色底，看起來像閃一下
 export function showScreen (name) {
+  const next = document.getElementById('screen-' + name)
   document.querySelectorAll('.screen').forEach(el => {
-    el.classList.toggle('active', el.id === 'screen-' + name)
+    if (el === next || !el.classList.contains('active')) return
+    el.classList.remove('active')
+    el.classList.add('leaving')
+    clearTimeout(el._leave)
+    el._leave = setTimeout(() => el.classList.remove('leaving'), 320)
   })
+  if (next) { next.classList.remove('leaving'); next.classList.add('active') }
+}
+
+// 手繪圖插槽：<img> 載入好才把底下的向量圖藏起來（onload 加 has-art）。
+// 畫面每重畫一次 onload 都要等一下才觸發，中間會先露出向量圖再換成手繪圖，看起來像閃一下。
+// 瀏覽器快取裡的圖一放進去就 complete，在畫出來之前（MutationObserver 的時間點）先補上 has-art 就不會閃。
+export function watchArtSlots () {
+  const stage = document.getElementById('stage')
+  if (!stage || typeof MutationObserver === 'undefined') return
+  const mark = img => { if (img.complete && img.naturalWidth && img.parentElement) img.parentElement.classList.add('has-art') }
+  new MutationObserver(list => {
+    for (const m of list) {
+      for (const n of m.addedNodes) {
+        if (n.nodeType !== 1) continue
+        if (n.matches('img.art-slot')) mark(n)
+        n.querySelectorAll('img.art-slot').forEach(mark)
+      }
+    }
+  }).observe(stage, { childList: true, subtree: true })
 }
 
 const GEAR_SVG = `<svg viewBox="0 0 24 24" width="40" height="40" fill="#fff"><path d="M19.4 13a7.6 7.6 0 0 0 .1-1 7.6 7.6 0 0 0-.1-1l2.1-1.6a.5.5 0 0 0 .1-.6l-2-3.5a.5.5 0 0 0-.6-.2l-2.5 1a7.3 7.3 0 0 0-1.7-1l-.4-2.6a.5.5 0 0 0-.5-.4h-4a.5.5 0 0 0-.5.4l-.4 2.6a7.3 7.3 0 0 0-1.7 1l-2.5-1a.5.5 0 0 0-.6.2l-2 3.5a.5.5 0 0 0 .1.6L4.6 11a7.6 7.6 0 0 0-.1 1 7.6 7.6 0 0 0 .1 1l-2.1 1.6a.5.5 0 0 0-.1.6l2 3.5a.5.5 0 0 0 .6.2l2.5-1a7.3 7.3 0 0 0 1.7 1l.4 2.6a.5.5 0 0 0 .5.4h4a.5.5 0 0 0 .5-.4l.4-2.6a7.3 7.3 0 0 0 1.7-1l2.5 1a.5.5 0 0 0 .6-.2l2-3.5a.5.5 0 0 0-.1-.6L19.4 13zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>`
