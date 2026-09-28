@@ -6,6 +6,7 @@ import { dogSvg, bgHtml } from './art.js'
 import { stagePoint, stageOffset, mountBgs } from './ui.js'
 import { normalizePoints, rasterize, coverage, bestMatch } from './ink.js'
 import { SIMILAR_SHAPE } from './data.js'
+import { strokeSvg } from './strokeplay.js'
 
 const PAD = 560 // 板子邊長（舞台座標）
 const GRID = 64 // 比對用小圖邊長
@@ -52,6 +53,7 @@ export function createWrite (root, { color = 0 } = {}) {
     '<div class="dog-wrap write-dog">' + dogSvg(color) + '</div>' +
     `<div class="pad-wrap">
        <div class="pad-template"><span></span></div>
+       <div class="pad-strokes"></div>
        <canvas class="pad" width="${PAD}" height="${PAD}"></canvas>
        <button class="pad-undo" aria-label="重寫">${UNDO_SVG}</button>
        <button class="pad-ok" aria-label="好了">${CHECK_SVG}</button>
@@ -63,6 +65,7 @@ export function createWrite (root, { color = 0 } = {}) {
   const ctx = canvas.getContext('2d')
   const tplEl = root.querySelector('.pad-template')
   const tplText = tplEl.querySelector('span')
+  const strokesEl = root.querySelector('.pad-strokes')
   let handler = null
   let locked = true
   let current = null
@@ -147,10 +150,13 @@ export function createWrite (root, { color = 0 } = {}) {
     handler(verdict, null)
   })
 
-  // 對答案：把正確符號疊在她寫的字上，對的綠、錯的橘
+  // 對答案：把正確符號疊在她寫的字上。對的：綠色的字；錯的：照教育部的筆順一筆一筆用橘色寫出來
   function reveal (ok) {
     tplEl.classList.remove('good', 'bad')
-    tplEl.classList.add('show', ok ? 'good' : 'bad')
+    if (ok) { tplEl.classList.add('show', 'good'); return }
+    tplEl.classList.remove('show')
+    strokesEl.innerHTML = strokeSvg(current.target).svg
+    strokesEl.classList.add('show')
   }
 
   function shakePad () {
@@ -168,6 +174,8 @@ export function createWrite (root, { color = 0 } = {}) {
     tplText.textContent = question.target
     tplEl.classList.remove('good', 'bad', 'flash')
     tplEl.classList.toggle('show', trace)
+    strokesEl.innerHTML = ''
+    strokesEl.classList.remove('show')
     padWrap.classList.remove('shake', 'glow')
   }
   function unlock () { locked = false }
