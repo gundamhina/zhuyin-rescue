@@ -236,48 +236,88 @@ export function renderHome (root, { profile, speech = true, bones = 0, mates = [
       <button class="chest ${chestState}" id="btn-chest" aria-label="寶箱" ${chestState === 'ready' ? '' : 'disabled'}>${UX_ICONS.chest}</button>
     </div>
     <button class="music-btn ${musicOn ? '' : 'off'}" id="btn-music" aria-label="背景音樂">${musicOn ? UX_ICONS.musicOn : UX_ICONS.musicOff}</button>
-    <div class="cards" id="cards">
-      <button class="card" data-game="fishing" aria-label="釣魚">
-        <div class="card-pic">${cardArt('fishing')}</div>
-      </button>
-      <button class="card" data-game="whack" aria-label="打地鼠">
-        <div class="card-pic">${cardArt('whack')}</div>
-      </button>
-      <button class="card" data-game="memory" aria-label="翻牌">
-        <div class="card-pic">${cardArt('memory')}</div>
-      </button>
-      <button class="card" data-game="match" aria-label="連連看">
-        <div class="card-pic">${cardArt('match')}</div>
-      </button>
-      <button class="card" data-game="fill" aria-label="填空">
-        <div class="card-pic">${cardArt('fill')}</div>
-      </button>
-      <button class="card" data-game="tone" aria-label="聲調填空">
-        <div class="card-pic">${cardArt('tone')}</div>
-      </button>
-      <button class="card" data-game="write" aria-label="寫給狗狗看">
-        <div class="card-pic">${cardArt('write')}</div>
-      </button>
-      <button class="card" data-game="learn" aria-label="學寫字">
-        <div class="card-pic">${cardArt('learn')}</div>
-      </button>
-      <button class="card ${speech ? '' : 'hidden'}" data-game="speak" aria-label="唸給狗狗聽">
-        <div class="card-pic">${cardArt('speak')}</div>
-      </button>
-    </div>
+    ${homeCardsHtml({ speech, teacher })}
     <div class="mates home-mates">${teacher ? '' : mates.map(c => `<div class="mate">${dogSvg(c, { mate: true })}</div>`).join('')}</div>
     <button class="gear" id="btn-gear" aria-label="大人面板">${GEAR_SVG}</button>`
   mountBgs(root)
-  // 今天推薦：那張卡發光、角落蓋一個腳印
-  if (teacher) (teacher.hidden || []).forEach(k => { const c = root.querySelector(`.card[data-game="${k}"]`); if (c) c.classList.add('hidden') })
-  const rec = !teacher && recommend && root.querySelector(`.card[data-game="${recommend}"]:not(.hidden)`)
-  if (rec) {
-    rec.classList.add('recommend')
-    const badge = document.createElement('span')
-    badge.className = 'rec-badge'
-    badge.innerHTML = UX_ICONS.paw
-    rec.appendChild(badge)
+  bindCategories(root)
+  // 今天推薦：那張卡發光、角落蓋一個腳印；手機兩層時，它所在的類別卡也蓋一個
+  if (!teacher && recommend) {
+    const stamp = el => {
+      el.classList.add('recommend')
+      const badge = document.createElement('span')
+      badge.className = 'rec-badge'
+      badge.innerHTML = UX_ICONS.paw
+      el.appendChild(badge)
+    }
+    root.querySelectorAll(`.card[data-game="${recommend}"]`).forEach(stamp)
+    const cat = CATEGORIES.find(c => c.games.includes(recommend))
+    const tile = cat && root.querySelector(`.cat-tile[data-cat="${cat.key}"]`)
+    if (tile) stamp(tile)
   }
+}
+
+// ---- 首頁的玩法分類：聽、看、寫、說 ----
+// 小孩不識字，類別靠圖示和顏色分。網頁（筆電）一層：同一頁分四區；手機兩層：先選類別再選玩法。
+export const CATEGORIES = [
+  { key: 'listen', name: '聽', color: '#4A6FA5', games: ['fishing', 'whack', 'memory'] },
+  { key: 'look', name: '看', color: '#5E9A6B', games: ['match', 'fill', 'tone'] },
+  { key: 'write', name: '寫', color: '#D9844B', games: ['learn', 'write'] },
+  { key: 'speak', name: '說', color: '#C8553D', games: ['speak'] },
+]
+const CAT_ICONS = {
+  listen: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9a5 5 0 1 1 10 0c0 3-2.5 4-3 6.5-.4 2-1.8 3.5-4 3.5"/><path d="M10 9.5a2 2 0 1 1 4 0c0 1.3-1.3 1.8-1.5 3"/></svg>',
+  look: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3.2" fill="#fff"/></svg>',
+  write: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1.2-4.4L16.4 4.4a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L8.4 18.8z"/><path d="M14.5 6.3l3.2 3.2"/></svg>',
+  speak: '<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 15a4 4 0 0 0 4-4V6a4 4 0 1 0-8 0v5a4 4 0 0 0 4 4zm6-4a6 6 0 0 1-12 0H4a8 8 0 0 0 7 7.9V22h2v-3.1A8 8 0 0 0 20 11h-2z"/></svg>',
+}
+const BACK_SVG = '<svg viewBox="0 0 24 24" width="44" height="44" fill="#fff"><path d="M15.4 5.4 14 4l-8 8 8 8 1.4-1.4L8.8 12z"/></svg>'
+// 手機：短邊不到 600、手指操作。筆電（Surface 也是觸控但螢幕大）用一層
+export function isPhone () {
+  const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches
+  return coarse && Math.min(window.innerWidth, window.innerHeight) < 600
+}
+let openCategory = null // 手機兩層：從遊戲回來時留在剛剛那一類
+function gameCardHtml (game) {
+  return `<button class="card" data-game="${game}" aria-label="${GAME_NAMES[game]}"><div class="card-pic">${cardArt(game)}</div></button>`
+}
+function homeCardsHtml ({ speech, teacher }) {
+  const hidden = teacher ? teacher.hidden || [] : []
+  const visible = g => !(g === 'speak' && !speech) && !hidden.includes(g)
+  const cats = CATEGORIES.map(c => ({ ...c, games: c.games.filter(visible) })).filter(c => c.games.length)
+  if (!isPhone()) {
+    return `<div class="cards cat-grid" id="cards">${cats.map(c => `
+      <div class="cat-block" style="--cat:${c.color}">
+        <div class="cat-head" title="${c.name}">${CAT_ICONS[c.key]}<b>${c.name}</b></div>
+        <div class="cat-cards">${c.games.map(gameCardHtml).join('')}</div>
+      </div>`).join('')}</div>`
+  }
+  if (openCategory && !cats.some(c => c.key === openCategory && c.games.length > 1)) openCategory = null
+  // 只有一個玩法的類別（說），類別卡本身就是那個玩法
+  const tile = c => c.games.length === 1
+    ? `<button class="cat-tile" data-cat="${c.key}" data-game="${c.games[0]}" style="--cat:${c.color}" aria-label="${GAME_NAMES[c.games[0]]}">${CAT_ICONS[c.key]}<b>${c.name}</b></button>`
+    : `<button class="cat-tile" data-cat="${c.key}" data-open="${c.key}" style="--cat:${c.color}" aria-label="${c.name}">${CAT_ICONS[c.key]}<b>${c.name}</b></button>`
+  return `<div class="cards cat-menu ${openCategory ? 'hidden' : ''}" id="cards">${cats.map(tile).join('')}</div>
+    ${cats.filter(c => c.games.length > 1).map(c => `
+    <div class="cards cat-sub ${openCategory === c.key ? '' : 'hidden'}" data-sub="${c.key}" style="--cat:${c.color}">
+      <div class="cat-sub-top"><button class="round-btn cat-back" aria-label="回類別">${BACK_SVG}</button><div class="cat-sub-head">${CAT_ICONS[c.key]}</div></div>
+      <div class="cat-sub-cards">${c.games.map(gameCardHtml).join('')}</div>
+    </div>`).join('')}`
+}
+// 手機兩層：點類別打開、點返回回到類別
+function bindCategories (root) {
+  const menu = root.querySelector('.cat-menu')
+  if (!menu) return
+  root.querySelectorAll('[data-open]').forEach(t => t.addEventListener('pointerdown', () => {
+    openCategory = t.dataset.open
+    menu.classList.add('hidden')
+    root.querySelectorAll('.cat-sub').forEach(s => s.classList.toggle('hidden', s.dataset.sub !== openCategory))
+  }))
+  root.querySelectorAll('.cat-back').forEach(b => b.addEventListener('pointerdown', () => {
+    openCategory = null
+    root.querySelectorAll('.cat-sub').forEach(s => s.classList.add('hidden'))
+    menu.classList.remove('hidden')
+  }))
 }
 
 export function renderResult (root, color = 0, { roundBones = 0, bones = 0, mates = [], daily = null, perfect = false, teacher = false } = {}) {

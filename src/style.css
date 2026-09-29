@@ -279,6 +279,32 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 .pad-strokes.show { opacity: 0.85; }
 .stroke-svg { width: 100%; height: 100%; display: block; }
 @keyframes strokeDraw { to { stroke-dashoffset: 0; } }
+/* ---- 首頁分類 ---- */
+/* 網頁一層：四區，橫的兩欄、直的一欄；每區前面一個類別圓章 */
+.cards.cat-grid { display: grid; grid-template-columns: repeat(2, auto); justify-content: center; align-content: start; gap: 22px 28px; padding: 0 20px; }
+.cat-block { display: flex; align-items: center; gap: 14px; padding: 14px 18px 18px 14px; border-radius: 34px; background: rgba(255,253,247,.55); box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--cat) 45%, transparent); }
+.cat-head { flex: none; width: 78px; height: 78px; border-radius: 50%; background: var(--cat); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 5px 0 rgba(0,0,0,.18); }
+.cat-head svg { width: 44px; height: 44px; }
+.cat-head b { color: #fff; font-size: 16px; line-height: 1; margin-top: -2px; }
+.cat-cards { display: flex; gap: 14px; }
+.cat-grid .card { width: 140px; height: 188px; border-width: 6px; border-radius: 22px; }
+.cat-grid .card-pic { border-radius: 18px; }
+.cat-grid .rec-badge { width: 42px; height: 42px; font-size: 26px; right: 4px; top: 4px; }
+#stage.portrait .cards.cat-grid { grid-template-columns: auto; top: 220px; align-content: center; }
+/* 手機兩層：先選類別 */
+.cards.cat-menu { gap: 28px; align-content: center; align-items: center; }
+.cat-tile { position: relative; width: 250px; height: 290px; border-radius: 40px; background: var(--cat); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 14px 0 rgba(0,0,0,.2), 0 22px 36px rgba(20,60,110,.22); border: 8px solid rgba(255,255,255,.9); }
+.cat-tile:active { transform: translateY(10px); box-shadow: 0 4px 0 rgba(0,0,0,.2); }
+.cat-tile svg { width: 150px; height: 150px; }
+.cat-tile b { color: #fff; font-size: 44px; font-weight: 900; }
+.cat-tile.recommend { box-shadow: 0 0 0 8px rgba(232,200,106,.95), 0 14px 0 rgba(0,0,0,.2); }
+.cards.cat-sub { flex-direction: column; flex-wrap: nowrap; justify-content: center; align-items: center; gap: 26px; }
+#stage.portrait .cards.cat-sub { top: 230px; bottom: 60px; }
+.cat-sub-top { display: flex; align-items: center; gap: 18px; }
+.cat-sub-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; }
+.cat-back { background: var(--cat); }
+.cat-sub-head { width: 90px; height: 90px; border-radius: 50%; background: var(--cat); display: flex; align-items: center; justify-content: center; }
+.cat-sub-head svg { width: 56px; height: 56px; }
 /* ---- 老師帳號 ---- */
 .kind-pick { display: flex; gap: 10px; justify-content: center; }
 .kind-btn { padding: 10px 18px; border-radius: 14px; background: #EEF3F7; color: #2B3A4A; font-size: 22px; font-weight: 700; border: 3px solid transparent; }
