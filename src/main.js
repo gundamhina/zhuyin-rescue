@@ -9,6 +9,7 @@ import { createMemory } from './memory.js'
 import { createSpeak, speechAvailable, createListener, matchesSymbol, openMicMeter } from './speak.js'
 import { createWrite } from './write.js'
 import { createLearn } from './learn.js'
+import { createChart } from './chart.js'
 import { createMatchLine } from './matchline.js'
 import { createFillBlank } from './fillblank.js'
 import { renderShop } from './shop.js'
@@ -365,7 +366,8 @@ function main () {
 
   function startGame (which) {
     destroyGame()
-    bonesEl.hidden = isTeacher() // 老師帳號沒有骨頭
+    bonesEl.hidden = isTeacher() || which === 'chart' // 老師帳號沒有骨頭；注音表只是看
+    gameEl.querySelector('#btn-help').classList.toggle('hidden', !hasTutorial(which))
     kind = which
     earned = []
     roundBones = 0
@@ -390,6 +392,7 @@ function main () {
   function runGame (which) {
     if (which === 'memory') return runMemory()
     if (which === 'learn') return runLearn()
+    if (which === 'chart') return runChart()
     if (which === 'speak') return runSpeak()
     if (which === 'match') return runMatch()
     if (which === 'fill') return runFill('syllable')
@@ -405,7 +408,7 @@ function main () {
   })
   // 「？」再看一次怎麼玩（蓋在遊戲上，按播放鍵回去繼續玩）
   gameEl.querySelector('#btn-help').addEventListener('pointerdown', () => {
-    if (!kind || gameEl.querySelector('.tut')) return
+    if (!kind || !hasTutorial(kind) || gameEl.querySelector('.tut')) return
     showTutorial(gameEl, kind, () => {})
   })
 
@@ -847,6 +850,12 @@ function main () {
       if (game !== myGame) return
     }
     finishRound()
+  }
+
+  // ---- 注音表：37 個符號，點一個就照筆順寫一次、唸出來。純看，不記進度、不給骨頭 ----
+  function runChart () {
+    game = createChart(playArea, { onPick: sym => audio.say(sym) })
+    replayBtn.classList.add('hidden')
   }
 
   // 「寫給狗狗看」寫錯後按「教我寫」：學寫字疊在上面教這個符號，教完回到同一題再寫一次。

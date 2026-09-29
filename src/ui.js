@@ -264,7 +264,7 @@ export function renderHome (root, { profile, speech = true, bones = 0, partner =
 export const CATEGORIES = [
   { key: 'listen', name: '聽', color: '#4A6FA5', games: ['fishing', 'whack', 'memory'] },
   { key: 'look', name: '看', color: '#5E9A6B', games: ['match', 'fill', 'tone'] },
-  { key: 'write', name: '寫', color: '#D9844B', games: ['learn', 'write'] },
+  { key: 'write', name: '寫', color: '#D9844B', games: ['chart', 'learn', 'write'] },
   { key: 'speak', name: '說', color: '#C8553D', games: ['speak'] },
 ]
 const CAT_ICONS = {
@@ -516,7 +516,7 @@ function bindVolume (root, settings, onSettings, onVolumeTest) {
   })
 }
 // 首頁的玩法卡，老師後台可以挑上課要顯示哪幾個
-export const GAME_NAMES = { fishing: '釣魚', whack: '打地鼠', memory: '翻牌', match: '連連看', fill: '填空', tone: '聲調填空', write: '寫寫看', learn: '學寫字', speak: '唸唸看' }
+export const GAME_NAMES = { fishing: '釣魚', whack: '打地鼠', memory: '翻牌', match: '連連看', fill: '填空', tone: '聲調填空', write: '寫寫看', learn: '學寫字', speak: '唸唸看', chart: '注音表' }
 
 export function renderPanel (root, opts) {
   if (opts.profile && opts.profile.adult) return renderTeacherPanel(root, opts)

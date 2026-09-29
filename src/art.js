@@ -412,6 +412,22 @@ export function cardArt (kind) {
   <path d="M100 330 l8 16 18 2 -13 12 3 18 -16 -9 -16 9 3 -18 -13 -12 18 -2z" fill="#E8C86A"/>
 </svg>`
   }
+  if (kind === 'chart') {
+    const cells = ['ㄅ', 'ㄆ', 'ㄇ', 'ㄈ', 'ㄧ', 'ㄨ', 'ㄚ', 'ㄛ', 'ㄜ'].map((s, i) => {
+      const x = 45 + (i % 3) * 75
+      const y = 95 + Math.floor(i / 3) * 80
+      const fill = i < 4 ? '#DCE7F5' : i < 6 ? '#DDEFD6' : '#F8E2CF'
+      return `<rect x="${x}" y="${y}" width="62" height="66" rx="12" fill="${fill}"/><text x="${x + 31}" y="${y + 50}" text-anchor="middle" font-size="44" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">${s}</text>`
+    }).join('')
+    return `<img class="art-slot" src="img/card-chart.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="400" fill="#F3E4C2"/>
+  <rect x="30" y="80" width="240" height="260" rx="22" fill="#FFFDF7" stroke="#B08A63" stroke-width="7"/>
+  ${cells}
+  <circle cx="232" cy="330" r="34" fill="#E0955B" stroke="#FFFDF7" stroke-width="6"/>
+  <path d="M220 318 v24 l20 -12z" fill="#fff"/>
+</svg>`
+  }
   if (kind === 'speak') {
     return `<img class="art-slot" src="img/card-speak.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">

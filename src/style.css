@@ -740,3 +740,27 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 
 /* 首頁卡片：手繪卡片圖放進來後，卡片框改成像照片那樣的暖白邊 */
 .card-pic.has-art { border-radius: 22px; }
+
+/* ---- 注音表 ---- */
+/* 橫的：11 組排成一排，每組一直行（像教室牆上的注音表）；直的：左邊聲符、右邊介符和韻符，每組一橫列 */
+.chart { position: absolute; left: 0; right: 0; top: 130px; bottom: 20px; display: grid; grid-template-columns: auto auto auto; justify-content: center; align-content: center; align-items: start; gap: 18px; }
+.chart-section { display: flex; gap: 8px; align-items: flex-start; --tile: #8FB0DA; --tile-dark: #5F83B3; }
+.chart-section.medial { --tile: #9FCB93; --tile-dark: #6E9E63; }
+.chart-section.final { --tile: #EDB386; --tile-dark: #C98652; }
+.chart-group { display: flex; flex-direction: column; gap: 8px; padding: 7px; border-radius: 22px; background: rgba(255,253,247,.65); box-shadow: inset 0 0 0 4px var(--tile); }
+.chart-tile { width: 76px; height: 76px; padding: 8px; border-radius: 18px; background: #FFFDF7; border: 5px solid var(--tile); box-shadow: 0 5px 0 var(--tile-dark); transition: transform .1s, box-shadow .1s; }
+.chart-tile:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--tile-dark); }
+.chart-pop { position: absolute; inset: 0; z-index: 20; }
+.chart-backdrop { position: absolute; left: calc((1200px - var(--W)) / 2); width: var(--W); top: 0; height: var(--H); background: rgba(43,58,74,0.6); }
+.chart-pad { left: 320px; top: 140px; animation: pop .3s; }
+.chart-close { position: absolute; left: 260px; top: 110px; background: #B32B37; }
+#stage.portrait .chart { top: 140px; grid-template-columns: auto auto; grid-template-areas: "ini med" "ini fin"; align-content: center; gap: 16px 24px; }
+#stage.portrait .chart-section { flex-direction: column; }
+#stage.portrait .chart-section.initial { grid-area: ini; }
+#stage.portrait .chart-section.medial { grid-area: med; }
+#stage.portrait .chart-section.final { grid-area: fin; }
+#stage.portrait .chart-group { flex-direction: row; }
+#stage.portrait .chart-tile { width: 80px; height: 80px; }
+#stage.portrait .chart-backdrop { left: 0; }
+#stage.portrait .chart-pad { left: 120px; top: calc((var(--H) - 560px) / 2); }
+#stage.portrait .chart-close { left: 60px; top: calc((var(--H) - 560px) / 2 - 30px); }
