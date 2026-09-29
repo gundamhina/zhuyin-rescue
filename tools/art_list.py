@@ -34,7 +34,7 @@ BLUE_BG = "Put the character on a plain solid bright blue background (pure #1E4B
 # 每位都是全身、置中、臉朝前看得清楚（首頁頭像、商店、結算都用同一張）。不拿釣竿：釣魚遊戲的釣竿由程式另外畫在碼頭上。
 FRAMING = ("Full body, centered, the character fills about 80 percent of the picture height, "
            "facing mostly toward the viewer so the face is clearly visible.")
-DOG_BASE = ("A Shiba Inu puppy with cream and orange fur, standing on its hind legs and giving a cheerful salute with its right paw. "
+DOG_BASE = ("A Shiba Inu puppy with cream and orange fur, sitting like a real dog on all fours (not standing up on its hind legs), lifting its right front paw to its cap in a cheerful salute. "
             "It wears a soft round blue police cap with " + BADGE + " on the front, and a blue vest with a thin white reflective stripe. "
             + FRAMING + " " + DOG_STYLE + ". " + BLUE_BG)
 DOG_EDIT = ("Use the attached picture only as a style reference. Draw a NEW character in exactly the same drawing style, "
