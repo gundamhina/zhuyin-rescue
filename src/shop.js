@@ -1,6 +1,7 @@
 // 狗狗商店：用骨頭買配件和救援隊員。全部用圖，不用字。
 // renderShop(root, { profile, state, tab, onTab, onBuy(item), onWear(slot, id|null), onClose })
 
+import { teamOf, partnerOf } from './scheduler.js'
 import { ACCESSORIES, accessoryIcon, boneSvg, dogSvg, bgHtml, SHOP_ICONS, TAB_ICONS, teammatesFor, ownedMates } from './art.js'
 import { mountBgs } from './ui.js'
 
@@ -11,6 +12,7 @@ function priceBtn (item, canBuy) {
 }
 
 export function renderShop (root, { profile, state, tab = 'acc', onTab, onBuy, onWear, onClose }) {
+  const partner = partnerOf(state, profile.color)
   const owned = state.owned || []
   const worn = state.worn || {}
   const mates = teammatesFor(profile.color)
@@ -46,7 +48,7 @@ export function renderShop (root, { profile, state, tab = 'acc', onTab, onBuy, o
         <svg viewBox="0 0 24 24" width="40" height="40" fill="#fff"><path d="M12 3 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
       </button>
       <div class="bones-pill big"><span class="bone-ic">${boneSvg()}</span><b>${state.bones}</b></div>
-      <div class="shop-dog dog-wrap">${dogSvg(profile.color)}</div>
+      <div class="shop-dog dog-wrap">${dogSvg(partner)}</div>
       <div class="shop-tabs">${tabBtn('acc', '配件')}${tabBtn('mate', '救援隊員')}</div>
       <div class="shop-grid ${tab === 'mate' ? 'mates-tab' : ''}">${cards}</div>
     </div>`
@@ -72,8 +74,8 @@ export function renderShop (root, { profile, state, tab = 'acc', onTab, onBuy, o
     btn.addEventListener('pointerdown', () => onWear(btn.dataset.wear, btn.dataset.id || null))
   })
 
-  // 已買的隊員一起站在旁邊
-  const team = ownedMates(state)
+  // 其他隊員一起站在旁邊（出任務的那位在中間試穿配件）
+  const team = teamOf(state, profile.color).filter(c => c !== partner)
   if (team.length) {
     const wrap = document.createElement('div')
     wrap.className = 'shop-team'

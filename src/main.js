@@ -1,6 +1,6 @@
 // 把所有模組接起來：使用者、狀態、出題、三種玩法、畫面切換。
 
-import { addBones, buyItem, wearItem, recordRound, claimDaily, dailyView, DAILY_GOAL, markSeen, recommendTrack, dayKey, questionReward, roundBonus, comboBonus, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, activePool, effectiveTier, trackView, applyTrack, toneOfSyllable, toneTiles, buildToneRound } from './scheduler.js'
+import { addBones, buyItem, wearItem, teamOf, partnerOf, setPartner, recordRound, claimDaily, dailyView, DAILY_GOAL, markSeen, recommendTrack, dayKey, questionReward, roundBonus, comboBonus, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, activePool, effectiveTier, trackView, applyTrack, toneOfSyllable, toneTiles, buildToneRound } from './scheduler.js'
 import { createStore } from './store.js'
 import { createAudio } from './audio.js'
 import { createFishing } from './fishing.js'
@@ -125,7 +125,7 @@ function main () {
         store.save(id, state)
       }
     }
-    setOutfit(profile.color, state.worn)
+    setOutfit(myColor(), state.worn)
     goHome()
   }
 
@@ -145,7 +145,17 @@ function main () {
     destroyGame()
     const daily = { ...dailyView(state, today()), goal: DAILY_GOAL }
     const teacher = isTeacher() ? { tier: state.lockTier, range: state.rangeGroups || [], hidden: state.hiddenGames || [] } : null
-    renderHome(homeEl, { profile, speech: speechAvailable(), bones: state.bones, mates: ownedMates(state), daily, recommend: recommendGame(), musicOn: !settings.musicOff, teacher })
+    renderHome(homeEl, { profile, speech: speechAvailable(), bones: state.bones, partner: myColor(), team: teamOf(state, profile.color), daily, recommend: recommendGame(), musicOn: !settings.musicOff, teacher })
+    // 點下方的隊員：換牠出任務（配件跟著戴到牠身上）
+    homeEl.querySelectorAll('[data-partner]').forEach(b => b.addEventListener('pointerdown', () => {
+      const c = parseInt(b.dataset.partner, 10)
+      if (c === myColor()) return
+      state = setPartner(state, c, profile.color)
+      store.save(profile.id, state)
+      setOutfit(myColor(), state.worn)
+      audio.ding()
+      goHome()
+    }))
     homeEl.querySelector('#btn-who').addEventListener('pointerdown', goProfiles)
     homeEl.querySelector('#btn-chest').addEventListener('pointerdown', openChest)
     // 老師：點難度直接換；點範圍打開挑選
@@ -217,14 +227,14 @@ function main () {
         if (next.owned.length === (state.owned || []).length) return
         state = next
         store.save(profile.id, state)
-        setOutfit(profile.color, state.worn)
+        setOutfit(myColor(), state.worn)
         audio.cheer()
         openShop()
       },
       onWear (slot, id) {
         state = wearItem(state, slot, id)
         store.save(profile.id, state)
-        setOutfit(profile.color, state.worn)
+        setOutfit(myColor(), state.worn)
         audio.ding()
         openShop()
       },
@@ -248,6 +258,8 @@ function main () {
   // 存檔馬上存；畫面上的數字等骨頭飛到了才加。fromEl 是骨頭飛出來的地方（答對的泡泡、地鼠…）
   // 老師帳號（教室投影）：難度、範圍由老師指定，不記紀錄、不自動升降，也沒有骨頭
   function isTeacher () { return !!(profile && profile.adult) }
+  // 出任務的隊員（顏色）：她在首頁點選的那位，沒選過就是建立使用者時選的
+  function myColor () { return partnerOf(state, profile.color) }
 
   function gain (n, fromEl = null) {
     if (!n || isTeacher()) return
@@ -434,7 +446,7 @@ function main () {
       daily = { ...dailyView(state, today()), goal: DAILY_GOAL }
     }
     const perfect = !PRACTICE_KINDS.includes(kind) && earned.length > 0 && earned.every(Boolean)
-    renderResult(resultEl, profile.color, { roundBones, bones: state.bones, mates: isTeacher() ? [] : ownedMates(state), daily, perfect, teacher: isTeacher() })
+    renderResult(resultEl, myColor(), { roundBones, bones: state.bones, mates: isTeacher() ? [] : teamOf(state, profile.color).filter(c => c !== myColor()), daily, perfect, teacher: isTeacher() })
     resultEl.querySelector('#btn-again').addEventListener('pointerdown', () => startGame(kind))
     resultEl.querySelector('#btn-home').addEventListener('pointerdown', goHome)
     show('result')
@@ -470,9 +482,9 @@ function main () {
   }
 
   function runQuestions (which) {
-    if (which === 'whack') game = createWhack(playArea, { color: profile.color })
-    else if (which === 'write') game = createWrite(playArea, { color: profile.color })
-    else game = createFishing(playArea, { color: profile.color })
+    if (which === 'whack') game = createWhack(playArea, { color: myColor() })
+    else if (which === 'write') game = createWrite(playArea, { color: myColor() })
+    else game = createFishing(playArea, { color: myColor() })
     replayBtn.classList.remove('hidden')
     // 寫字只出單一符號；聽的玩法不出詞
     const v = currentView()
@@ -575,7 +587,7 @@ function main () {
   let meter = null // 音量計（openMicMeter）
   let meterRaf = 0
   function runSpeak () {
-    game = createSpeak(playArea, { color: profile.color })
+    game = createSpeak(playArea, { color: myColor() })
     replayBtn.classList.add('hidden') // 讀的練習不給聽
     // 每按一次麥克風開一次辨識；網站在 https 上，Chrome 記得權限不會每次問
     if (listener) listener.stop()
@@ -693,7 +705,7 @@ function main () {
 
   // ---- 連連看（讀）：4 個詞配 4 張圖，記在讀那軌 ----
   function runMatch () {
-    game = createMatchLine(playArea, { color: profile.color })
+    game = createMatchLine(playArea, { color: myColor() })
     replayBtn.classList.add('hidden')
     const words = pickSymbols(wordsOnlyState(currentView()), Math.random, MATCH_PAIRS)
     starTotal = words.length
@@ -727,7 +739,7 @@ function main () {
   // ---- 填空（讀）：詞少一個音節，拖對的音節進去 ----
   // 填空（mode 'syllable'）與聲調填空（mode 'tone'）共用：一個挑缺的音節，一個挑缺的調號
   function runFill (mode) {
-    game = createFillBlank(playArea, { color: profile.color })
+    game = createFillBlank(playArea, { color: myColor() })
     replayBtn.classList.add('hidden')
     const v = wordsOnlyState(currentView(), { pictures: mode !== 'tone' })
     // 聲調填空專挑聲調難分辨的詞，空格放在最難的音節
@@ -817,7 +829,7 @@ function main () {
 
   // ---- 學寫字：純練習。從「寫」軌最不熟的單一符號開始，照教育部筆順一筆一筆教，寫完一個給 1 根 ----
   async function runLearn () {
-    game = createLearn(playArea, { color: profile.color })
+    game = createLearn(playArea, { color: myColor() })
     replayBtn.classList.add('hidden')
     const symbols = pickSymbols(singleSymbolState(trackView(state, 'write')), Math.random, LEARN_SYMBOLS)
     starTotal = symbols.length
@@ -863,7 +875,7 @@ function main () {
       audio.say(q.target)
       armIdle(q, index, myGame)
     }
-    learnOverlay = createLearn(el, { color: profile.color, overlay: true, onClose: close })
+    learnOverlay = createLearn(el, { color: myColor(), overlay: true, onClose: close })
     audio.say(q.target)
     learnOverlay.teach(q.target).then(close)
   }

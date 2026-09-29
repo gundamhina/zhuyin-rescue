@@ -2,7 +2,7 @@
 
 import { GROUPS, REP_CHAR, GROUP_NAMES, WORD_TEXT } from './data.js'
 import { stars, activePool, effectiveTier, unlockedCount, lifetimeStats, dailyStats, TIERS, TRACKS, TRACK_NAMES } from './scheduler.js'
-import { dogSvg, confettiHtml, DOG_COLORS, bgHtml, cardArt, boneSvg, SHOP_ICONS, UX_ICONS } from './art.js'
+import { dogSvg, confettiHtml, DOG_COLORS, bgHtml, cardArt, boneSvg, SHOP_ICONS, UX_ICONS, DOG_NAMES } from './art.js'
 
 
 // 舞台會跟著螢幕比例變形，所以不留邊：
@@ -219,14 +219,16 @@ export function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
 // 首頁：目前使用者的狗狗、三張玩法卡
 // daily = { rounds, claimed, streak, goal }；recommend = 推薦的玩法；musicOn = 背景音樂開著沒
 // teacher = { tier, range }：老師帳號，首頁上方換成難度和範圍，沒有骨頭、寶箱、商店、隊員
-export function renderHome (root, { profile, speech = true, bones = 0, mates = [], daily = null, recommend = null, musicOn = true, teacher = null }) {
+// partner：出任務的隊員（顏色）；team：自己原本那位加上買回家的隊員，首頁下方一排，點誰誰出任務
+export function renderHome (root, { profile, speech = true, bones = 0, partner = null, team = [], daily = null, recommend = null, musicOn = true, teacher = null }) {
+  const me = partner == null ? profile.color : partner
   const d = daily || { rounds: 0, claimed: false, streak: 0, goal: 3 }
   const chestState = d.claimed ? 'claimed' : d.rounds >= d.goal ? 'ready' : 'locked'
   const paws = Array.from({ length: d.goal }, (_, i) => `<span class="paw ${i < d.rounds ? 'on' : ''}">${UX_ICONS.paw}</span>`).join('')
   root.innerHTML = `
     ${bgHtml('home')}
     <button class="who" id="btn-who" aria-label="換人">
-      <div class="who-avatar">${dogSvg(profile.color)}</div>
+      <div class="who-avatar">${dogSvg(me)}</div>
       <div class="who-name">${escapeHtml(profile.name)}</div>
     </button>
     ${teacher ? teacherBarHtml(teacher) : `<button class="shop-btn" id="btn-shop" aria-label="商店"><span class="bone-ic">${boneSvg()}</span><b>${bones}</b><span class="shop-word">${SHOP_ICONS.bag}</span></button>`}
@@ -237,7 +239,7 @@ export function renderHome (root, { profile, speech = true, bones = 0, mates = [
     </div>
     <button class="music-btn ${musicOn ? '' : 'off'}" id="btn-music" aria-label="背景音樂">${musicOn ? UX_ICONS.musicOn : UX_ICONS.musicOff}</button>
     ${homeCardsHtml({ speech, teacher })}
-    <div class="mates home-mates">${teacher ? '' : mates.map(c => `<div class="mate">${dogSvg(c, { mate: true })}</div>`).join('')}</div>
+    <div class="mates home-mates">${teacher || team.length < 2 ? '' : team.map(c => `<button class="mate ${c === me ? 'on' : ''}" data-partner="${c}" aria-label="${DOG_NAMES[c]}出任務">${dogSvg(c, { mate: c !== me })}</button>`).join('')}</div>
     <button class="gear" id="btn-gear" aria-label="大人面板">${GEAR_SVG}</button>`
   mountBgs(root)
   bindCategories(root)

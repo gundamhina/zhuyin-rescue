@@ -514,12 +514,31 @@ export const ACCESSORIES = [
 // 目前這位小孩的狗狗顏色和穿戴；main.js 選人、買東西、換裝時更新。dogSvg 畫到同色的狗才加配件。
 const OUTFIT = { color: -1, worn: {} }
 export function setOutfit (color, worn) { OUTFIT.color = color; OUTFIT.worn = worn || {} }
+// 配件的座標是對著舊的那隻狗畫的（眼睛中心 121,108、頭頂 120,30、脖子 120,164）。
+// 2026-09-29 換成六種動物，每位的臉、帽子、脖子位置和大小都不同，這裡記每位的 [x, y, 縮放]，配件照著移過去。
+// head 是帽子頂端（本來就戴著帽子，頭上的配件疊在帽子上），face 是兩眼中間，neck 是脖子（背後的配件也對這裡）
+const ACC_REF = { head: [120, 30], face: [121, 108], neck: [120, 164] }
+const ACC_ANCHORS = [
+  { head: [145, 6, 1.05], face: [134, 104, 0.97], neck: [135, 160, 1] }, // 柴犬
+  { head: [140, 22, 1], face: [132, 115, 0.93], neck: [140, 168, 1] }, // 小象
+  { head: [140, 46, 0.85], face: [149, 118, 0.78], neck: [140, 158, 0.8] }, // 兔子
+  { head: [150, 4, 1], face: [168, 96, 0.6], neck: [135, 128, 0.9] }, // 小熊（眼睛被望遠鏡擋住，眼鏡戴在望遠鏡上）
+  { head: [120, 4, 0.9], face: [109, 76, 0.72], neck: [115, 126, 0.9] }, // 河狸
+  { head: [165, 2, 0.75], face: [131, 101, 0.55], neck: [140, 132, 0.8] }, // 小貓
+]
+const SLOT_ANCHOR = { head: 'head', face: 'face', neck: 'neck', back: 'neck' }
+function placeAccessory (color, item) {
+  const part = SLOT_ANCHOR[item.slot]
+  const [x, y, k] = ACC_ANCHORS[color % ACC_ANCHORS.length][part]
+  const [rx, ry] = ACC_REF[part]
+  return `<g transform="translate(${x} ${y}) scale(${k}) translate(${-rx} ${-ry})">${item.svg}</g>`
+}
 function accessoryLayer (color) {
   if (color !== OUTFIT.color) return ''
   const items = ACCESSORIES.filter(a => OUTFIT.worn[a.slot] === a.id)
   if (!items.length) return ''
   const layer = (cls, list) => list.length
-    ? `<svg class="dog-acc ${cls}" viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg">${list.map(a => a.svg).join('')}</svg>`
+    ? `<svg class="dog-acc ${cls}" viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg">${list.map(a => placeAccessory(color, a)).join('')}</svg>`
     : ''
   // 背包、披風、翅膀畫在狗狗後面，其他畫在前面
   return layer('back', items.filter(a => a.slot === 'back')) + layer('front', items.filter(a => a.slot !== 'back'))

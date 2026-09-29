@@ -6,6 +6,7 @@ import {
   dayKey, dailyView, recordRound, claimDaily, dailyBonus, DAILY_GOAL, markSeen, recommendTrack,
   questionReward, roundBonus, comboBonus,
   toneOfSyllable, stripTone, toneTiles, TONE_ORDER, TONE_PARTNER, toneHardness, buildToneRound,
+  teamOf, partnerOf, setPartner,
 } from '../src/scheduler.js';
 import { GROUPS, coreOf } from '../src/data.js';
 
@@ -698,4 +699,18 @@ test('只聽不看圖的詞：連連看、填空不出，聲調填空才出', as
   assert.ok(withPics.every(w => WORD_ICON[w]), '連連看、填空只出有圖的詞')
   const all = activePool(wordsOnlyState(v, { pictures: false }))
   assert.ok(LISTEN_WORDS.every(w => all.includes(w)), '聲調填空也出只聽的詞')
+})
+
+test('出任務的隊員：預設是自己原本那位，買回家的隊員才能選', () => {
+  let s = createState()
+  assert.deepEqual(teamOf(s, 2), [2])
+  assert.equal(partnerOf(s, 2), 2)
+  assert.equal(setPartner(s, 4, 2), s, '還沒買的不能選')
+  s = { ...s, owned: ['mate-4', 'flower'] }
+  assert.deepEqual(teamOf(s, 2), [2, 4])
+  s = setPartner(s, 4, 2)
+  assert.equal(partnerOf(s, 2), 4)
+  s = setPartner(s, 2, 2)
+  assert.equal(partnerOf(s, 2), 2, '換回自己原本那位')
+  assert.equal(partnerOf({ ...s, partner: 5 }, 2), 2, '存檔裡選的不在隊上（例如被清掉）就回到原本那位')
 })

@@ -53,7 +53,7 @@ export function createState ({ known = [], groups = null } = {}) {
 
 // 骨頭（積分）與商店：各軌共用。bones 現在有幾根、bonesTotal 累計賺過幾根、owned 買過的配件、worn 每個部位戴著哪一件
 export function emptyWallet () {
-  return { bones: 0, bonesTotal: 0, owned: [], worn: {}, daily: null, streak: { last: null, count: 0 }, seen: {} }
+  return { bones: 0, bonesTotal: 0, owned: [], worn: {}, daily: null, streak: { last: null, count: 0 }, seen: {}, partner: null }
 }
 // 舊存檔沒有這幾個欄位，補上。daily 今天玩了幾局、寶箱開了沒；streak 連續天數；seen 看過哪些玩法的教學
 export function withWallet (state) {
@@ -79,6 +79,20 @@ export function buyItem (state, item) {
   if (item.slot) next.worn = { ...s.worn, [item.slot]: item.id }
   return next
 }
+// 出任務的隊員：自己原本那位（建立使用者時選的顏色），或已經買回家的隊員。沒選過、或選的還沒買，就是原本那位
+export function teamOf (state, ownColor) {
+  const owned = (state.owned || []).filter(id => id.startsWith('mate-')).map(id => parseInt(id.slice(5), 10))
+  return [ownColor, ...owned.filter(c => c !== ownColor)]
+}
+export function partnerOf (state, ownColor) {
+  const p = state.partner
+  return typeof p === 'number' && teamOf(state, ownColor).includes(p) ? p : ownColor
+}
+export function setPartner (state, color, ownColor) {
+  if (!teamOf(state, ownColor).includes(color)) return state
+  return { ...withWallet(state), partner: color }
+}
+
 // 戴上（id）或脫掉（null）某個部位的配件；沒買過的不能戴
 export function wearItem (state, slot, id) {
   const s = withWallet(state)
