@@ -3,6 +3,9 @@
 
 import { WORD_TEXT, WORD_ICON } from './data.js'
 
+// 圖片的版本：build.js 換成所有圖檔內容的雜湊。圖換了網址就跟著變，瀏覽器才不會一直拿快取裡的舊圖
+const IMG_V = '__IMG_V__'
+
 // 符號怎麼顯示：單一符號直接放，結合韻兩個直排
 export function symbolMarkup (sym) {
   // 詞：音節左右並列，每個音節各自直排；單一符號的音節也包成一欄，字才會一樣大
@@ -87,7 +90,7 @@ export function wordPicMarkup (word) {
   if (!WORD_ICON[word]) return SPEAKER_PIC
   const text = WORD_TEXT[word] || ''
   const icon = WORD_ICON[word]
-  return `<img class="art-slot" src="img/words/${text}.png" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">` +
+  return `<img class="art-slot" src="img/words/${text}.png?v=${IMG_V}" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">` +
     `<img class="emoji emoji-img" src="img/emoji/${twemojiName(icon)}.svg" alt="${icon}" onerror="this.outerHTML='<span class=&quot;emoji&quot;>${icon}</span>'">`
 }
 
@@ -102,8 +105,8 @@ export function bgHtml (kind, inner = '') {
   if (kind === 'scene') art = sceneSvg()
   else if (BG_SLOTS.includes(kind)) {
     art = homeBgSvg().replace(
-      /src="img\/home\.jpg"([^>]*)onerror="this\.remove\(\)"/,
-      `src="img/bg-${kind}.jpg"$1onerror="if (!this.dataset.fallback) { this.dataset.fallback = 1; this.src = 'img/home.jpg' } else this.remove()"`)
+      /src="img\/home\.jpg[^"]*"([^>]*)onerror="this\.remove\(\)"/,
+      `src="img/bg-${kind}.jpg?v=${IMG_V}"$1onerror="if (!this.dataset.fallback) { this.dataset.fallback = 1; this.src = 'img/home.jpg' } else this.remove()"`)
   } else art = homeBgSvg()
   return `<div class="bg" data-fit="${kind === 'scene' ? 'left' : 'center'}"><div class="bg-fill ${BG_SLOTS.includes(kind) ? 'home' : kind}"></div><div class="bg-art">${art}${inner}</div></div>`
 }
@@ -156,7 +159,7 @@ function dogIsCopy (color) {
 export function dogSvg (color = 0, { mate = false } = {}) {
   const c = DOG_COLORS[color % DOG_COLORS.length]
   const band = mate && dogIsCopy(color) ? `<svg class="dog-acc front" viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg"><path d="M72 150 Q120 178 168 152 Q170 170 164 180 Q120 204 76 174 Z" fill="${c.main}" stroke="${c.dark}" stroke-width="4"/></svg>` : ''
-  return `<span class="dog-slot">${accessoryLayer(color)}${band}<img class="art-slot" src="img/dog-${color % DOG_COLORS.length}.png" width="260" height="300" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+  return `<span class="dog-slot">${accessoryLayer(color)}${band}<img class="art-slot" src="img/dog-${color % DOG_COLORS.length}.png?v=${IMG_V}" width="260" height="300" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg class="dog" viewBox="0 0 260 300" width="260" height="300" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <radialGradient id="fur${color}" cx="0.4" cy="0.35" r="0.75">
@@ -201,7 +204,7 @@ export function dogSvg (color = 0, { mate = false } = {}) {
 
 // 遊戲背景：水彩天、積雲、層疊山丘、青綠海、褪色碼頭。1200×800。
 export function sceneSvg () {
-  return `<img class="art-slot" src="img/scene.jpg" width="1200" height="800" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+  return `<img class="art-slot" src="img/scene.jpg?v=${IMG_V}" width="1200" height="800" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg class="scene" viewBox="0 0 1200 800" width="1200" height="800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
   <defs>
     ${PAPER_FILTER}
@@ -275,7 +278,7 @@ export function sceneSvg () {
 
 // 首頁／選人／結算的背景：水彩天、積雲、草原。1200×800。
 export function homeBgSvg () {
-  return `<img class="art-slot" src="img/home.jpg" width="1200" height="800" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+  return `<img class="art-slot" src="img/home.jpg?v=${IMG_V}" width="1200" height="800" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg class="scene" viewBox="0 0 1200 800" width="1200" height="800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
   <defs>
     ${PAPER_FILTER}
@@ -306,7 +309,7 @@ export function homeBgSvg () {
 // 三張玩法卡的插圖。300×400。
 export function cardArt (kind) {
   if (kind === 'fishing') {
-    return `<img class="art-slot" src="img/card-fishing.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+    return `<img class="art-slot" src="img/card-fishing.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <defs><linearGradient id="csky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6F9FD0"/><stop offset="1" stop-color="#DCEBF2"/></linearGradient></defs>
   <rect width="300" height="400" fill="url(#csky)"/>
@@ -326,7 +329,7 @@ export function cardArt (kind) {
 </svg>`
   }
   if (kind === 'whack') {
-    return `<img class="art-slot" src="img/card-whack.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+    return `<img class="art-slot" src="img/card-whack.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <defs><linearGradient id="wsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6F9FD0"/><stop offset="1" stop-color="#DCEBF2"/></linearGradient></defs>
   <rect width="300" height="400" fill="url(#wsky)"/>
@@ -341,7 +344,7 @@ export function cardArt (kind) {
 </svg>`
   }
   if (kind === 'write') {
-    return `<img class="art-slot" src="img/card-write.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+    return `<img class="art-slot" src="img/card-write.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#EAF1EC"/>
   <rect x="40" y="60" width="220" height="220" rx="24" fill="#FFFDF7" stroke="#B08A63" stroke-width="8"/>
@@ -352,7 +355,7 @@ export function cardArt (kind) {
 </svg>`
   }
   if (kind === 'match') {
-    return `<img class="art-slot" src="img/card-match.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+    return `<img class="art-slot" src="img/card-match.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#DCEBF2"/>
   <rect x="30" y="70" width="100" height="70" rx="14" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
@@ -366,7 +369,7 @@ export function cardArt (kind) {
 </svg>`
   }
   if (kind === 'fill') {
-    return `<img class="art-slot" src="img/card-fill.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+    return `<img class="art-slot" src="img/card-fill.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#F3E4C2"/>
   <text x="70" y="150" text-anchor="middle" font-size="80">\u{1F34E}</text>
@@ -381,7 +384,7 @@ export function cardArt (kind) {
 </svg>`
   }
   if (kind === 'tone') {
-    return `<img class="art-slot" src="img/card-tone.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+    return `<img class="art-slot" src="img/card-tone.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#F3E4C2"/>
   <text x="70" y="150" text-anchor="middle" font-size="80">\u{1F434}</text>
@@ -397,7 +400,7 @@ export function cardArt (kind) {
 </svg>`
   }
   if (kind === 'learn') {
-    return `<img class="art-slot" src="img/card-learn.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+    return `<img class="art-slot" src="img/card-learn.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#F3E4C2"/>
   <rect x="40" y="60" width="220" height="220" rx="22" fill="#FFFDF7" stroke="#B08A63" stroke-width="7"/>
@@ -410,7 +413,7 @@ export function cardArt (kind) {
 </svg>`
   }
   if (kind === 'speak') {
-    return `<img class="art-slot" src="img/card-speak.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+    return `<img class="art-slot" src="img/card-speak.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#F3E4C2"/>
   <path d="M0 300 h300 v100 H0z" fill="#8DBB74"/>
@@ -427,7 +430,7 @@ export function cardArt (kind) {
   <rect x="224" y="330" width="12" height="30" fill="#4A6FA5"/>
 </svg>`
   }
-  return `<img class="art-slot" src="img/card-memory.jpg" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
+  return `<img class="art-slot" src="img/card-memory.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
 <svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#BFD8B0"/>
   <g>

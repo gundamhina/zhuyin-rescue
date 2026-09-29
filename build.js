@@ -6,6 +6,7 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, exis
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 
 const root = dirname(fileURLToPath(import.meta.url))
 const ORDER = ['syllables.js', 'data.js', 'scheduler.js', 'store.js', 'audio.js', 'art.js', 'fishing.js', 'whack.js', 'memory.js', 'speak.js', 'ink.js', 'strokes.js', 'strokeplay.js', 'write.js', 'learn.js', 'matchline.js', 'fillblank.js', 'ui.js', 'fx.js', 'tutorial.js', 'shop.js', 'check.js', 'main.js']
@@ -21,7 +22,22 @@ function strip (src, name) {
 const dogPath = i => join(root, 'img', `dog-${i}.png`)
 const dog0 = existsSync(dogPath(0)) ? readFileSync(dogPath(0)) : null
 const dogCopies = [1, 2, 3, 4, 5].filter(i => dog0 && existsSync(dogPath(i)) && readFileSync(dogPath(i)).equals(dog0))
-const js = `const DOG_COPIES = ${JSON.stringify(dogCopies)}\n` + ORDER.map(f => strip(readFileSync(join(root, 'src', f), 'utf8'), f)).join('\n')
+// 圖片版本：所有圖檔內容一起算雜湊，換圖網址才會變（art.js 的 IMG_V）
+function imageVersion () {
+  const h = createHash('sha1')
+  const walk = dir => {
+    if (!existsSync(dir)) return
+    for (const f of readdirSync(dir).sort()) {
+      const p = join(dir, f)
+      if (/\.(png|jpg|jpeg|webp|svg)$/i.test(f)) h.update(f).update(readFileSync(p))
+      else if (f === 'words' || f === 'emoji') walk(p)
+    }
+  }
+  walk(join(root, 'img'))
+  return h.digest('hex').slice(0, 8)
+}
+const imgVersion = imageVersion()
+const js = `const DOG_COPIES = ${JSON.stringify(dogCopies)}\n` + ORDER.map(f => strip(readFileSync(join(root, 'src', f), 'utf8'), f)).join('\n').replace(/__IMG_V__/g, imgVersion)
 // 各模組最外層的名稱不能撞：合成同一個範圍後，同名的 function 會靜靜地互相蓋掉，new Function 抓不到
 const seen = {}
 for (const f of ORDER) {
@@ -49,6 +65,7 @@ function buildVersion () {
   return [`v${pkg.version}`, sha.slice(0, 7), when].filter(Boolean).join(' · ')
 }
 const version = buildVersion()
+
 
 const html = readFileSync(join(root, 'src', 'index.html'), 'utf8')
   .replace('__VERSION__', () => version)
