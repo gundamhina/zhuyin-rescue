@@ -110,12 +110,12 @@ export function bgHtml (kind, inner = '') {
 
 // 六隻救援狗的配色：帽子／背心顏色，深色版做陰影
 export const DOG_COLORS = [
-  { main: '#4A6FA5', dark: '#34507A' }, // 藍 警察
-  { main: '#C8553D', dark: '#96402D' }, // 紅 消防
-  { main: '#E39AA8', dark: '#B87483' }, // 粉 飛行
-  { main: '#6B9E6B', dark: '#4E7A4E' }, // 綠 回收
-  { main: '#E0955B', dark: '#B07242' }, // 橘 工程
-  { main: '#E8C86A', dark: '#B99A44' }, // 黃 鬆餅
+  { main: '#4A6FA5', dark: '#34507A' }, // 藍 警察（柴犬）
+  { main: '#C8553D', dark: '#96402D' }, // 紅 消防（小象）
+  { main: '#E39AA8', dark: '#B87483' }, // 粉 醫護（兔子）；2026-09-29 救援隊改成六種動物
+  { main: '#6B9E6B', dark: '#4E7A4E' }, // 綠 森林（小熊）
+  { main: '#E0955B', dark: '#B07242' }, // 橘 工程（河狸）
+  { main: '#E8C86A', dark: '#B99A44' }, // 黃 廚師（小貓）
 ]
 
 // 水彩紙紋：疊在色塊上的細顆粒
@@ -529,7 +529,7 @@ export function accessoryIcon (item) {
 
 
 // ---- 救援隊員：另外五隻狗狗，一隻一隻買回家 ----
-export const DOG_NAMES = ['警察狗', '消防狗', '飛行狗', '回收狗', '工程狗', '鬆餅狗']
+export const DOG_NAMES = ['警察柴犬', '消防象', '醫護兔', '森林熊', '工程河狸', '廚師貓']
 const MATE_PRICES = [1800, 2400, 3300, 4200, 5400]
 
 // 她自己那隻本來就有，商店賣其他五隻；越後面越貴

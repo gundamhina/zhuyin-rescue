@@ -18,13 +18,15 @@ import art_list  # noqa: E402
 ROOT = art_list.ROOT
 
 GROUPS = [
-    ('dogs', '五隻救援隊員', '現在五隻隊員是同一張圖的複本，只靠領巾分辨。最明顯、最值得先做。',
-     '上傳 img/dog-0.png，請 Gemini「改這張圖」，五隻才會像同一個畫家畫的。'),
-    ('cards', '首頁七張卡片', '首頁一打開就看到，現在是向量畫的卡片。',
+    ('dog0', '第一步：隊長 dog-0', '救援隊改成六種動物，畫風是水彩加彩色鉛筆的卡通貼紙風。先生隊長這張，畫風定了再做其他五位。',
+     '不用上傳參考圖，直接貼提示詞。生好照檔名放進 img/raw/ 跑 prep_images.py，新的 dog-0 就換上去了。'),
+    ('dogs', '其他五位救援隊員', '小象、兔子、小熊、河狸、小貓。全部是原創角色，帽子、制服、隊徽都跟現有卡通錯開（網站是公開的）。',
+     '上傳新的 img/dog-0.png，請 Gemini「改這張圖」，換動物但保留畫風和姿勢，五位才會像同一個畫家畫的。'),
+    ('cards', '首頁的玩法卡片', '首頁一打開就看到，現在是向量畫的卡片。',
      '上傳 img/home.jpg 當畫風參考，說「用這張圖的畫風」。'),
     ('bgs', '三張遊戲背景', '現在除了釣魚，每個遊戲都借用首頁的草原。',
      '上傳 img/home.jpg 當畫風參考。手機直拿只看得到中間，所以中間要安靜。'),
-    ('words', '191 個詞的圖', '連連看和填空的圖，現在是表情符號。一次生九張，處理工具會自動切開。',
+    ('words', '詞的圖', '連連看和填空的圖，現在是表情符號。一次生九張，處理工具會自動切開。',
      '上傳 img/home.jpg 當畫風參考。生出來請確認九個東西的順序跟下面列的一樣。'),
 ]
 
@@ -100,7 +102,7 @@ def write_readme(items):
         '## 注意',
         '',
         '- 生出來的圖如果有文字或水印，重生或裁掉再放。',
-        '- 這些圖只在自己家裡用，不對外發布。',
+        '- 網站是公開的：不要生任何現有卡通的角色、名字或標誌（例如汪汪隊的爪印盾牌徽章）。',
         '',
     ]
     open(os.path.join(ROOT, 'img', 'README.md'), 'w', encoding='utf-8').write('\n'.join(lines))
@@ -111,6 +113,7 @@ def write_html(items, out_dir):
         'groups': [{'id': g, 'name': n, 'why': w, 'how': h} for g, n, w, h in GROUPS],
         'items': [{**it, 'spec': spec_label(it['kind'])} for it in items],
         'refs': {
+            None: None,
             'img/dog-0.png': thumb('img/dog-0.png', 220, 'PNG'),
             'img/home.jpg': thumb('img/home.jpg', 360, 'JPEG'),
         },

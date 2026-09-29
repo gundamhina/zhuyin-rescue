@@ -34,51 +34,63 @@
 hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
 ```
 
-## 五隻救援隊員
+## 第一步：隊長 dog-0
 
-現在五隻隊員是同一張圖的複本，只靠領巾分辨。最明顯、最值得先做。上傳 img/dog-0.png，請 Gemini「改這張圖」，五隻才會像同一個畫家畫的。
+救援隊改成六種動物，畫風是水彩加彩色鉛筆的卡通貼紙風。先生隊長這張，畫風定了再做其他五位。不用上傳參考圖，直接貼提示詞。生好照檔名放進 img/raw/ 跑 prep_images.py，新的 dog-0 就換上去了。
 
-### `dog-1`　消防狗
+### `dog-0`　警察柴犬（隊長，先生這張）
+
+520×600，透明背景。參考圖：`None`。
+
+```
+A Shiba Inu puppy with cream and orange fur, sitting and facing three-quarters to the viewer, holding a short wooden fishing rod in its right front paw with the rod pointing up to the upper right. It wears a soft round blue police cap with a small round golden team badge with a white bone and a little star on it on the front, and a blue vest with a thin white reflective stripe. cute cartoon baby animal character, hand-drawn watercolor and colored pencil illustration, soft pencil outlines, big friendly round eyes, gentle smile, children's picture book style, an ORIGINAL character design that does not resemble any existing cartoon, TV show or toy character, no paw print symbols, no shield shaped badges, no text, no letters, no numbers, no watermark. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
+```
+
+## 其他五位救援隊員
+
+小象、兔子、小熊、河狸、小貓。全部是原創角色，帽子、制服、隊徽都跟現有卡通錯開（網站是公開的）。上傳新的 img/dog-0.png，請 Gemini「改這張圖」，換動物但保留畫風和姿勢，五位才會像同一個畫家畫的。
+
+### `dog-1`　消防象
 
 520×600，透明背景。參考圖：`img/dog-0.png`。
 
 ```
-Edit the attached picture. Keep exactly the same puppy, the same sitting pose, the same fishing rod, the same proportions and the same painting style. Only change this: make the fur golden orange, and replace the blue police cap and vest with a red firefighter helmet and a red vest with a yellow stripe. Put the puppy on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
+Edit the attached picture. Keep exactly the same drawing style, the same sitting pose, the same fishing rod, the same size in the picture and the same cute chubby proportions. Change the character into this one: a baby elephant with soft grey skin and big round ears, its trunk curled up, wearing a red firefighter helmet with a wide round brim and a red jacket with two yellow stripes. Keep a small round golden team badge with a white bone and a little star on it on the hat or the vest. It must stay an original character, not like any existing cartoon. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
 ```
 
-### `dog-2`　飛行狗
+### `dog-2`　醫護兔
 
 520×600，透明背景。參考圖：`img/dog-0.png`。
 
 ```
-Edit the attached picture. Keep exactly the same puppy, the same sitting pose, the same fishing rod, the same proportions and the same painting style. Only change this: make the fur light grey, and replace the blue police cap and vest with pink aviator goggles pushed up on the head and a pink pilot vest. Put the puppy on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
+Edit the attached picture. Keep exactly the same drawing style, the same sitting pose, the same fishing rod, the same size in the picture and the same cute chubby proportions. Change the character into this one: a fluffy white baby bunny with long upright ears, wearing a pink nurse cap with a small white heart and a pink vest with a tiny first-aid pouch (no red cross symbol). Keep a small round golden team badge with a white bone and a little star on it on the hat or the vest. It must stay an original character, not like any existing cartoon. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
 ```
 
-### `dog-3`　回收狗
+### `dog-3`　森林熊
 
 520×600，透明背景。參考圖：`img/dog-0.png`。
 
 ```
-Edit the attached picture. Keep exactly the same puppy, the same sitting pose, the same fishing rod, the same proportions and the same painting style. Only change this: make the fur dark chocolate brown, and replace the blue police cap and vest with a green cap and a green vest with a small leaf badge and a tool pocket. Put the puppy on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
+Edit the attached picture. Keep exactly the same drawing style, the same sitting pose, the same fishing rod, the same size in the picture and the same cute chubby proportions. Change the character into this one: a brown bear cub with round ears, wearing a green forest ranger hat with a leaf on it and a green vest, with small binoculars hanging on its chest. Keep a small round golden team badge with a white bone and a little star on it on the hat or the vest. It must stay an original character, not like any existing cartoon. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
 ```
 
-### `dog-4`　工程狗
+### `dog-4`　工程河狸
 
 520×600，透明背景。參考圖：`img/dog-0.png`。
 
 ```
-Edit the attached picture. Keep exactly the same puppy, the same sitting pose, the same fishing rod, the same proportions and the same painting style. Only change this: make the fur cream white with one brown ear, and replace the blue police cap and vest with an orange construction hard hat and an orange safety vest. Put the puppy on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
+Edit the attached picture. Keep exactly the same drawing style, the same sitting pose, the same fishing rod, the same size in the picture and the same cute chubby proportions. Change the character into this one: a baby beaver with brown fur, two big front teeth and a flat tail, wearing a round orange construction hard hat and an orange safety vest with reflective stripes, with a small tool bag showing a wrench. Keep a small round golden team badge with a white bone and a little star on it on the hat or the vest. It must stay an original character, not like any existing cartoon. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
 ```
 
-### `dog-5`　鬆餅狗
+### `dog-5`　廚師貓
 
 520×600，透明背景。參考圖：`img/dog-0.png`。
 
 ```
-Edit the attached picture. Keep exactly the same puppy, the same sitting pose, the same fishing rod, the same proportions and the same painting style. Only change this: make the fur fluffy white, and replace the blue police cap and vest with a tall yellow chef hat and a yellow apron. Put the puppy on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
+Edit the attached picture. Keep exactly the same drawing style, the same sitting pose, the same fishing rod, the same size in the picture and the same cute chubby proportions. Change the character into this one: an orange tabby kitten with a striped tail, wearing a tall white chef hat and a yellow apron. Keep a small round golden team badge with a white bone and a little star on it on the hat or the vest. It must stay an original character, not like any existing cartoon. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
 ```
 
-## 首頁七張卡片
+## 首頁的玩法卡片
 
 首頁一打開就看到，現在是向量畫的卡片。上傳 img/home.jpg 當畫風參考，說「用這張圖的畫風」。
 
@@ -138,6 +150,14 @@ a row of four little wooden music bells on a windowsill, each a different height
 a small slate chalkboard on a wooden easel next to a fat yellow pencil and crayons, on a sunny windowsill, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
 ```
 
+### `card-learn`　學寫字
+
+600×800，直的 3:4。參考圖：`img/home.jpg`。
+
+```
+a small wooden writing board on an easel with one big brush stroke glowing softly on it, a fat pencil with a tiny arrow ribbon, a few paper stars around, on a sunny windowsill, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
+```
+
 ### `card-speak`　唸給狗狗聽
 
 600×800，直的 3:4。參考圖：`img/home.jpg`。
@@ -174,7 +194,7 @@ the cozy inside of a wooden treehouse classroom, sunlight through a round window
 a small cozy pet accessory shop, wooden shelves with colorful hats, scarves, bows and toys along the left and right walls, little bunting flags, warm afternoon light, wide 3:2 landscape format, the middle of the picture is open and calm with little detail because game pieces are placed on top, the nicer details stay near the left and right edges, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
 ```
 
-## 191 個詞的圖
+## 詞的圖
 
 連連看和填空的圖，現在是表情符號。一次生九張，處理工具會自動切開。上傳 img/home.jpg 當畫風參考。生出來請確認九個東西的順序跟下面列的一樣。
 
@@ -628,17 +648,47 @@ A 3 by 3 grid of nine separate small illustrations, each centered in its own cel
 A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: flexed arm muscle; tongue; brain. Row 2, left to right: bone; playing card; bowling. Row 3, left to right: medal; gold medal; firecracker.
 ```
 
-### `words-46`　電影、門票、國旗
+### `words-46`　電影、門票、國旗、水母、海豹、珊瑚、蟑螂、蚯蚓、甲蟲
 
 切成每張 384×384，透明背景。參考圖：`img/home.jpg`。
 
-一列，由左到右、由上到下：電影、門票、國旗。切開後存成 `img/words/<國字>.png`。
+三行三列，由左到右、由上到下：電影、門票、國旗、水母、海豹、珊瑚、蟑螂、蚯蚓、甲蟲。切開後存成 `img/words/<國字>.png`。
 
 ```
-A single row of 3 separate small illustrations side by side, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Left to right: movie clapperboard; ticket; flags.
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: movie clapperboard; ticket; flags. Row 2, left to right: jellyfish; seal; coral. Row 3, left to right: cockroach; earthworm; beetle.
+```
+
+### `words-47`　烏鴉、驢子、狗熊、茶壺、鏡子、窗戶、牙刷、梳子、扇子
+
+切成每張 384×384，透明背景。參考圖：`img/home.jpg`。
+
+三行三列，由左到右、由上到下：烏鴉、驢子、狗熊、茶壺、鏡子、窗戶、牙刷、梳子、扇子。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: crow; donkey; bear. Row 2, left to right: teapot; mirror; window. Row 3, left to right: toothbrush; comb; folding fan.
+```
+
+### `words-48`　拖鞋、梯子、鋸子、盆栽、石頭、木頭、奶茶、硬幣、救生圈
+
+切成每張 384×384，透明背景。參考圖：`img/home.jpg`。
+
+三行三列，由左到右、由上到下：拖鞋、梯子、鋸子、盆栽、石頭、木頭、奶茶、硬幣、救生圈。切開後存成 `img/words/<國字>.png`。
+
+```
+A 3 by 3 grid of nine separate small illustrations, each centered in its own cell, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Row 1, left to right: flip-flop slippers; ladder; saw. Row 2, left to right: potted plant; rock; wood log. Row 3, left to right: bubble tea; coin; life ring.
+```
+
+### `words-49`　泡泡、羽毛、翅膀、手風琴、橄欖
+
+切成每張 384×384，透明背景。參考圖：`img/home.jpg`。
+
+一列，由左到右、由上到下：泡泡、羽毛、翅膀、手風琴、橄欖。切開後存成 `img/words/<國字>.png`。
+
+```
+A single row of 5 separate small illustrations side by side, with wide plain white gaps between them, on a plain pure white background. All the same size and the same style: hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark. No borders, no labels. Left to right: bubbles; feather; wing; accordion; olives.
 ```
 
 ## 注意
 
 - 生出來的圖如果有文字或水印，重生或裁掉再放。
-- 這些圖只在自己家裡用，不對外發布。
+- 網站是公開的：不要生任何現有卡通的角色、名字或標誌（例如汪汪隊的爪印盾牌徽章）。

@@ -20,16 +20,30 @@ SPECS = {
     'sheet': {'ratio': 1, 'size': (384, 384), 'label': '切成每張 384×384，透明背景'},
 }
 
-# ---- 第一優先：五隻救援隊員。用 dog-0 當參考圖「改圖」，五隻才會像同一個畫家畫的 ----
-DOG_EDIT = ("Edit the attached picture. Keep exactly the same puppy, the same sitting pose, the same fishing rod, "
-            "the same proportions and the same painting style. Only change this: {change}. "
-            "Put the puppy on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.")
+# ---- 第一優先：六位救援隊員（2026-09-29 第二版：水彩加彩色鉛筆的卡通貼紙風，六種不同的動物）----
+# 網站是公開的，角色一定要原創：動物、帽子、制服、隊徽都不能跟任何現有卡通（特別是汪汪隊）一樣。
+# 檔名沿用 dog-0 … dog-5（程式、存檔都用這個編號），裡面不一定是狗。
+# 我們的隊徽：金色圓形徽章，上面一根白色骨頭加一顆星星。不用爪印，也不用盾牌形。
+DOG_STYLE = ("cute cartoon baby animal character, hand-drawn watercolor and colored pencil illustration, soft pencil outlines, "
+             "big friendly round eyes, gentle smile, children's picture book style, "
+             "an ORIGINAL character design that does not resemble any existing cartoon, TV show or toy character, "
+             "no paw print symbols, no shield shaped badges, no text, no letters, no numbers, no watermark")
+BADGE = "a small round golden team badge with a white bone and a little star on it"
+BLUE_BG = "Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern."
+# dog-0 從零生；其他五隻上傳新的 dog-0 改圖。狗狗手上要拿一支短釣竿（釣魚遊戲的線從竿尖拉出去）
+DOG_BASE = ("A Shiba Inu puppy with cream and orange fur, sitting and facing three-quarters to the viewer, "
+            "holding a short wooden fishing rod in its right front paw with the rod pointing up to the upper right. "
+            "It wears a soft round blue police cap with " + BADGE + " on the front, and a blue vest with a thin white reflective stripe. "
+            + DOG_STYLE + ". " + BLUE_BG)
+DOG_EDIT = ("Edit the attached picture. Keep exactly the same drawing style, the same sitting pose, the same fishing rod, "
+            "the same size in the picture and the same cute chubby proportions. Change the character into this one: {change}. "
+            "Keep " + BADGE + " on the hat or the vest. It must stay an original character, not like any existing cartoon. " + BLUE_BG)
 DOGS = [
-    ('dog-1', '消防狗', '#C8553D', "make the fur golden orange, and replace the blue police cap and vest with a red firefighter helmet and a red vest with a yellow stripe"),
-    ('dog-2', '飛行狗', '#E39AA8', "make the fur light grey, and replace the blue police cap and vest with pink aviator goggles pushed up on the head and a pink pilot vest"),
-    ('dog-3', '回收狗', '#6B9E6B', "make the fur dark chocolate brown, and replace the blue police cap and vest with a green cap and a green vest with a small leaf badge and a tool pocket"),
-    ('dog-4', '工程狗', '#E0955B', "make the fur cream white with one brown ear, and replace the blue police cap and vest with an orange construction hard hat and an orange safety vest"),
-    ('dog-5', '鬆餅狗', '#E8C86A', "make the fur fluffy white, and replace the blue police cap and vest with a tall yellow chef hat and a yellow apron"),
+    ('dog-1', '消防象', '#C8553D', "a baby elephant with soft grey skin and big round ears, its trunk curled up, wearing a red firefighter helmet with a wide round brim and a red jacket with two yellow stripes"),
+    ('dog-2', '醫護兔', '#E39AA8', "a fluffy white baby bunny with long upright ears, wearing a pink nurse cap with a small white heart and a pink vest with a tiny first-aid pouch (no red cross symbol)"),
+    ('dog-3', '森林熊', '#6B9E6B', "a brown bear cub with round ears, wearing a green forest ranger hat with a leaf on it and a green vest, with small binoculars hanging on its chest"),
+    ('dog-4', '工程河狸', '#E0955B', "a baby beaver with brown fur, two big front teeth and a flat tail, wearing a round orange construction hard hat and an orange safety vest with reflective stripes, with a small tool bag showing a wrench"),
+    ('dog-5', '廚師貓', '#E8C86A', "an orange tabby kitten with a striped tail, wearing a tall white chef hat and a yellow apron"),
 ]
 
 # ---- 第二優先：首頁七張卡片 ----
@@ -498,10 +512,11 @@ GLOSS = {
 
 
 def words_in_order():
-    # 詞照遊戲裡的順序（src/syllables.js 的 WORD_TEXT）
+    # 有圖的詞，照遊戲裡的順序（src/syllables.js 的 WORD_TEXT）；只聽不看圖的詞沒有 WORD_ICON，不用生圖
     m = open(os.path.join(ROOT, 'src', 'syllables.js'), encoding='utf-8').read()
-    block = m[m.index('WORD_TEXT = {'):m.index('WORD_ICON = {')]
-    return re.findall(r"^  '[^']+': '([^']+)',$", block, re.M)
+    text = re.findall(r"^  '([^']+)': '([^']+)',$", m[m.index('WORD_TEXT = {'):m.index('WORD_ICON = {')], re.M)
+    icons = set(re.findall(r"^  '([^']+)': ", m[m.index('WORD_ICON = {'):], re.M))
+    return [t for z, t in text if z in icons]
 
 
 def word_sheets():
@@ -528,7 +543,8 @@ def sheet_prompt(sheet):
 
 def all_items():
     # 整份清單，照優先順序。每項：group、file、title、kind（處理方式）、ref（要上傳的參考圖）、prompt
-    items = []
+    items = [{'group': 'dog0', 'file': 'dog-0', 'title': '警察柴犬（隊長，先生這張）', 'kind': 'dog', 'color': '#4A6FA5',
+              'ref': None, 'prompt': DOG_BASE}]
     for f, name, color, change in DOGS:
         items.append({'group': 'dogs', 'file': f, 'title': name, 'kind': 'dog', 'color': color,
                       'ref': 'img/dog-0.png', 'prompt': DOG_EDIT.format(change=change)})
