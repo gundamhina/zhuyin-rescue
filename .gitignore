@@ -4,3 +4,4 @@ releases/
 .claude/
 __pycache__/
 tools/.moe/
+dist/

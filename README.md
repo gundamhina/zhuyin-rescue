@@ -4,7 +4,7 @@
 
 ## 玩
 
-把 `dist` 整個資料夾複製到要玩的電腦，用 Chrome 開 `dist/index.html`。不用安裝、不用網路。`index.html` 旁邊的 `audio`、`img` 資料夾要一起帶著。
+先 `npm run build` 產生 `dist`（`dist/` 不進 git），再把整個資料夾複製到要玩的電腦，用 Chrome 開 `dist/index.html`。不用安裝、不用網路。`index.html` 旁邊的 `audio`、`img` 資料夾要一起帶著。
 
 - 第一次進去先新增一個人，之後開機直接進上次那個人的首頁。
 - 九個玩法，首頁分四類（網頁一層分區、手機兩層）：
@@ -25,7 +25,7 @@ npm test          # 單元測試（node 內建 test runner，零相依）
 npm run build     # 把 src/ 合成 dist/index.html，並複製 audio/、img/
 ```
 
-`src/` 是分檔的原始碼，`dist/` 是交付物。發音檔在 `audio/`（教育部手冊官方錄音，CC BY 4.0），圖在 `img/`（生圖後用 `tools/prep_images.py` 整理）。設計文件在 `docs/superpowers/specs/`。
+`src/` 是分檔的原始碼，`dist/` 是 build 出來的交付物（不進 git，GitHub Pages 由 CI 自己 build）。發音檔在 `audio/`（教育部手冊官方錄音，CC BY 4.0），圖在 `img/`（生圖後用 `tools/prep_images.py` 整理）。設計文件在 `docs/superpowers/specs/`。
 
 資料來源：
 - 發音：教育部《國語注音符號手冊》錄音，CC BY 4.0。
@@ -34,7 +34,7 @@ npm run build     # 把 src/ 合成 dist/index.html，並複製 audio/、img/
 - 注音筆順：教育部《國字標準字體筆順學習網》，CC BY-NC-ND 3.0 臺灣。原始資料原封不動存在 `tools/moe_strokes.json`，`tools/gen_strokes.py` 只換成 SVG 路徑寫法產生 `src/strokes.js`。
 
 
-## 部署到 Northflank
+## 部署到 Northflank（備用，目前沒在用）
 
 根目錄的 `Dockerfile` 兩段式：node 跑 `npm run build` 合成 `dist/`，再用 nginx 端出來，聽 8080。nginx 設定在 `deploy/nginx.conf`（index.html 不快取，錄音和圖片快取 30 天）。
 
@@ -55,10 +55,10 @@ Northflank 上建服務：Combined service → Git repo 選 `gundamhina/zhuyin-r
 
 答對賺骨頭，照題目難度給：階級越高給越多，還不熟的符號多給、已經很熟的少給；連對和玩完一局的獎勵也照階級（規則在 `src/scheduler.js` 的 `questionReward`）。首頁上方「商店」用骨頭買東西。翻牌是純遊玩，不算進星星和難度，骨頭只有配對一對 1 根。商店兩個分頁：
 
-- **配件** 十六件（180～1650 根），分頭上、臉上、脖子、背後，每個部位戴一件，戴在她的狗狗身上，首頁、遊戲、結算都看得到。表在 `src/art.js` 的 `ACCESSORIES`，每件是畫在狗狗 260×300 框裡的 SVG（背後那三件畫到框外才露得出來）。
-- **救援隊員** 另外五隻狗狗，1800 到 5400 根。買回家後站在首頁草地上，結算時一起跳舞。
+- **配件** 十六件（180～1650 根），分頭上、臉上、脖子、背後，每個部位戴一件，戴在正在出任務的那位隊員身上，首頁、遊戲、結算都看得到。表在 `src/art.js` 的 `ACCESSORIES`，每件是畫在隊員 260×300 框裡的 SVG，每位隊員記了頭頂、兩眼中間、脖子的位置，配件照著移過去（背後那三件畫到框外才露得出來）。
+- **救援隊員** 六位原創隊員（警察柴犬、消防象、醫護兔、森林熊、工程河狸、廚師貓，`DOG_NAMES`），商店賣自己那位以外的五位，1800 到 5400 根。買回家後站在首頁草地上、結算時一起跳舞；首頁下方隊員列點誰，誰就出任務（存在存檔的 `partner`）。
 
-商店畫面在 `src/shop.js`，家長區可以加減骨頭。六隻狗的 PNG 現在都是同一張複本，所以隊員多畫一條隊色領巾才分得出來；`img/dog-1.png` 到 `dog-5.png` 換成各自的圖之後，把 `dogSvg` 的 `mate` 領巾拿掉就好。
+商店畫面在 `src/shop.js`，家長區可以加減骨頭。隊員圖是 `img/dog-0.png` 到 `dog-5.png`（檔名沿用舊的 dog）。`build.js` 會比對哪幾張還是 dog-0 的複本，只有複本才在 `dogSvg` 多畫一條隊色領巾來分辨；現在六張都是各自的圖，領巾不會出現。
 
 ## 手機
 
