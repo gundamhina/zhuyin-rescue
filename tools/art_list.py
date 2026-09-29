@@ -30,20 +30,28 @@ DOG_STYLE = ("cute cartoon baby animal character, hand-drawn watercolor and colo
              "no paw print symbols, no shield shaped badges, no text, no letters, no numbers, no watermark")
 BADGE = "a small round golden team badge with a white bone and a little star on it"
 BLUE_BG = "Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern."
-# dog-0 從零生；其他五隻上傳新的 dog-0 改圖。狗狗手上要拿一支短釣竿（釣魚遊戲的線從竿尖拉出去）
-DOG_BASE = ("A Shiba Inu puppy with cream and orange fur, sitting and facing three-quarters to the viewer, "
-            "holding a short wooden fishing rod in its right front paw with the rod pointing up to the upper right. "
+# dog-0 從零生；其他五位上傳新的 dog-0 當「畫風參考」重畫（不是改圖）：畫風、線條、大小一樣，動物和動作各自不同。
+# 每位都是全身、置中、臉朝前看得清楚（首頁頭像、商店、結算都用同一張）。不拿釣竿：釣魚遊戲的釣竿由程式另外畫在碼頭上。
+FRAMING = ("Full body, centered, the character fills about 80 percent of the picture height, "
+           "facing mostly toward the viewer so the face is clearly visible.")
+DOG_BASE = ("A Shiba Inu puppy with cream and orange fur, standing on its hind legs and giving a cheerful salute with its right paw. "
             "It wears a soft round blue police cap with " + BADGE + " on the front, and a blue vest with a thin white reflective stripe. "
-            + DOG_STYLE + ". " + BLUE_BG)
-DOG_EDIT = ("Edit the attached picture. Keep exactly the same drawing style, the same sitting pose, the same fishing rod, "
-            "the same size in the picture and the same cute chubby proportions. Change the character into this one: {change}. "
-            "Keep " + BADGE + " on the hat or the vest. It must stay an original character, not like any existing cartoon. " + BLUE_BG)
+            + FRAMING + " " + DOG_STYLE + ". " + BLUE_BG)
+DOG_EDIT = ("Use the attached picture only as a style reference. Draw a NEW character in exactly the same drawing style, "
+            "the same line quality and coloring, the same size and framing as the reference, but with its own pose: {change}. "
+            "It has " + BADGE + " on its hat or vest. " + FRAMING + " "
+            "It must be an original character, not like any existing cartoon. " + BLUE_BG)
 DOGS = [
-    ('dog-1', '消防象', '#C8553D', "a baby elephant with soft grey skin and big round ears, its trunk curled up, wearing a red firefighter helmet with a wide round brim and a red jacket with two yellow stripes"),
-    ('dog-2', '醫護兔', '#E39AA8', "a fluffy white baby bunny with long upright ears, wearing a pink nurse cap with a small white heart and a pink vest with a tiny first-aid pouch (no red cross symbol)"),
-    ('dog-3', '森林熊', '#6B9E6B', "a brown bear cub with round ears, wearing a green forest ranger hat with a leaf on it and a green vest, with small binoculars hanging on its chest"),
-    ('dog-4', '工程河狸', '#E0955B', "a baby beaver with brown fur, two big front teeth and a flat tail, wearing a round orange construction hard hat and an orange safety vest with reflective stripes, with a small tool bag showing a wrench"),
-    ('dog-5', '廚師貓', '#E8C86A', "an orange tabby kitten with a striped tail, wearing a tall white chef hat and a yellow apron"),
+    ('dog-1', '消防象', '#C8553D', "a baby elephant with soft grey skin and big round ears, wearing a red firefighter helmet with a wide round brim and a red jacket with two yellow stripes, "
+     "sitting and happily spraying a small arc of water from its raised trunk"),
+    ('dog-2', '醫護兔', '#E39AA8', "a fluffy white baby bunny with long upright ears, wearing a pink nurse cap with a small white heart and a pink vest, "
+     "standing and holding a small pink first-aid box with a heart on it in both paws (no red cross symbol)"),
+    ('dog-3', '森林熊', '#6B9E6B', "a brown bear cub with round ears, wearing a green forest ranger hat with a leaf on it and a green vest, "
+     "standing and looking through small binoculars held in both paws"),
+    ('dog-4', '工程河狸', '#E0955B', "a baby beaver with brown fur, two big front teeth and a flat tail, wearing a round orange construction hard hat and an orange safety vest with reflective stripes, "
+     "standing and proudly holding up a small wooden hammer in one paw"),
+    ('dog-5', '廚師貓', '#E8C86A', "an orange tabby kitten with a striped tail, wearing a tall white chef hat and a yellow apron, "
+     "standing and flipping a pancake in a small frying pan"),
 ]
 
 # ---- 第二優先：首頁七張卡片 ----

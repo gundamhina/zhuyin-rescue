@@ -43,19 +43,19 @@ hand-painted watercolor and gouache illustration in the style of a 1990s Japanes
 520×600，透明背景。參考圖：`None`。
 
 ```
-A Shiba Inu puppy with cream and orange fur, sitting and facing three-quarters to the viewer, holding a short wooden fishing rod in its right front paw with the rod pointing up to the upper right. It wears a soft round blue police cap with a small round golden team badge with a white bone and a little star on it on the front, and a blue vest with a thin white reflective stripe. cute cartoon baby animal character, hand-drawn watercolor and colored pencil illustration, soft pencil outlines, big friendly round eyes, gentle smile, children's picture book style, an ORIGINAL character design that does not resemble any existing cartoon, TV show or toy character, no paw print symbols, no shield shaped badges, no text, no letters, no numbers, no watermark. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
+A Shiba Inu puppy with cream and orange fur, standing on its hind legs and giving a cheerful salute with its right paw. It wears a soft round blue police cap with a small round golden team badge with a white bone and a little star on it on the front, and a blue vest with a thin white reflective stripe. Full body, centered, the character fills about 80 percent of the picture height, facing mostly toward the viewer so the face is clearly visible. cute cartoon baby animal character, hand-drawn watercolor and colored pencil illustration, soft pencil outlines, big friendly round eyes, gentle smile, children's picture book style, an ORIGINAL character design that does not resemble any existing cartoon, TV show or toy character, no paw print symbols, no shield shaped badges, no text, no letters, no numbers, no watermark. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
 ```
 
 ## 其他五位救援隊員
 
-小象、兔子、小熊、河狸、小貓。全部是原創角色，帽子、制服、隊徽都跟現有卡通錯開（網站是公開的）。上傳新的 img/dog-0.png，請 Gemini「改這張圖」，換動物但保留畫風和姿勢，五位才會像同一個畫家畫的。
+小象、兔子、小熊、河狸、小貓。全部是原創角色，帽子、制服、隊徽都跟現有卡通錯開（網站是公開的）。上傳新的 img/dog-0.png 當畫風參考，請 Gemini 照同樣的畫風和大小重畫。每位的動物和動作都不一樣，但看起來像同一個畫家畫的。
 
 ### `dog-1`　消防象
 
 520×600，透明背景。參考圖：`img/dog-0.png`。
 
 ```
-Edit the attached picture. Keep exactly the same drawing style, the same sitting pose, the same fishing rod, the same size in the picture and the same cute chubby proportions. Change the character into this one: a baby elephant with soft grey skin and big round ears, its trunk curled up, wearing a red firefighter helmet with a wide round brim and a red jacket with two yellow stripes. Keep a small round golden team badge with a white bone and a little star on it on the hat or the vest. It must stay an original character, not like any existing cartoon. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
+Use the attached picture only as a style reference. Draw a NEW character in exactly the same drawing style, the same line quality and coloring, the same size and framing as the reference, but with its own pose: a baby elephant with soft grey skin and big round ears, wearing a red firefighter helmet with a wide round brim and a red jacket with two yellow stripes, sitting and happily spraying a small arc of water from its raised trunk. It has a small round golden team badge with a white bone and a little star on it on its hat or vest. Full body, centered, the character fills about 80 percent of the picture height, facing mostly toward the viewer so the face is clearly visible. It must be an original character, not like any existing cartoon. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
 ```
 
 ### `dog-2`　醫護兔
@@ -63,7 +63,7 @@ Edit the attached picture. Keep exactly the same drawing style, the same sitting
 520×600，透明背景。參考圖：`img/dog-0.png`。
 
 ```
-Edit the attached picture. Keep exactly the same drawing style, the same sitting pose, the same fishing rod, the same size in the picture and the same cute chubby proportions. Change the character into this one: a fluffy white baby bunny with long upright ears, wearing a pink nurse cap with a small white heart and a pink vest with a tiny first-aid pouch (no red cross symbol). Keep a small round golden team badge with a white bone and a little star on it on the hat or the vest. It must stay an original character, not like any existing cartoon. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
+Use the attached picture only as a style reference. Draw a NEW character in exactly the same drawing style, the same line quality and coloring, the same size and framing as the reference, but with its own pose: a fluffy white baby bunny with long upright ears, wearing a pink nurse cap with a small white heart and a pink vest, standing and holding a small pink first-aid box with a heart on it in both paws (no red cross symbol). It has a small round golden team badge with a white bone and a little star on it on its hat or vest. Full body, centered, the character fills about 80 percent of the picture height, facing mostly toward the viewer so the face is clearly visible. It must be an original character, not like any existing cartoon. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
 ```
 
 ### `dog-3`　森林熊
@@ -71,7 +71,7 @@ Edit the attached picture. Keep exactly the same drawing style, the same sitting
 520×600，透明背景。參考圖：`img/dog-0.png`。
 
 ```
-Edit the attached picture. Keep exactly the same drawing style, the same sitting pose, the same fishing rod, the same size in the picture and the same cute chubby proportions. Change the character into this one: a brown bear cub with round ears, wearing a green forest ranger hat with a leaf on it and a green vest, with small binoculars hanging on its chest. Keep a small round golden team badge with a white bone and a little star on it on the hat or the vest. It must stay an original character, not like any existing cartoon. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
+Use the attached picture only as a style reference. Draw a NEW character in exactly the same drawing style, the same line quality and coloring, the same size and framing as the reference, but with its own pose: a brown bear cub with round ears, wearing a green forest ranger hat with a leaf on it and a green vest, standing and looking through small binoculars held in both paws. It has a small round golden team badge with a white bone and a little star on it on its hat or vest. Full body, centered, the character fills about 80 percent of the picture height, facing mostly toward the viewer so the face is clearly visible. It must be an original character, not like any existing cartoon. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
 ```
 
 ### `dog-4`　工程河狸
@@ -79,7 +79,7 @@ Edit the attached picture. Keep exactly the same drawing style, the same sitting
 520×600，透明背景。參考圖：`img/dog-0.png`。
 
 ```
-Edit the attached picture. Keep exactly the same drawing style, the same sitting pose, the same fishing rod, the same size in the picture and the same cute chubby proportions. Change the character into this one: a baby beaver with brown fur, two big front teeth and a flat tail, wearing a round orange construction hard hat and an orange safety vest with reflective stripes, with a small tool bag showing a wrench. Keep a small round golden team badge with a white bone and a little star on it on the hat or the vest. It must stay an original character, not like any existing cartoon. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
+Use the attached picture only as a style reference. Draw a NEW character in exactly the same drawing style, the same line quality and coloring, the same size and framing as the reference, but with its own pose: a baby beaver with brown fur, two big front teeth and a flat tail, wearing a round orange construction hard hat and an orange safety vest with reflective stripes, standing and proudly holding up a small wooden hammer in one paw. It has a small round golden team badge with a white bone and a little star on it on its hat or vest. Full body, centered, the character fills about 80 percent of the picture height, facing mostly toward the viewer so the face is clearly visible. It must be an original character, not like any existing cartoon. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
 ```
 
 ### `dog-5`　廚師貓
@@ -87,7 +87,7 @@ Edit the attached picture. Keep exactly the same drawing style, the same sitting
 520×600，透明背景。參考圖：`img/dog-0.png`。
 
 ```
-Edit the attached picture. Keep exactly the same drawing style, the same sitting pose, the same fishing rod, the same size in the picture and the same cute chubby proportions. Change the character into this one: an orange tabby kitten with a striped tail, wearing a tall white chef hat and a yellow apron. Keep a small round golden team badge with a white bone and a little star on it on the hat or the vest. It must stay an original character, not like any existing cartoon. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
+Use the attached picture only as a style reference. Draw a NEW character in exactly the same drawing style, the same line quality and coloring, the same size and framing as the reference, but with its own pose: an orange tabby kitten with a striped tail, wearing a tall white chef hat and a yellow apron, standing and flipping a pancake in a small frying pan. It has a small round golden team badge with a white bone and a little star on it on its hat or vest. Full body, centered, the character fills about 80 percent of the picture height, facing mostly toward the viewer so the face is clearly visible. It must be an original character, not like any existing cartoon. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
 ```
 
 ## 首頁的玩法卡片
