@@ -39,7 +39,7 @@ export function renderCheck (root, { audio, settings, onSettings, onClose }) {
           <label>符號 <select id="rec-sym">${SYMBOLS.map(s => `<option value="${s}">${s}</option>`).join('')}</select></label>
           <button id="rec-go">按一下開始唸</button>
           <span id="rec-result">聽到的字會顯示在這裡，判定用同音字表：<code id="rec-accept"></code></span>`
-          : '<span>這個瀏覽器沒有語音辨識，「唸給狗狗聽」在這裡不會出現。</span>'}
+          : '<span>這個瀏覽器沒有語音辨識，「唸唸看」在這裡不會出現。</span>'}
       </div>
     </div>`
 

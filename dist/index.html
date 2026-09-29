@@ -761,7 +761,7 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
   </defs>
 </svg>
 <div id="install-hint" hidden>手機請用 Chrome 開，再從選單「加到主畫面」，就會是全螢幕。點這裡關掉。</div>
-<div id="version" aria-hidden="true">v0.3.0 · bdbfcf7 · 09/29 14:24</div>
+<div id="version" aria-hidden="true">v0.3.0 · e5f7c13 · 09/29 14:28</div>
 <div id="stage">
   <section class="screen" id="screen-profiles"></section>
   <section class="screen" id="screen-home"></section>
@@ -4596,7 +4596,7 @@ function createSpeak (root, { color = 0 } = {}) {
     '<div class="dog-wrap speak-dog">' + dogSvg(color) + '</div>' +
     '<div class="sign"><div class="sign-board"><span></span></div><div class="sign-post"></div></div>' +
     '<div class="heard"></div>' +
-    `<button class="mic-btn" aria-label="唸給狗狗聽">${MIC_SVG}</button></div>`
+    `<button class="mic-btn" aria-label="唸唸看">${MIC_SVG}</button></div>`
   mountBgs(root)
   const dogWrap = root.querySelector('.speak-dog')
   const signEl = root.querySelector('.sign')
@@ -6028,7 +6028,7 @@ function renderHome (root, { profile, speech = true, bones = 0, mates = [], dail
       <div class="who-avatar">${dogSvg(profile.color)}</div>
       <div class="who-name">${escapeHtml(profile.name)}</div>
     </button>
-    ${teacher ? teacherBarHtml(teacher) : `<button class="shop-btn" id="btn-shop" aria-label="狗狗商店"><span class="bone-ic">${boneSvg()}</span><b>${bones}</b><span class="shop-word">${SHOP_ICONS.bag}</span></button>`}
+    ${teacher ? teacherBarHtml(teacher) : `<button class="shop-btn" id="btn-shop" aria-label="商店"><span class="bone-ic">${boneSvg()}</span><b>${bones}</b><span class="shop-word">${SHOP_ICONS.bag}</span></button>`}
     <div class="daily ${teacher ? 'hidden' : ''}" id="daily">
       <div class="streak ${d.streak ? '' : 'cold'}" title="連續 ${d.streak} 天">${UX_ICONS.flame}<b>${d.streak}</b></div>
       <div class="paws" title="今天玩了 ${Math.min(d.rounds, d.goal)} 局">${paws}</div>
@@ -6313,7 +6313,7 @@ function bindVolume (root, settings, onSettings, onVolumeTest) {
   })
 }
 // 首頁的玩法卡，老師後台可以挑上課要顯示哪幾個
-const GAME_NAMES = { fishing: '釣魚', whack: '打地鼠', memory: '翻牌', match: '連連看', fill: '填空', tone: '聲調填空', write: '寫給狗狗看', learn: '學寫字', speak: '唸給狗狗聽' }
+const GAME_NAMES = { fishing: '釣魚', whack: '打地鼠', memory: '翻牌', match: '連連看', fill: '填空', tone: '聲調填空', write: '寫寫看', learn: '學寫字', speak: '唸唸看' }
 
 function renderPanel (root, opts) {
   if (opts.profile && opts.profile.adult) return renderTeacherPanel(root, opts)
@@ -6442,7 +6442,7 @@ function renderFamilyPanel (root, { profile, profiles, state, track = 'listen', 
       <div class="panel-row panel-tracks">
         <b>看哪一軌</b>
         ${TRACKS.map(t => `<button class="track-tab ${t === track ? 'on' : ''}" data-track="${t}">${TRACK_NAMES[t]}</button>`).join('')}
-        <span class="panel-hint-inline">聽＝釣魚、打地鼠；讀＝唸給狗狗聽；寫＝寫給狗狗看；詞＝連連看、填空；調＝聲調填空。翻牌、學寫字是純練習，不算進任何一軌。星星、混淆、階級、解鎖各軌分開算，下面的設定各軌共用。</span>
+        <span class="panel-hint-inline">聽＝釣魚、打地鼠；讀＝唸唸看；寫＝寫寫看、學寫字；詞＝連連看、填空；調＝聲調填空。翻牌、學寫字是純練習，不記進度。星星、混淆、階級、解鎖各軌分開算，下面的設定各軌共用。</span>
       </div>
       <div class="panel-row">
         <div>「${TRACK_NAMES[track]}」目前出題階級：<b>${effectiveTier(state) + 1}</b> / 6（${tierLabel(TIERS[effectiveTier(state)])}）</div>
@@ -6925,7 +6925,7 @@ function renderCheck (root, { audio, settings, onSettings, onClose }) {
           <label>符號 <select id="rec-sym">${SYMBOLS.map(s => `<option value="${s}">${s}</option>`).join('')}</select></label>
           <button id="rec-go">按一下開始唸</button>
           <span id="rec-result">聽到的字會顯示在這裡，判定用同音字表：<code id="rec-accept"></code></span>`
-          : '<span>這個瀏覽器沒有語音辨識，「唸給狗狗聽」在這裡不會出現。</span>'}
+          : '<span>這個瀏覽器沒有語音辨識，「唸唸看」在這裡不會出現。</span>'}
       </div>
     </div>`
 
@@ -7053,8 +7053,8 @@ const MATCH_PAIRS = 4
 const MIC_MSG = {
   silent: '沒聽到聲音，靠近一點再唸一次',
   // 麥克風有收到聲音、辨識卻沒回任何字：單一個注音太短，辨識服務常常直接丟掉，連唸兩次比較聽得懂（三次有效但小孩嫌累）
-  unclear: '狗狗有聽到聲音，但聽不出是哪個字：一個注音連唸兩次，例如「ㄅㄅ」',
-  unclearWord: '狗狗有聽到聲音，但聽不出是哪個詞：唸大聲、慢一點再試一次',
+  unclear: '有聽到聲音，但聽不出是哪個字：一個注音連唸兩次，例如「ㄅㄅ」',
+  unclearWord: '有聽到聲音，但聽不出是哪個詞：唸大聲、慢一點再試一次',
   denied: '麥克風被封鎖了：按網址列左邊的鎖頭或圖示，把麥克風改成「允許」，再重新整理',
   nomic: '找不到麥克風，或麥克風被別的程式占用',
   listening: '我在聽…',
@@ -7346,7 +7346,7 @@ function main () {
   const starsEl = gameEl.querySelector('.progress-stars')
   const replayBtn = gameEl.querySelector('#btn-replay')
   let game = null
-  let learnOverlay = null // 「寫給狗狗看」上面疊的學寫字
+  let learnOverlay = null // 「寫寫看」上面疊的學寫字
   let kind = null
   let earned = []
   let starTotal = 5

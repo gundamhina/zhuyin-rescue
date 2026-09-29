@@ -229,7 +229,7 @@ export function renderHome (root, { profile, speech = true, bones = 0, mates = [
       <div class="who-avatar">${dogSvg(profile.color)}</div>
       <div class="who-name">${escapeHtml(profile.name)}</div>
     </button>
-    ${teacher ? teacherBarHtml(teacher) : `<button class="shop-btn" id="btn-shop" aria-label="狗狗商店"><span class="bone-ic">${boneSvg()}</span><b>${bones}</b><span class="shop-word">${SHOP_ICONS.bag}</span></button>`}
+    ${teacher ? teacherBarHtml(teacher) : `<button class="shop-btn" id="btn-shop" aria-label="商店"><span class="bone-ic">${boneSvg()}</span><b>${bones}</b><span class="shop-word">${SHOP_ICONS.bag}</span></button>`}
     <div class="daily ${teacher ? 'hidden' : ''}" id="daily">
       <div class="streak ${d.streak ? '' : 'cold'}" title="連續 ${d.streak} 天">${UX_ICONS.flame}<b>${d.streak}</b></div>
       <div class="paws" title="今天玩了 ${Math.min(d.rounds, d.goal)} 局">${paws}</div>
@@ -514,7 +514,7 @@ function bindVolume (root, settings, onSettings, onVolumeTest) {
   })
 }
 // 首頁的玩法卡，老師後台可以挑上課要顯示哪幾個
-export const GAME_NAMES = { fishing: '釣魚', whack: '打地鼠', memory: '翻牌', match: '連連看', fill: '填空', tone: '聲調填空', write: '寫給狗狗看', learn: '學寫字', speak: '唸給狗狗聽' }
+export const GAME_NAMES = { fishing: '釣魚', whack: '打地鼠', memory: '翻牌', match: '連連看', fill: '填空', tone: '聲調填空', write: '寫寫看', learn: '學寫字', speak: '唸唸看' }
 
 export function renderPanel (root, opts) {
   if (opts.profile && opts.profile.adult) return renderTeacherPanel(root, opts)
@@ -643,7 +643,7 @@ function renderFamilyPanel (root, { profile, profiles, state, track = 'listen', 
       <div class="panel-row panel-tracks">
         <b>看哪一軌</b>
         ${TRACKS.map(t => `<button class="track-tab ${t === track ? 'on' : ''}" data-track="${t}">${TRACK_NAMES[t]}</button>`).join('')}
-        <span class="panel-hint-inline">聽＝釣魚、打地鼠；讀＝唸給狗狗聽；寫＝寫給狗狗看；詞＝連連看、填空；調＝聲調填空。翻牌、學寫字是純練習，不算進任何一軌。星星、混淆、階級、解鎖各軌分開算，下面的設定各軌共用。</span>
+        <span class="panel-hint-inline">聽＝釣魚、打地鼠；讀＝唸唸看；寫＝寫寫看、學寫字；詞＝連連看、填空；調＝聲調填空。翻牌、學寫字是純練習，不記進度。星星、混淆、階級、解鎖各軌分開算，下面的設定各軌共用。</span>
       </div>
       <div class="panel-row">
         <div>「${TRACK_NAMES[track]}」目前出題階級：<b>${effectiveTier(state) + 1}</b> / 6（${tierLabel(TIERS[effectiveTier(state)])}）</div>

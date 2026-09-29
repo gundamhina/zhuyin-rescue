@@ -142,7 +142,7 @@ a wooden jigsaw puzzle board with one piece missing and that puzzle piece floati
 a row of four little wooden music bells on a windowsill, each a different height like steps going up and down, a small songbird perched on the tallest one, soft morning light, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
 ```
 
-### `card-write`　寫給狗狗看
+### `card-write`　寫寫看
 
 600×800，直的 3:4。參考圖：`img/home.jpg`。
 
@@ -158,7 +158,7 @@ a small slate chalkboard on a wooden easel next to a fat yellow pencil and crayo
 a small wooden writing board on an easel with one big brush stroke glowing softly on it, a fat pencil with a tiny arrow ribbon, a few paper stars around, on a sunny windowsill, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
 ```
 
-### `card-speak`　唸給狗狗聽
+### `card-speak`　唸唸看
 
 600×800，直的 3:4。參考圖：`img/home.jpg`。
 

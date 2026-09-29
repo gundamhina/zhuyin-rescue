@@ -63,9 +63,9 @@ CARDS = [
     ('card-match', '連連看', "a small cork board with two picture cards pinned on it, one of a cat and one of an apple, joined by a red yarn string, soft light"),
     ('card-fill', '填空', "a wooden jigsaw puzzle board with one piece missing and that puzzle piece floating just above the gap with a soft glow"),
     ('card-tone', '聲調填空', "a row of four little wooden music bells on a windowsill, each a different height like steps going up and down, a small songbird perched on the tallest one, soft morning light"),
-    ('card-write', '寫給狗狗看', "a small slate chalkboard on a wooden easel next to a fat yellow pencil and crayons, on a sunny windowsill"),
+    ('card-write', '寫寫看', "a small slate chalkboard on a wooden easel next to a fat yellow pencil and crayons, on a sunny windowsill"),
     ('card-learn', '學寫字', "a small wooden writing board on an easel with one big brush stroke glowing softly on it, a fat pencil with a tiny arrow ribbon, a few paper stars around, on a sunny windowsill"),
-    ('card-speak', '唸給狗狗聽', "an old-fashioned round microphone on a little stand in a flower meadow, soft sound ripples and small musical notes floating out of it"),
+    ('card-speak', '唸唸看', "an old-fashioned round microphone on a little stand in a flower meadow, soft sound ripples and small musical notes floating out of it"),
 ]
 
 # ---- 第三優先：遊戲背景。手機直拿時只看得到中間一段，中間又要夠安靜，遊戲的東西才看得清楚 ----

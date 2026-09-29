@@ -168,7 +168,7 @@ export function createSpeak (root, { color = 0 } = {}) {
     '<div class="dog-wrap speak-dog">' + dogSvg(color) + '</div>' +
     '<div class="sign"><div class="sign-board"><span></span></div><div class="sign-post"></div></div>' +
     '<div class="heard"></div>' +
-    `<button class="mic-btn" aria-label="唸給狗狗聽">${MIC_SVG}</button></div>`
+    `<button class="mic-btn" aria-label="唸唸看">${MIC_SVG}</button></div>`
   mountBgs(root)
   const dogWrap = root.querySelector('.speak-dog')
   const signEl = root.querySelector('.sign')

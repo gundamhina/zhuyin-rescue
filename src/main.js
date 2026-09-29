@@ -32,8 +32,8 @@ const MATCH_PAIRS = 4
 const MIC_MSG = {
   silent: '沒聽到聲音，靠近一點再唸一次',
   // 麥克風有收到聲音、辨識卻沒回任何字：單一個注音太短，辨識服務常常直接丟掉，連唸兩次比較聽得懂（三次有效但小孩嫌累）
-  unclear: '狗狗有聽到聲音，但聽不出是哪個字：一個注音連唸兩次，例如「ㄅㄅ」',
-  unclearWord: '狗狗有聽到聲音，但聽不出是哪個詞：唸大聲、慢一點再試一次',
+  unclear: '有聽到聲音，但聽不出是哪個字：一個注音連唸兩次，例如「ㄅㄅ」',
+  unclearWord: '有聽到聲音，但聽不出是哪個詞：唸大聲、慢一點再試一次',
   denied: '麥克風被封鎖了：按網址列左邊的鎖頭或圖示，把麥克風改成「允許」，再重新整理',
   nomic: '找不到麥克風，或麥克風被別的程式占用',
   listening: '我在聽…',
@@ -325,7 +325,7 @@ function main () {
   const starsEl = gameEl.querySelector('.progress-stars')
   const replayBtn = gameEl.querySelector('#btn-replay')
   let game = null
-  let learnOverlay = null // 「寫給狗狗看」上面疊的學寫字
+  let learnOverlay = null // 「寫寫看」上面疊的學寫字
   let kind = null
   let earned = []
   let starTotal = 5
