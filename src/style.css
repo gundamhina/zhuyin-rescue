@@ -95,6 +95,8 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 @keyframes tilt { 0%,100% { transform: rotate(0); } 40% { transform: rotate(14deg); } }
 
 .fish-dog { left: 170px; top: 226px; }
+.fish-rod { position: absolute; left: 0; top: 0; width: 1200px; height: 800px; pointer-events: none; }
+.fish-rod svg { display: block; }
 .bubbles { position: absolute; inset: 0; }
 .bubble { position: absolute; width: 176px; height: 176px; border-radius: 50%;
   background: radial-gradient(circle at 34% 30%, #FFFDF7 0 12%, rgba(246,243,230,0.85) 40%, rgba(207,234,240,0.85) 72%, rgba(143,199,210,0.95));

@@ -109,6 +109,8 @@ button { font-family: inherit; border: 0; background: none; cursor: pointer; tou
 @keyframes tilt { 0%,100% { transform: rotate(0); } 40% { transform: rotate(14deg); } }
 
 .fish-dog { left: 170px; top: 226px; }
+.fish-rod { position: absolute; left: 0; top: 0; width: 1200px; height: 800px; pointer-events: none; }
+.fish-rod svg { display: block; }
 .bubbles { position: absolute; inset: 0; }
 .bubble { position: absolute; width: 176px; height: 176px; border-radius: 50%;
   background: radial-gradient(circle at 34% 30%, #FFFDF7 0 12%, rgba(246,243,230,0.85) 40%, rgba(207,234,240,0.85) 72%, rgba(143,199,210,0.95));
@@ -761,7 +763,7 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
   </defs>
 </svg>
 <div id="install-hint" hidden>手機請用 Chrome 開，再從選單「加到主畫面」，就會是全螢幕。點這裡關掉。</div>
-<div id="version" aria-hidden="true">v0.3.0 · e5f7c13 · 09/29 14:28</div>
+<div id="version" aria-hidden="true">v0.3.0 · e323e04 · 09/29 14:37</div>
 <div id="stage">
   <section class="screen" id="screen-profiles"></section>
   <section class="screen" id="screen-home"></section>
@@ -4029,8 +4031,21 @@ function bubbleSlots (n, dogTop = STAGE.h - 500) {
   return out
 }
 
+// 碼頭上插著的一支釣竿（場景座標）。隊員的圖不拿釣竿了（2026-09-29 起每位各自一個職業動作），竿子由這裡畫。
+// 竿尖固定在 (426, 278)，釣到的泡泡飛到這裡；釣線從竿尖垂進水裡，末端一個紅白浮標
+// 外面包一層 div：場景圖載好時 .has-art > svg 會被藏起來（那是給向量底圖用的）
+const ROD_SVG = `<div class="fish-rod"><svg viewBox="0 0 1200 800" width="1200" height="800" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path d="M426 278 Q470 420 520 598" fill="none" stroke="#F6F3E6" stroke-width="2.5" opacity="0.85"/>
+  <circle cx="520" cy="604" r="9" fill="#FFFDF7" stroke="#5A3A20" stroke-width="2"/>
+  <path d="M511 604 a9 9 0 0 1 18 0 z" fill="#C8553D"/>
+  <path d="M366 540 L426 278" stroke="#5A3A20" stroke-width="7" stroke-linecap="round"/>
+  <path d="M366 540 L380 478" stroke="#2B3A4A" stroke-width="11" stroke-linecap="round"/>
+  <circle cx="386" cy="468" r="10" fill="#B0B8C4" stroke="#5C6C78" stroke-width="3"/>
+  <rect x="348" y="528" width="40" height="30" rx="6" fill="#8B6746" stroke="#5A3A20" stroke-width="3"/>
+</svg></div>`
+
 function createFishing (root, { color = 0 } = {}) {
-  root.innerHTML = bgHtml('scene', '<div class="dog-wrap fish-dog">' + dogSvg(color) + '</div>') +
+  root.innerHTML = bgHtml('scene', ROD_SVG + '<div class="dog-wrap fish-dog">' + dogSvg(color) + '</div>') +
     '<div class="frame"><div class="bubbles"></div></div>'
   mountBgs(root)
   const bubblesEl = root.querySelector('.bubbles')
@@ -4109,7 +4124,7 @@ function createFishing (root, { color = 0 } = {}) {
       b.classList.add('caught')
       const x = parseFloat(b.style.left)
       const y = parseFloat(b.style.top)
-      // 釣竿尖端在場景座標 (426, 278)：dog-wrap 左上 (170, 226) 加上竿尖 (256, 52)。場景層有縮放位移，換成 frame 座標
+      // 釣竿尖端在場景座標 (426, 278)（ROD_SVG 畫的那支）。場景層有縮放位移，換成 frame 座標
       const s = parseFloat(art.dataset.s || 1)
       const tipX = parseFloat(art.dataset.x || 0) + 426 * s - frame.offsetLeft
       const tipY = parseFloat(art.dataset.y || 0) + 278 * s - frame.offsetTop

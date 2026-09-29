@@ -142,7 +142,11 @@ def fit_square(rgba, size, pad=0.08):
 
 def prep_dog(src, out):
     rgba = cut_out(Image.open(src))
-    rgba = rgba.crop(rgba.getchannel('A').getbbox())
+    # 去背後背景常留一層幾乎看不見的淡淡雜訊（透明度 1～20），會把裁切範圍撐到整張圖、角色被縮得很小。
+    # 太淡的直接清成全透明，裁切範圍只看夠不透明的部分
+    alpha = rgba.getchannel('A').point(lambda v: 0 if v < 24 else v)
+    rgba.putalpha(alpha)
+    rgba = rgba.crop(alpha.point(lambda v: 255 if v >= 64 else 0).getbbox())
     cw, ch = rgba.size
     scale = min(1300 / cw, 1500 / ch)
     rgba = rgba.resize((int(cw * scale), int(ch * scale)), Image.LANCZOS)
