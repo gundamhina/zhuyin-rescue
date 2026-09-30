@@ -22,6 +22,11 @@
       <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="7" result="noise"/>
       <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" xChannelSelector="R" yChannelSelector="G"/>
     </filter>
+    <!-- 按鈕、面板用：抖得比卡片小一點，範圍留大一點，下面的硬陰影才不會被切掉 -->
+    <filter id="wobble" x="-12%" y="-12%" width="124%" height="136%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="3" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
   </defs>
 </svg>
 <div id="install-hint" hidden>手機請用 Chrome 開，再從選單「加到主畫面」，就會是全螢幕。點這裡關掉。</div>
