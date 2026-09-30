@@ -815,3 +815,31 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 .card.recommend { animation-name: recGlowInk; }
 @keyframes recGlowInk { 0%, 100% { box-shadow: 0 0 0 5px rgba(232,200,106,.9), 0 8px 0 #C39A1E; } 50% { box-shadow: 0 0 0 12px rgba(232,200,106,.55), 0 8px 0 #C39A1E; } }
 .tut-card { border: 5px solid var(--wood); box-shadow: 0 10px 0 var(--wood), 0 24px 50px rgba(0,0,0,.2); }
+
+/* 首頁類別外框：虛線改成手畫的實線。框放在 ::before 上抖，裡面的卡片才不會抖兩次 */
+.cat-block { position: relative; border: 0; background: none; }
+.cat-block::before { content: ''; position: absolute; inset: 0; border-radius: inherit; border: 4px solid color-mix(in srgb, var(--cat) 70%, transparent); background: rgba(255,253,247,.55) var(--paper-tex); filter: url(#wobble); pointer-events: none; }
+.cat-block > * { position: relative; }
+
+/* 選角頁 */
+.profile-card { filter: url(#wobble); }
+.profile-card:not(.add) { border: 5px solid var(--wood); box-shadow: 0 8px 0 var(--wood); }
+.profile-card:active { box-shadow: 0 2px 0 var(--wood); }
+.profile-card.adult:not(.add) { border-color: #3E5F8F; box-shadow: 0 8px 0 #3E5F8F; }
+.profile-badge { border: 2px solid #3E5F8F; }
+.profile-card.add { background: rgba(255,253,247,.55) var(--paper-tex); border: 5px dashed var(--wood); }
+.profile-plus { color: var(--wood); text-shadow: none; }
+.profile-form-box { background: var(--paper) var(--paper-tex); border: 5px solid var(--wood); box-shadow: 0 10px 0 var(--wood), 0 20px 50px rgba(0,0,0,.25); }
+.color-dot { border-color: var(--paper); box-shadow: 0 0 0 3px var(--wood); }
+.color-dot.on { box-shadow: 0 0 0 5px #2B3A4A; }
+#profile-name { border-color: var(--wood); background: #fff; color: #2B3A4A; }
+.profile-form-actions button { background: var(--paper) var(--paper-tex); color: #2B3A4A; border: 4px solid var(--wood); box-shadow: 0 5px 0 var(--wood); }
+.profile-form-actions button.primary { background-color: #6B9E6B; color: #fff; border-color: #466E46; box-shadow: 0 5px 0 #466E46; }
+
+/* 商店 */
+.item-card { filter: url(#wobble); border: 5px solid var(--wood); box-shadow: 0 6px 0 var(--wood); }
+.item-card.owned { border-color: #466E46; box-shadow: 0 6px 0 #466E46; }
+.item-card.worn { box-shadow: 0 0 0 7px rgba(232,200,106,.8), 0 6px 0 #466E46; }
+.item-btn { filter: none; } /* 卡片整張已經在抖 */
+.item-btn.off, .item-btn.buy.poor { background: var(--paper) var(--paper-tex); border: 3px solid var(--wood); box-shadow: 0 4px 0 var(--wood); }
+.item-btn.buy.poor { color: #B7A48E; }
