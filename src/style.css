@@ -619,8 +619,8 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 .result-crown { position: absolute; left: 50%; top: 4px; font-size: 110px; transform: translateX(-50%) translateY(-140px); opacity: 0; line-height: 1; }
 .result-crown.show { animation: crownDrop .7s cubic-bezier(.3,1.5,.5,1) forwards; }
 @keyframes crownDrop { 0% { transform: translateX(-50%) translateY(-140px) rotate(-20deg); opacity: 0; } 100% { transform: translateX(-50%) translateY(0) rotate(0deg); opacity: 1; } }
-.result-daily { position: absolute; right: 30px; top: 26px; display: flex; gap: 8px; align-items: center; padding: 8px 16px; border-radius: 40px; background: rgba(255,253,247,.9); box-shadow: 0 6px 0 #A9BFCF; }
-.result-daily .paw { font-size: 40px; }
+.result-daily { position: absolute; right: 30px; top: 26px; display: flex; gap: 4px; align-items: center; padding: 8px 16px; border-radius: 40px; background: rgba(255,253,247,.9); box-shadow: 0 6px 0 #A9BFCF; }
+.result-daily .paw { font-size: 30px; }
 .result-daily .paw.stamp { animation: pawStamp .45s cubic-bezier(.3,1.6,.5,1); }
 @keyframes pawStamp { 0% { scale: 2.2; opacity: 0; } 100% { scale: 1; opacity: 1; } }
 .result-daily .chest { font-size: 50px; }

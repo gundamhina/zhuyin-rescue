@@ -222,7 +222,7 @@ export function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
 // partner：出任務的隊員（顏色）；team：自己原本那位加上買回家的隊員，首頁下方一排，點誰誰出任務
 export function renderHome (root, { profile, speech = true, bones = 0, partner = null, team = [], daily = null, recommend = null, musicOn = true, teacher = null }) {
   const me = partner == null ? profile.color : partner
-  const d = daily || { rounds: 0, claimed: false, streak: 0, goal: 3 }
+  const d = daily || { rounds: 0, claimed: false, streak: 0, goal: 10 }
   const chestState = d.claimed ? 'claimed' : d.rounds >= d.goal ? 'ready' : 'locked'
   const paws = Array.from({ length: d.goal }, (_, i) => `<span class="paw ${i < d.rounds ? 'on' : ''}">${UX_ICONS.paw}</span>`).join('')
   root.innerHTML = `

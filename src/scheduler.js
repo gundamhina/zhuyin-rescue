@@ -460,7 +460,7 @@ export function dailyStats (state, days, now = Date.now()) {
 
 // ---- 每日目標與連續天數 ----
 // 一天玩滿 DAILY_GOAL 局（翻牌不算）就能開寶箱。日期都用當地時間的 'YYYY-MM-DD'，由呼叫的人傳進來，測試才好寫。
-export const DAILY_GOAL = 3
+export const DAILY_GOAL = 10
 
 export function dayKey (ms) {
   const d = new Date(ms)
