@@ -93,6 +93,19 @@ const SCENES = {
     ${sparks('tut-fill-s', 371, 132)}
     ${hand('tut-fill-hand')}`,
 
+  // 拼拼看：先聽，再把磁磚拖進牌子上的下一格（跟填空同一套動畫，空格位置對齊）
+  spell: `
+    ${SPEAKER}
+    <rect x="290" y="6" width="162" height="196" rx="22" fill="#FFFDF7" stroke="${WOOD}" stroke-width="8"/>
+    <text x="371" y="46" font-size="50" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄇ</text>
+    <rect class="tut-fill-blank" x="336" y="92" width="70" height="80" rx="14" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="10 8"/>
+    <g class="tut-fill-tile"><rect x="285" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#F6F3E6" stroke-width="5"/>
+    <text x="325" y="304" font-size="56" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄠ</text></g>
+    <rect x="435" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#F6F3E6" stroke-width="5"/>
+    <text x="475" y="304" font-size="56" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄡ</text>
+    ${sparks('tut-fill-s', 371, 132)}
+    ${hand('tut-fill-hand')}`,
+
   // 在板子上寫
   write: `
     <rect x="170" y="70" width="300" height="280" rx="26" fill="#FFFDF7" stroke="${WOOD}" stroke-width="8"/>

@@ -1,6 +1,6 @@
 // 把所有模組接起來：使用者、狀態、出題、三種玩法、畫面切換。
 
-import { addBones, buyItem, wearItem, teamOf, partnerOf, setPartner, recordRound, claimDaily, dailyView, DAILY_GOAL, markSeen, recommendTrack, dayKey, questionReward, roundBonus, comboBonus, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, activePool, effectiveTier, trackView, applyTrack, toneOfSyllable, toneTiles, buildToneRound } from './scheduler.js'
+import { addBones, buyItem, wearItem, teamOf, partnerOf, setPartner, recordRound, claimDaily, dailyView, DAILY_GOAL, markSeen, recommendTrack, dayKey, questionReward, roundBonus, comboBonus, buildRound, recordAnswer, resetProgress, pickSymbols, singleSymbolState, noWordsState, wordsOnlyState, activePool, effectiveTier, trackView, applyTrack, toneOfSyllable, toneTiles, buildToneRound, syllablesOnlyState, spellTiles } from './scheduler.js'
 import { createStore } from './store.js'
 import { createAudio } from './audio.js'
 import { createFishing } from './fishing.js'
@@ -12,19 +12,20 @@ import { createLearn } from './learn.js'
 import { createChart } from './chart.js'
 import { createMatchLine } from './matchline.js'
 import { createFillBlank } from './fillblank.js'
+import { createSpell } from './spell.js'
 import { renderShop } from './shop.js'
 import { setOutfit, boneSvg, ownedMates, bgHtml, UX_ICONS } from './art.js'
 import { burstAt, flyBones, bump, buzz } from './fx.js'
 import { showTutorial, hasTutorial } from './tutorial.js'
-import { WORD_ICON } from './data.js'
+import { WORD_ICON, coreOf } from './data.js'
 import { fitStage, layoutBg, mountBgs, goFullscreenOnPhone, showScreen, renderProfiles, renderHome, renderResult, playResult, renderPanel, panelMessage, openRangePicker, watchArtSlots } from './ui.js'
 import { renderCheck } from './check.js'
 
 const SETTINGS_KEY = 'zhuyin-rescue-settings'
 const MEMORY_PAIRS = 5
-// 每個玩法練哪一軌：聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）、詞（連連看、填空）、調（聲調填空）
+// 每個玩法練哪一軌：聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）、詞（連連看、填空）、調（聲調填空）、拼（拼拼看）
 // 翻牌只借「聽」那一軌的出題池挑符號，不寫任何紀錄進去
-const TRACK_OF = { fishing: 'listen', whack: 'listen', memory: 'listen', speak: 'read', write: 'write', match: 'word', fill: 'word', tone: 'tone', learn: 'write' }
+const TRACK_OF = { fishing: 'listen', whack: 'listen', memory: 'listen', speak: 'read', write: 'write', match: 'word', fill: 'word', tone: 'tone', learn: 'write', spell: 'spell' }
 // 純練習的玩法：不記進度、沒有玩完的骨頭、不算今天的腳印
 const PRACTICE_KINDS = ['memory', 'learn']
 const LEARN_SYMBOLS = 3 // 學寫字一局教幾個符號
@@ -138,6 +139,7 @@ function main () {
     if (t === 'listen') return odd ? 'whack' : 'fishing'
     if (t === 'word') return odd ? 'fill' : 'match'
     if (t === 'tone') return 'tone'
+    if (t === 'spell') return 'spell'
     if (t === 'read') return speechAvailable() ? 'speak' : 'match'
     return 'write'
   }
@@ -397,6 +399,7 @@ function main () {
     if (which === 'match') return runMatch()
     if (which === 'fill') return runFill('syllable')
     if (which === 'tone') return runFill('tone')
+    if (which === 'spell') return runSpell()
     runQuestions(which)
   }
 
@@ -808,6 +811,77 @@ function main () {
       game.sad()
     })
     askFill()
+  }
+
+  // ---- 拼拼看：聽一個音，照順序（由上往下）把符號拖進空格拼出來 ----
+  // 放對一塊唸那個符號，全部拼好唸整個音對答案。中間放錯一塊這題就算錯（只記一次），可以繼續拼完。
+  function runSpell () {
+    game = createSpell(playArea, { color: myColor() })
+    replayBtn.classList.remove('hidden')
+    round = buildRound(syllablesOnlyState(currentView()), Math.random)
+    index = 0
+    starTotal = round.length
+    setStars()
+    let pieces = []
+    let placed = 0
+    const askSpell = async () => {
+      const q = round[index]
+      const myIndex = index
+      const myGame = game
+      pieces = [...coreOf(q.target)]
+      placed = 0
+      firstAttempt = true
+      clearIdle()
+      busy = true
+      game.start(q, { pieces, tiles: spellTiles(q.target, effectiveTier(currentView()), Math.random) })
+      await wait(350)
+      let opened = false
+      const open = () => {
+        if (opened || index !== myIndex || game !== myGame) return
+        opened = true
+        game.unlock()
+        busy = false
+      }
+      await audio.say(q.target, { onStart: open })
+      open()
+      if (index === myIndex && game === myGame) armIdle(q, myIndex, myGame)
+    }
+    game.onAnswer(async sym => {
+      if (busy) return
+      const q = round[index]
+      const myGame = game
+      if (sym === pieces[placed]) {
+        placed++
+        game.fill(sym)
+        if (placed < pieces.length) {
+          audio.say(sym)
+          armIdle(q, index, myGame)
+          return
+        }
+        busy = true
+        clearIdle()
+        game.lock()
+        const bones = questionReward(currentView(), q.target, firstAttempt)
+        if (firstAttempt) commit({ target: q.target, ok: true, picked: q.target, ms: 0, drill: q.drill })
+        audio.ding()
+        game.complete()
+        rewardCorrect(firstAttempt, playArea.querySelector('.spell-sign'), bones)
+        await game.celebrate()
+        if (game !== myGame) return
+        await audio.say(q.target) // 對答案
+        if (game !== myGame) return
+        index++
+        if (index >= round.length) return finishRound()
+        askSpell()
+        return
+      }
+      if (firstAttempt) { commit({ target: q.target, ok: false, picked: null, ms: 0, drill: q.drill }); firstAttempt = false }
+      rewardWrong()
+      audio.wrong()
+      game.bounce(sym)
+      game.sad()
+    })
+    askSpell()
   }
 
   // ---- 翻牌：純遊玩。不寫進熟練度、混淆對、升降級，骨頭也只有配對那一點，沒有過關獎勵 ----

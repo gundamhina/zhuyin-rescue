@@ -843,3 +843,24 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 .item-btn { filter: none; } /* 卡片整張已經在抖 */
 .item-btn.off, .item-btn.buy.poor { background: var(--paper) var(--paper-tex); border: 3px solid var(--wood); box-shadow: 0 4px 0 var(--wood); }
 .item-btn.buy.poor { color: #B7A48E; }
+
+/* ---- 拼拼看 ---- */
+/* 牌子上一格一格由上往下，下一格要放的淡淡亮著；拼完換成完整的音節 */
+.spell-dog { left: 20px; top: 430px; width: 220px; height: 254px; }
+.spell-dog .dog, .spell-dog .dog-slot .art-slot { width: 220px; height: 254px; }
+.spell-sign { left: 290px; top: 110px; width: 240px; }
+.spell-sign .sign-board { width: 240px; height: auto; min-height: 280px; padding: 22px 0; box-sizing: border-box; }
+.spell-sign .sign-post { height: 40px; }
+.spell-slots { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.spell-slot { width: 120px; height: 120px; border-radius: 22px; border: 6px dashed #E0955B; background: rgba(224,149,91,.06); box-sizing: border-box; display: flex; align-items: center; justify-content: center; }
+.spell-slot.next { background: rgba(224,149,91,.2); animation: slotPulse 1.4s ease-in-out infinite; }
+.spell-slot.filled { border-color: transparent; background: none; animation: pop .3s; }
+.spell-sign .sign-board .spell-slot span { font-size: 100px; color: #2B3A4A; }
+.spell-sign .spell-whole { font-size: 150px; color: #2B3A4A; line-height: 1; animation: pop .35s; }
+@keyframes slotPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+#stage.portrait .spell-sign { left: 280px; }
+#stage.portrait .spell-dog { left: 20px; top: 110px; width: 180px; height: 208px; }
+#stage.portrait .spell-dog .dog, #stage.portrait .spell-dog .dog-slot .art-slot { width: 180px; height: 208px; }
+/* 寫那一類有四張卡：各區照自己的寬度排，一排放得下兩區就兩區（聽＋看、寫＋說），不再兩欄等寬 */
+.cards.cat-grid { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; padding: 0 10px; }
+#stage.portrait .cards.cat-grid { flex-direction: column; align-items: center; flex-wrap: nowrap; justify-content: center; }

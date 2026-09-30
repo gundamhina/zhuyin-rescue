@@ -7,8 +7,9 @@ import {
   questionReward, roundBonus, comboBonus,
   toneOfSyllable, stripTone, toneTiles, TONE_ORDER, TONE_PARTNER, toneHardness, buildToneRound,
   teamOf, partnerOf, setPartner,
+  syllablesOnlyState, spellTiles, TRACKS,
 } from '../src/scheduler.js';
-import { GROUPS, coreOf } from '../src/data.js';
+import { GROUPS, SYMBOLS, coreOf } from '../src/data.js';
 
 // 固定亂數，讓測試可重現
 function seededRng(seed = 1) {
@@ -313,10 +314,10 @@ test('寫字用的狀態：只保留單一符號的組別（前十組裡已解�
 });
 
 // ---- 聽、讀、寫、詞、調五軌分開記 ----
-test('新狀態有五軌，各自空的紀錄；共用的家長設定在外層', () => {
+test('新狀態有六軌，各自空的紀錄；共用的家長設定在外層', () => {
   const s = createState();
   assert.equal(s.version, 2);
-  assert.deepEqual(Object.keys(s.tracks).sort(), ['listen', 'read', 'tone', 'word', 'write']);
+  assert.deepEqual(Object.keys(s.tracks).sort(), ['listen', 'read', 'spell', 'tone', 'word', 'write']);
   for (const t of Object.values(s.tracks)) {
     assert.deepEqual(t.mastery, {});
     assert.deepEqual(t.confusions, {});
@@ -573,17 +574,18 @@ test('今天推薦：推今天練最少的那一軌，都一樣就照日子輪',
   const at = new Date(2026, 8, 24, 10).getTime()
   const today = dayKey(at)
   const ans = (target, ok = true) => ({ target, ok, picked: target, ms: 1000, at })
-  // 聽練了兩題、讀詞調各練了一題、寫沒練 → 推寫
+  // 聽練了兩題、讀詞調拼各練了一題、寫沒練 → 推寫
   s = applyTrack(s, 'listen', recordAnswer(trackView(s, 'listen'), ans('ㄚ')))
   s = applyTrack(s, 'listen', recordAnswer(trackView(s, 'listen'), ans('ㄛ')))
   s = applyTrack(s, 'read', recordAnswer(trackView(s, 'read'), ans('ㄚ')))
   s = applyTrack(s, 'word', recordAnswer(trackView(s, 'word'), ans('ㄅㄚˋ ˙ㄅㄚ')))
   s = applyTrack(s, 'tone', recordAnswer(trackView(s, 'tone'), ans('ㄅㄚˋ ˙ㄅㄚ')))
+  s = applyTrack(s, 'spell', recordAnswer(trackView(s, 'spell'), ans('ㄧㄚ')))
   assert.equal(recommendTrack(s, today), 'write')
   // 昨天練的不算
   const fresh = createState()
-  const days = ['2026-09-24', '2026-09-25', '2026-09-26', '2026-09-27', '2026-09-28'].map(d => recommendTrack(fresh, d))
-  assert.equal(new Set(days).size, 5, '五軌都沒練的時候，每天輪一軌')
+  const days = ['2026-09-24', '2026-09-25', '2026-09-26', '2026-09-27', '2026-09-28', '2026-09-29'].map(d => recommendTrack(fresh, d))
+  assert.equal(new Set(days).size, 6, '六軌都沒練的時候，每天輪一軌')
 })
 
 
@@ -713,4 +715,40 @@ test('出任務的隊員：預設是自己原本那位，買回家的隊員才�
   s = setPartner(s, 2, 2)
   assert.equal(partnerOf(s, 2), 2, '換回自己原本那位')
   assert.equal(partnerOf({ ...s, partner: 5 }, 2), 2, '存檔裡選的不在隊上（例如被清掉）就回到原本那位')
+})
+
+// ---- 拼拼看 ----
+test('拼拼看：只出結合韻和拼讀字，自己一組一組解鎖；家長範圍裡有就照範圍', () => {
+  assert.ok(TRACKS.includes('spell'))
+  const isSpell = i => GROUPS[i].every(x => !x.includes(' ') && coreOf(x).length > 1)
+  const first = GROUPS.findIndex((g, i) => isSpell(i))
+  assert.equal(first, 10, '第一組是結合韻（第 11 組）')
+  let s = trackView(createState(), 'spell')
+  assert.deepEqual(syllablesOnlyState(s).rangeGroups, [first], '一開始只有第一組')
+  // 第一組全部練到 5 顆星，第二組就開
+  for (const sym of GROUPS[first]) for (let k = 0; k < 5; k++) s = recordAnswer(s, { target: sym, ok: true, picked: sym, ms: 900 })
+  assert.deepEqual(syllablesOnlyState(s).rangeGroups, [first, first + 1])
+  // 家長範圍只選單一符號的組：退回自己解鎖；有選拼讀字的組就照範圍
+  assert.deepEqual(syllablesOnlyState({ ...s, rangeGroups: [0, 1] }).rangeGroups, [first, first + 1])
+  const syl = GROUPS.findIndex((g, i) => i > 12 && isSpell(i))
+  assert.deepEqual(syllablesOnlyState({ ...s, rangeGroups: [0, syl] }).rangeGroups, [syl])
+  for (const i of syllablesOnlyState({ ...s, unlockedUpTo: GROUPS.length }).rangeGroups) assert.ok(isSpell(i))
+})
+
+test('拼拼看的磁磚：答案每個符號各一塊，干擾項照階級加、不重複、不跟答案撞', () => {
+  let seed = 7
+  const rng = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647 }
+  for (const target of ['ㄧㄚ', 'ㄏㄨㄚ', 'ㄉㄢˋ', 'ㄒㄩㄝˇ']) {
+    for (let tier = 0; tier < 6; tier++) {
+      const tiles = spellTiles(target, tier, rng)
+      const pieces = [...coreOf(target)]
+      assert.equal(new Set(tiles).size, tiles.length, '不重複')
+      for (const p of pieces) assert.ok(tiles.includes(p), target + ' 缺 ' + p)
+      assert.equal(tiles.length, pieces.length + [1, 2, 2, 3, 3, 3][tier])
+      for (const t of tiles) assert.ok(SYMBOLS.includes(t), '都是單一符號')
+    }
+  }
+  // 高階一定放音似的：ㄅ 的音似 ㄆ
+  const hard = spellTiles('ㄅㄚ', 5, rng)
+  assert.ok(hard.includes('ㄆ'))
 })

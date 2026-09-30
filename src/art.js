@@ -407,6 +407,22 @@ export function cardArt (kind) {
   <path d="M232 266 q24 -60 2 -96" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="6 6"/>
 </svg>`
   }
+  if (kind === 'spell') {
+    return `<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="400" fill="#F3E4C2"/>
+  <path d="M30 96 h22 l26 -22 v68 l-26 -22 h-22 z" fill="#E0955B"/>
+  <g fill="none" stroke="#E0955B" stroke-width="6" stroke-linecap="round"><path d="M92 90 q12 18 0 36"/><path d="M108 76 q22 32 0 64"/></g>
+  <rect x="150" y="30" width="120" height="236" rx="18" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <text x="210" y="96" text-anchor="middle" font-size="50" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄏ</text>
+  <text x="210" y="164" text-anchor="middle" font-size="50" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄨ</text>
+  <rect x="182" y="186" width="56" height="62" rx="11" fill="rgba(224,149,91,0.15)" stroke="#E0955B" stroke-width="5" stroke-dasharray="9 7"/>
+  <rect x="44" y="296" width="72" height="72" rx="14" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <rect x="178" y="296" width="72" height="72" rx="14" fill="#FFF3B0" stroke="#E0955B" stroke-width="6"/>
+  <text x="80" y="347" text-anchor="middle" font-size="42" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄛ</text>
+  <text x="214" y="347" text-anchor="middle" font-size="42" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄚ</text>
+  <path d="M252 300 q34 -34 -8 -60" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="6 6"/>
+</svg>`
+  }
   if (kind === 'tone') {
     return `<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#F3E4C2"/>

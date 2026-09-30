@@ -1,7 +1,7 @@
 // 出題邏輯：熟練度、解鎖、加權出題、混淆對加練、階級升降。
 // 純函式，不碰 DOM，不碰 localStorage。所有函式回傳新狀態，不改舊的。
 
-import { GROUPS, SIMILAR_SHAPE, SIMILAR_SOUND, coreOf, WORD_ICON } from './data.js'
+import { GROUPS, SYMBOLS, SIMILAR_SHAPE, SIMILAR_SOUND, coreOf, WORD_ICON } from './data.js'
 
 export const HISTORY_CAP = 10
 export const RECENT_CAP = 10
@@ -23,10 +23,11 @@ export const TIERS = [
   { options: 6, distract: 'sound', similar: 1, idleHint: 0 },
 ]
 
-// 聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）、詞（連連看、填空）、調（聲調填空）各軌分開記，練的是不同的東西。
+// 聽（釣魚、打地鼠）、讀（唸給狗狗聽）、寫（寫給狗狗看）、詞（連連看、填空）、調（聲調填空）、拼（拼拼看）各軌分開記，練的是不同的東西。
 // 調軌也是拿詞出題，但記的是「這個詞的聲調會不會」，所以不跟詞軌共用星星。
-export const TRACKS = ['listen', 'read', 'write', 'word', 'tone']
-export const TRACK_NAMES = { listen: '聽', read: '讀', write: '寫', word: '詞', tone: '調' }
+// 拼軌拿結合韻和拼讀字出題，記的是「聽到這個音，拼不拼得出來」。
+export const TRACKS = ['listen', 'read', 'write', 'word', 'tone', 'spell']
+export const TRACK_NAMES = { listen: '聽', read: '讀', write: '寫', word: '詞', tone: '調', spell: '拼' }
 const TRACK_FIELDS = ['mastery', 'confusions', 'tier', 'recent', 'log']
 export const LOG_CAP = 3000
 
@@ -312,6 +313,58 @@ export function wordsOnlyState (state, { pictures = true } = {}) {
   }
   if (!chosen.length) chosen = wordIdx
   return { ...state, rangeGroups: chosen }
+}
+
+// ---- 拼拼看 ----
+// 只出兩個符號以上、不是詞的組（結合韻、拼讀字）。家長範圍裡有這種組就用那些；
+// 否則這一軌自己解鎖：第一組一定有，前一組平均練到 UNLOCK_STARS 顆星才開下一組（家長手動跳級也算）。
+function isSpellGroup (g) { return g.length > 0 && g.every(s => !s.includes(' ') && coreOf(s).length > 1) }
+export function syllablesOnlyState (state) {
+  const groups = state.groups || GROUPS
+  const idx = [...groups.keys()].filter(i => isSpellGroup(groups[i]))
+  let chosen = []
+  if (Array.isArray(state.rangeGroups) && state.rangeGroups.length) {
+    chosen = state.rangeGroups.filter(i => idx.includes(i))
+  }
+  if (!chosen.length && idx.length) {
+    const manual = typeof state.unlockedUpTo === 'number' ? state.unlockedUpTo : 0
+    chosen = [idx[0]]
+    for (let k = 1; k < idx.length; k++) {
+      if (idx[k] < manual || groupAverage(state, groups[idx[k - 1]]) >= UNLOCK_STARS) chosen.push(idx[k])
+      else break
+    }
+  }
+  return { ...state, rangeGroups: chosen }
+}
+
+// 符號分三類：聲符、介符（ㄧㄨㄩ）、韻符。干擾項盡量跟空格同一類，才不能只靠位置猜
+const MEDIALS = ['ㄧ', 'ㄨ', 'ㄩ']
+function symbolKind (sym) {
+  if (MEDIALS.includes(sym)) return 'medial'
+  return SYMBOLS.indexOf(sym) < 21 ? 'initial' : 'final'
+}
+// 每階多放幾塊不在答案裡的磁磚
+const SPELL_EXTRA = [1, 2, 2, 3, 3, 3]
+// 拼拼看的磁磚：答案的每個符號各一塊，再加幾塊干擾項，打亂。
+// 干擾項先放答案符號的形似／音似（誰先看這階的 distract，放不放看 similar 機率），再補同一類的，都不重複、不跟答案撞。
+export function spellTiles (target, tier, rng) {
+  const t = TIERS[Math.max(0, Math.min(TIERS.length - 1, tier))]
+  const pieces = [...coreOf(target)]
+  const extra = SPELL_EXTRA[Math.max(0, Math.min(SPELL_EXTRA.length - 1, tier))]
+  const chosen = []
+  const add = s => { if (s && SYMBOLS.includes(s) && !pieces.includes(s) && !chosen.includes(s) && chosen.length < extra) chosen.push(s) }
+  if (rng() < t.similar) {
+    const first = t.distract === 'sound' ? SIMILAR_SOUND : SIMILAR_SHAPE
+    const second = t.distract === 'sound' ? SIMILAR_SHAPE : SIMILAR_SOUND
+    for (const p of shuffle(pieces, rng)) {
+      for (const q of shuffle(partnersOf(p, first), rng)) add(q)
+      for (const q of shuffle(partnersOf(p, second), rng)) add(q)
+    }
+  }
+  const kinds = pieces.map(symbolKind)
+  for (const s of shuffle(SYMBOLS.filter(x => kinds.includes(symbolKind(x))), rng)) add(s)
+  for (const s of shuffle(SYMBOLS, rng)) add(s)
+  return shuffle([...pieces, ...chosen], rng)
 }
 
 // ---- 聲調填空 ----
