@@ -2,6 +2,7 @@
 // 風格：借宮崎駿動畫的氛圍。水彩天空、厚積雲、層疊山丘、青綠海面、褪色木頭、柔光，不用粗描邊。
 
 import { WORD_TEXT, WORD_ICON } from './data.js'
+import { STROKES } from './strokes.js'
 
 // 圖片的版本：build.js 換成所有圖檔內容的雜湊。圖換了網址就跟著變，瀏覽器才不會一直拿快取裡的舊圖
 const IMG_V = '__IMG_V__'
@@ -307,85 +308,107 @@ export function homeBgSvg () {
 }
 
 // 三張玩法卡的插圖。300×400。
+// 首頁卡片用的小工具：翻牌背面的星星、寫寫看卡片上照筆順寫到一半的注音（第一筆寫好，其他筆淡淡的）
+function cardStar (cx, cy, r) {
+  const pts = []
+  for (let i = 0; i < 10; i++) {
+    const a = Math.PI / 5 * i - Math.PI / 2
+    const k = i % 2 ? r * 0.45 : r
+    pts.push((cx + k * Math.cos(a)).toFixed(1) + ',' + (cy + k * Math.sin(a)).toFixed(1))
+  }
+  return `<polygon points="${pts.join(' ')}" fill="#FFFDF7"/>`
+}
+function writeCardGlyph (sym) {
+  return (STROKES[sym] || []).map((st, i) => `<path d="${st.d}" fill="${i === 0 ? '#2B3A4A' : '#E6D9C3'}"/>`).join('')
+}
+
 export function cardArt (kind) {
   if (kind === 'fishing') {
-    return `<img class="art-slot" src="img/card-fishing.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
-<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
-  <defs><linearGradient id="csky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6F9FD0"/><stop offset="1" stop-color="#DCEBF2"/></linearGradient></defs>
-  <rect width="300" height="400" fill="url(#csky)"/>
-  <circle cx="230" cy="70" r="30" fill="#FFF7DC"/>
-  ${cloud(90, 80, 0.45)}
-  <path d="M0 190 q80 -60 160 -10 q70 -50 140 0 v40 H0z" fill="#7FAF6E"/>
-  <rect y="210" width="300" height="190" fill="#3E8FA6"/>
-  <g fill="none" stroke="#CFEAF0" stroke-width="5" stroke-linecap="round" opacity="0.6">
-    <path d="M40 260 q20 -12 40 0 t40 0"/><path d="M180 340 q20 -12 40 0 t40 0"/>
-  </g>
-  <rect x="0" y="240" width="120" height="18" rx="5" fill="#B08A63"/>
-  <rect x="20" y="258" width="12" height="80" fill="#6E4F35"/><rect x="86" y="258" width="12" height="80" fill="#6E4F35"/>
-  <line x1="70" y1="242" x2="150" y2="130" stroke="#5A3A20" stroke-width="7" stroke-linecap="round"/>
-  <line x1="150" y1="130" x2="200" y2="270" stroke="#F6F3E6" stroke-width="2.5"/>
-  <circle cx="200" cy="300" r="52" fill="#F6F3E6" opacity="0.92"/>
-  <text x="200" y="322" text-anchor="middle" font-size="64" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄅ</text>
+    return `<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="400" fill="#F3E4C2"/>
+  <rect y="238" width="300" height="162" fill="#CFE3EC"/>
+  <path d="M0 238 q25 -12 50 0 t50 0 t50 0 t50 0 t50 0 t50 0" fill="none" stroke="#FFFDF7" stroke-width="6"/>
+  <path d="M20 300 q20 -10 40 0 t40 0 M150 385 q20 -10 40 0 t40 0" fill="none" stroke="#FFFDF7" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+  <path d="M34 128 Q100 44 190 46" fill="none" stroke="#B08A63" stroke-width="10" stroke-linecap="round"/>
+  <line x1="190" y1="46" x2="190" y2="128" stroke="#2B3A4A" stroke-width="3"/>
+  <g fill="none" stroke="#E0955B" stroke-width="5" stroke-linecap="round"><path d="M118 150 l-18 -8"/><path d="M122 186 h-20"/><path d="M262 150 l18 -8"/><path d="M258 186 h20"/></g>
+  <circle cx="190" cy="184" r="56" fill="#FFFDF7" stroke="#E0955B" stroke-width="6"/>
+  <text x="190" y="207" text-anchor="middle" font-size="64" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄅ</text>
+  <circle cx="78" cy="316" r="36" fill="#FFFDF7" stroke="#B08A63" stroke-width="5"/>
+  <text x="78" y="330" text-anchor="middle" font-size="40" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄆ</text>
+  <circle cx="226" cy="322" r="30" fill="#FFFDF7" stroke="#B08A63" stroke-width="5"/>
+  <text x="226" y="334" text-anchor="middle" font-size="34" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄇ</text>
+  <circle cx="140" cy="360" r="10" fill="none" stroke="#B08A63" stroke-width="4"/>
+  <circle cx="160" cy="280" r="7" fill="none" stroke="#B08A63" stroke-width="4"/>
 </svg>`
   }
   if (kind === 'whack') {
-    return `<img class="art-slot" src="img/card-whack.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
-<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
-  <defs><linearGradient id="wsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6F9FD0"/><stop offset="1" stop-color="#DCEBF2"/></linearGradient></defs>
-  <rect width="300" height="400" fill="url(#wsky)"/>
-  ${cloud(80, 70, 0.4)}
-  <rect y="170" width="300" height="230" fill="#8DBB74"/>
-  <path d="M0 170 q75 -30 150 0 t150 0 v20 H0z" fill="#7FAF6E"/>
-  <ellipse cx="80" cy="260" rx="52" ry="22" fill="#5A4030"/>
-  <ellipse cx="150" cy="340" rx="52" ry="22" fill="#5A4030"/>
-  <rect x="180" y="190" width="80" height="80" rx="40" fill="#F6E7C8"/>
-  <text x="220" y="250" text-anchor="middle" font-size="56" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄇ</text>
-  <ellipse cx="220" cy="262" rx="56" ry="14" fill="#3E2A1A"/>
+    return `<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="400" fill="#F3E4C2"/>
+  <ellipse cx="72" cy="120" rx="46" ry="14" fill="#8A6A4C"/>
+  <ellipse cx="72" cy="345" rx="46" ry="14" fill="#8A6A4C"/>
+  <ellipse cx="228" cy="345" rx="46" ry="14" fill="#8A6A4C"/>
+  <ellipse cx="150" cy="275" rx="62" ry="18" fill="#8A6A4C"/>
+  <path d="M100 275 v-72 a50 50 0 0 1 100 0 v72 z" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <text x="150" y="238" text-anchor="middle" font-size="64" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄇ</text>
+  <path d="M88 275 a62 18 0 0 0 124 0 z" fill="#B08A63"/>
+  <g stroke="#E0955B" stroke-width="5" stroke-linecap="round"><path d="M186 132 l14 -14"/><path d="M160 116 l3 -20"/><path d="M204 158 l20 -4"/></g>
+  <g transform="translate(-18 22) rotate(-35 245 70)">
+    <rect x="238" y="58" width="14" height="96" rx="6" fill="#B08A63"/>
+    <rect x="205" y="20" width="80" height="46" rx="14" fill="#E0955B"/>
+    <rect x="221" y="20" width="10" height="46" fill="#FFF3B0" opacity="0.7"/>
+  </g>
 </svg>`
   }
   if (kind === 'write') {
-    return `<img class="art-slot" src="img/card-write.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
-<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
-  <rect width="300" height="400" fill="#EAF1EC"/>
-  <rect x="40" y="60" width="220" height="220" rx="24" fill="#FFFDF7" stroke="#B08A63" stroke-width="8"/>
-  <text x="150" y="215" text-anchor="middle" font-size="150" font-weight="900" fill="#CFD8E3" font-family="Microsoft JhengHei, sans-serif">ㄅ</text>
-  <path d="M120 120 q10 60 -4 120 q40 -6 62 -30" fill="none" stroke="#2B3A4A" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="200" y="290" width="26" height="90" rx="8" fill="#E0955B" transform="rotate(-30 213 335)"/>
-  <polygon points="188,372 200,395 210,380" fill="#2B3A4A" transform="rotate(-30 213 335)"/>
+    return `<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="400" fill="#F3E4C2"/>
+  <rect x="40" y="50" width="220" height="220" rx="22" fill="#FFFDF7" stroke="#B08A63" stroke-width="7"/>
+  <g stroke="#EADFCB" stroke-width="3" stroke-dasharray="10 8"><line x1="150" y1="58" x2="150" y2="262"/><line x1="48" y1="160" x2="252" y2="160"/></g>
+  <svg x="60" y="70" width="180" height="180" viewBox="0 0 2048 2048">${writeCardGlyph('ㄆ')}</svg>
+  <g transform="rotate(35 222 318)">
+    <rect x="208" y="285" width="28" height="84" rx="4" fill="#E0955B"/>
+    <rect x="208" y="360" width="28" height="18" rx="5" fill="#B08A63"/>
+    <path d="M208 285 L222 252 L236 285 Z" fill="#F3D3B8"/>
+    <path d="M217 264 L222 252 L227 264 Z" fill="#2B3A4A"/>
+  </g>
 </svg>`
   }
   if (kind === 'match') {
-    return `<img class="art-slot" src="img/card-match.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
-<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
-  <rect width="300" height="400" fill="#DCEBF2"/>
-  <rect x="30" y="70" width="100" height="70" rx="14" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
-  <rect x="30" y="230" width="100" height="70" rx="14" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
-  <text x="80" y="118" text-anchor="middle" font-size="40" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄒㄍ</text>
-  <text x="80" y="278" text-anchor="middle" font-size="40" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄒㄇ</text>
-  <line x1="130" y1="105" x2="200" y2="265" stroke="#6B9E6B" stroke-width="8" stroke-linecap="round"/>
-  <line x1="130" y1="265" x2="200" y2="105" stroke="#6B9E6B" stroke-width="8" stroke-linecap="round"/>
-  <text x="240" y="130" text-anchor="middle" font-size="60">\u{1F431}</text>
-  <text x="240" y="290" text-anchor="middle" font-size="60">\u{1F436}</text>
+    return `<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="400" fill="#F3E4C2"/>
+  <rect x="30" y="65" width="100" height="110" rx="16" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <rect x="30" y="225" width="100" height="110" rx="16" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <text x="80" y="143" text-anchor="middle" font-size="64">\u{1F431}</text>
+  <text x="80" y="303" text-anchor="middle" font-size="64">\u{1F436}</text>
+  <rect x="180" y="55" width="90" height="130" rx="16" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <rect x="180" y="215" width="90" height="130" rx="16" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <text x="217" y="110" text-anchor="middle" font-size="44" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄍ</text>
+  <text x="217" y="162" text-anchor="middle" font-size="44" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄡ</text>
+  <path d="M242 126 L250 138 L258 126" stroke="#2B3A4A" stroke-width="5" fill="none"/>
+  <text x="225" y="270" text-anchor="middle" font-size="44" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄇ</text>
+  <text x="225" y="322" text-anchor="middle" font-size="44" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄠ</text>
+  <g stroke="#E0955B" stroke-width="7" stroke-linecap="round"><line x1="134" y1="120" x2="176" y2="280"/><line x1="134" y1="280" x2="176" y2="120"/></g>
+  <g fill="#E0955B"><circle cx="134" cy="120" r="9"/><circle cx="176" cy="280" r="9"/><circle cx="134" cy="280" r="9"/><circle cx="176" cy="120" r="9"/></g>
 </svg>`
   }
   if (kind === 'fill') {
-    return `<img class="art-slot" src="img/card-fill.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
-<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+    return `<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#F3E4C2"/>
-  <text x="70" y="150" text-anchor="middle" font-size="80">\u{1F34E}</text>
-  <rect x="130" y="60" width="140" height="130" rx="18" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
-  <text x="165" y="140" text-anchor="middle" font-size="44" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄆ</text>
-  <rect x="200" y="90" width="50" height="70" rx="10" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="10 8"/>
-  <rect x="60" y="260" width="70" height="70" rx="14" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
-  <rect x="170" y="260" width="70" height="70" rx="14" fill="#FFF3B0" stroke="#E0955B" stroke-width="6"/>
-  <text x="95" y="310" text-anchor="middle" font-size="40" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄍ</text>
-  <text x="205" y="310" text-anchor="middle" font-size="40" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄨ</text>
-  <path d="M215 250 q10 -40 10 -70" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="6 6"/>
+  <text x="70" y="160" text-anchor="middle" font-size="80">\u{1F338}</text>
+  <rect x="140" y="40" width="130" height="200" rx="18" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <text x="205" y="98" text-anchor="middle" font-size="46" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄏ</text>
+  <rect x="180" y="113" width="50" height="54" rx="9" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="8 6"/>
+  <text x="205" y="220" text-anchor="middle" font-size="46" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄚ</text>
+  <rect x="60" y="275" width="70" height="70" rx="14" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <rect x="170" y="275" width="70" height="70" rx="14" fill="#FFF3B0" stroke="#E0955B" stroke-width="6"/>
+  <text x="95" y="325" text-anchor="middle" font-size="42" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄛ</text>
+  <text x="205" y="325" text-anchor="middle" font-size="42" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄨ</text>
+  <path d="M232 266 q24 -60 2 -96" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="6 6"/>
 </svg>`
   }
   if (kind === 'tone') {
-    return `<img class="art-slot" src="img/card-tone.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
-<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+    return `<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#F3E4C2"/>
   <text x="70" y="150" text-anchor="middle" font-size="80">\u{1F434}</text>
   <rect x="140" y="50" width="130" height="160" rx="18" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
@@ -400,8 +423,7 @@ export function cardArt (kind) {
 </svg>`
   }
   if (kind === 'learn') {
-    return `<img class="art-slot" src="img/card-learn.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
-<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+    return `<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#F3E4C2"/>
   <rect x="40" y="60" width="220" height="220" rx="22" fill="#FFFDF7" stroke="#B08A63" stroke-width="7"/>
   <path d="M95 130 L205 130 L205 235" stroke="#F3D3B8" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
@@ -419,8 +441,7 @@ export function cardArt (kind) {
       const fill = i < 4 ? '#DCE7F5' : i < 6 ? '#DDEFD6' : '#F8E2CF'
       return `<rect x="${x}" y="${y}" width="62" height="66" rx="12" fill="${fill}"/><text x="${x + 31}" y="${y + 50}" text-anchor="middle" font-size="44" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">${s}</text>`
     }).join('')
-    return `<img class="art-slot" src="img/card-chart.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
-<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+    return `<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#F3E4C2"/>
   <rect x="30" y="80" width="240" height="260" rx="22" fill="#FFFDF7" stroke="#B08A63" stroke-width="7"/>
   ${cells}
@@ -429,34 +450,24 @@ export function cardArt (kind) {
 </svg>`
   }
   if (kind === 'speak') {
-    return `<img class="art-slot" src="img/card-speak.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
-<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+    return `<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="400" fill="#F3E4C2"/>
-  <path d="M0 300 h300 v100 H0z" fill="#8DBB74"/>
-  <circle cx="110" cy="230" r="60" fill="#C99A63"/>
-  <ellipse cx="110" cy="258" rx="34" ry="22" fill="#F1DFC0"/>
-  <ellipse cx="56" cy="240" rx="22" ry="42" fill="#6E4522" transform="rotate(14 56 240)"/>
-  <ellipse cx="164" cy="240" rx="22" ry="42" fill="#6E4522" transform="rotate(-14 164 240)"/>
-  <ellipse cx="92" cy="222" rx="9" ry="11" fill="#2B1D12"/><ellipse cx="128" cy="222" rx="9" ry="11" fill="#2B1D12"/>
-  <path d="M110 270 q-16 0 -16 -8 h32 q0 8 -16 8z" fill="#2B1D12"/>
-  <path d="M170 90 h100 a16 16 0 0 1 16 16 v70 a16 16 0 0 1 -16 16 h-60 l-30 26 v-26 h-10 a16 16 0 0 1 -16 -16 v-70 a16 16 0 0 1 16 -16z" fill="#FFFDF7"/>
-  <text x="220" y="158" text-anchor="middle" font-size="60" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄚ</text>
-  <rect x="210" y="250" width="40" height="70" rx="20" fill="#4A6FA5"/>
-  <path d="M196 300 a34 34 0 0 0 68 0" stroke="#4A6FA5" stroke-width="10" fill="none"/>
-  <rect x="224" y="330" width="12" height="30" fill="#4A6FA5"/>
+  <path d="M50 50 h200 a20 20 0 0 1 20 20 v120 a20 20 0 0 1 -20 20 h-110 l-34 34 v-34 h-56 a20 20 0 0 1 -20 -20 v-120 a20 20 0 0 1 20 -20z" fill="#FFFDF7" stroke="#B08A63" stroke-width="6"/>
+  <text x="150" y="164" text-anchor="middle" font-size="96" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄚ</text>
+  <rect x="80" y="258" width="50" height="80" rx="25" fill="#E0955B"/>
+  <g stroke="#FFFDF7" stroke-width="4" stroke-linecap="round"><path d="M93 282 h24"/><path d="M93 297 h24"/><path d="M93 312 h24"/></g>
+  <path d="M66 308 a39 39 0 0 0 78 0" fill="none" stroke="#B08A63" stroke-width="8" stroke-linecap="round"/>
+  <rect x="99" y="346" width="12" height="24" fill="#B08A63"/>
+  <rect x="72" y="366" width="66" height="12" rx="6" fill="#B08A63"/>
+  <g fill="none" stroke="#E0955B" stroke-width="6" stroke-linecap="round"><path d="M166 272 q16 26 0 52"/><path d="M192 256 q28 42 0 84"/><path d="M218 240 q40 58 0 116" stroke-dasharray="10 9"/></g>
 </svg>`
   }
-  return `<img class="art-slot" src="img/card-memory.jpg?v=${IMG_V}" width="300" height="400" alt="" onload="this.parentElement.classList.add('has-art')" onerror="this.remove()">
-<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
-  <rect width="300" height="400" fill="#BFD8B0"/>
-  <g>
-    <rect x="40" y="80" width="90" height="120" rx="14" fill="#E39AA8"/>
-    <rect x="170" y="80" width="90" height="120" rx="14" fill="#6F9FD0"/>
-    <rect x="40" y="220" width="90" height="120" rx="14" fill="#E8C86A"/>
-    <rect x="170" y="220" width="90" height="120" rx="14" fill="#F6F3E6"/>
-  </g>
-  <g fill="#F6F3E6" opacity="0.7"><circle cx="85" cy="140" r="22"/><circle cx="215" cy="140" r="22"/><circle cx="85" cy="280" r="22"/></g>
-  <text x="215" y="300" text-anchor="middle" font-size="60" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄉ</text>
+  return `<svg viewBox="0 0 300 400" width="300" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="400" fill="#F3E4C2"/>
+  <rect x="35" y="55" width="100" height="130" rx="14" fill="#E0955B" stroke="#B08A63" stroke-width="6"/><rect x="47" y="67" width="76" height="106" rx="9" fill="none" stroke="#FFFDF7" stroke-width="4" stroke-dasharray="8 6"/>${cardStar(85, 120, 20)}
+  <rect x="165" y="55" width="100" height="130" rx="14" fill="#FFF3B0" stroke="#E0955B" stroke-width="6"/><text x="215" y="143" text-anchor="middle" font-size="64" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄉ</text>
+  <rect x="35" y="215" width="100" height="130" rx="14" fill="#FFF3B0" stroke="#E0955B" stroke-width="6"/><text x="85" y="303" text-anchor="middle" font-size="64" font-weight="900" fill="#2B3A4A" font-family="Microsoft JhengHei, sans-serif">ㄉ</text>
+  <rect x="165" y="215" width="100" height="130" rx="14" fill="#E0955B" stroke="#B08A63" stroke-width="6"/><rect x="177" y="227" width="76" height="106" rx="9" fill="none" stroke="#FFFDF7" stroke-width="4" stroke-dasharray="8 6"/>${cardStar(215, 280, 20)}
 </svg>`
 }
 

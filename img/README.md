@@ -11,7 +11,7 @@
 | `scene.jpg` | 釣魚遊戲背景（左下角木碼頭，狗狗坐在上面） |
 | `home.jpg` | 選人、首頁、結算的背景；也是其他背景還沒生之前的備用 |
 | `dog-0.png` … `dog-5.png` | 六隻救援狗（透明背景 PNG）。dog-0 是其他五隻的參考圖 |
-| `card-*.jpg`、`bg-*.jpg` | 首頁卡片、遊戲背景（不透明，存 JPG 比較小） |
+| `bg-*.jpg` | 遊戲背景（不透明，存 JPG 比較小） |
 | `icon-*.png` | 手機桌面圖示，`tools/make_icons.py` 從 dog-0 做出來 |
 
 ## 怎麼把生好的圖放進來
@@ -88,82 +88,6 @@ Use the attached picture only as a style reference. Draw a NEW character in exac
 
 ```
 Use the attached picture only as a style reference. Draw a NEW character in exactly the same drawing style, the same line quality and coloring, the same size and framing as the reference, but with its own pose: an orange tabby kitten with a striped tail, wearing a tall white chef hat and a yellow apron, standing and flipping a pancake in a small frying pan. It has a small round golden team badge with a white bone and a little star on it on its hat or vest. Full body, centered, the character fills about 80 percent of the picture height, facing mostly toward the viewer so the face is clearly visible. It must be an original character, not like any existing cartoon. Put the character on a plain solid bright blue background (pure #1E4BFF), no shadow, no gradient, no checkerboard pattern.
-```
-
-## 首頁的玩法卡片
-
-首頁一打開就看到，現在是向量畫的卡片。上傳 img/home.jpg 當畫風參考，說「用這張圖的畫風」。
-
-### `card-fishing`　釣魚
-
-600×800，直的 3:4。參考圖：`img/home.jpg`。
-
-```
-a small wooden pier over calm teal water on a sunny day, a fishing line dangling into the water where one big round shiny soap bubble floats, fluffy clouds, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
-```
-
-### `card-whack`　打地鼠
-
-600×800，直的 3:4。參考圖：`img/home.jpg`。
-
-```
-a sunny vegetable garden with three round dark soil holes in soft grass, one round cream-colored ball peeking out of the middle hole, carrot leaves and small flowers around, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
-```
-
-### `card-memory`　翻牌
-
-600×800，直的 3:4。參考圖：`img/home.jpg`。
-
-```
-four playing cards lying on a checked picnic blanket in the grass, two face down with a paw print on the back, two face up with plain white faces, a few daisies, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
-```
-
-### `card-match`　連連看
-
-600×800，直的 3:4。參考圖：`img/home.jpg`。
-
-```
-a small cork board with two picture cards pinned on it, one of a cat and one of an apple, joined by a red yarn string, soft light, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
-```
-
-### `card-fill`　填空
-
-600×800，直的 3:4。參考圖：`img/home.jpg`。
-
-```
-a wooden jigsaw puzzle board with one piece missing and that puzzle piece floating just above the gap with a soft glow, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
-```
-
-### `card-tone`　聲調填空
-
-600×800，直的 3:4。參考圖：`img/home.jpg`。
-
-```
-a row of four little wooden music bells on a windowsill, each a different height like steps going up and down, a small songbird perched on the tallest one, soft morning light, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
-```
-
-### `card-write`　寫寫看
-
-600×800，直的 3:4。參考圖：`img/home.jpg`。
-
-```
-a small slate chalkboard on a wooden easel next to a fat yellow pencil and crayons, on a sunny windowsill, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
-```
-
-### `card-learn`　學寫字
-
-600×800，直的 3:4。參考圖：`img/home.jpg`。
-
-```
-a small wooden writing board on an easel with one big brush stroke glowing softly on it, a fat pencil with a tiny arrow ribbon, a few paper stars around, on a sunny windowsill, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
-```
-
-### `card-speak`　唸唸看
-
-600×800，直的 3:4。參考圖：`img/home.jpg`。
-
-```
-an old-fashioned round microphone on a little stand in a flower meadow, soft sound ripples and small musical notes floating out of it, vertical 3:4 portrait format, one clear centered subject with big simple shapes, hand-painted watercolor and gouache illustration in the style of a 1990s Japanese animated film, soft edges, warm natural light, gentle pastel colors, children's picture book mood, no text, no letters, no numbers, no watermark
 ```
 
 ## 三張遊戲背景
