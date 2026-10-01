@@ -132,6 +132,12 @@ function main () {
   }
 
   // ---- 首頁 ----
+  // 唸唸看要用 Google 的語音辨識，沒網路就先藏起來；網路斷了或回來時，首頁跟著重畫
+  function canSpeak () { return speechAvailable() && navigator.onLine !== false }
+  const onNetChange = () => { if (currentScreen === 'home' && profile) goHome() }
+  window.addEventListener('online', onNetChange)
+  window.addEventListener('offline', onNetChange)
+
   // 今天推薦哪個玩法：今天練最少的那一軌，軌裡再照日子輪
   function recommendGame () {
     const t = recommendTrack(state, today())
@@ -140,7 +146,7 @@ function main () {
     if (t === 'word') return odd ? 'fill' : 'match'
     if (t === 'tone') return 'tone'
     if (t === 'spell') return 'spell'
-    if (t === 'read') return speechAvailable() ? 'speak' : 'match'
+    if (t === 'read') return canSpeak() ? 'speak' : 'match'
     return 'write'
   }
 
@@ -148,7 +154,7 @@ function main () {
     destroyGame()
     const daily = { ...dailyView(state, today()), goal: DAILY_GOAL }
     const teacher = isTeacher() ? { tier: state.lockTier, range: state.rangeGroups || [], hidden: state.hiddenGames || [] } : null
-    renderHome(homeEl, { profile, speech: speechAvailable(), bones: state.bones, partner: myColor(), team: teamOf(state, profile.color), daily, recommend: recommendGame(), musicOn: !settings.musicOff, teacher })
+    renderHome(homeEl, { profile, speech: canSpeak(), bones: state.bones, partner: myColor(), team: teamOf(state, profile.color), daily, recommend: recommendGame(), musicOn: !settings.musicOff, teacher })
     // 點下方的隊員：換牠出任務（配件跟著戴到牠身上）
     homeEl.querySelectorAll('[data-partner]').forEach(b => b.addEventListener('pointerdown', () => {
       const c = parseInt(b.dataset.partner, 10)
@@ -1071,3 +1077,10 @@ function main () {
 function wait (ms) { return new Promise(r => setTimeout(r, ms)) }
 
 document.addEventListener('DOMContentLoaded', main)
+
+// 離線版：註冊 sw.js，第一次有網路打開就把整個遊戲存進裝置。直接開檔案（file://）不支援，就照舊上網用
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('離線版註冊失敗：', err))
+  })
+}

@@ -2,7 +2,7 @@
 // 做法：依相依順序串接各模組，拿掉 import 行和 export 關鍵字，全部放進同一個 script 範圍。
 // 前提：各模組頂層名稱不能撞。
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, existsSync, rmSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, existsSync, rmSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execSync } from 'node:child_process'
@@ -112,3 +112,23 @@ if (existsSync(imgDir)) {
   }
   console.log('dist/img/', files.length, 'files,', wordFiles.length, 'word pictures,', emojiFiles.length, 'emoji')
 }
+
+// 離線版：dist/sw.js。清單是 dist/ 底下所有錄音和圖（路徑照網址編碼，每個檔帶自己的內容雜湊），
+// 網頁版本用 index.html 的雜湊：每次打包都會變，裝置下次有網路打開就換新版
+const assetHash = {}
+const listAssets = (dir, prefix) => {
+  if (!existsSync(dir)) return
+  for (const f of readdirSync(dir).sort()) {
+    const p = join(dir, f)
+    if (statSync(p).isDirectory()) listAssets(p, prefix + encodeURIComponent(f) + '/')
+    else if (/\.(png|jpg|jpeg|webp|svg|mp3|wav)$/i.test(f)) assetHash[prefix + encodeURIComponent(f)] = createHash('sha1').update(readFileSync(p)).digest('hex').slice(0, 10)
+  }
+}
+listAssets(join(root, 'dist', 'audio'), 'audio/')
+listAssets(join(root, 'dist', 'img'), 'img/')
+const shellVersion = createHash('sha1').update(html).digest('hex').slice(0, 10)
+const sw = readFileSync(join(root, 'src', 'sw.js'), 'utf8')
+  .replace('__SHELL_VERSION__', shellVersion)
+  .replace('__ASSETS__', () => JSON.stringify(assetHash))
+writeFileSync(join(root, 'dist', 'sw.js'), sw)
+console.log('dist/sw.js', Object.keys(assetHash).length, 'files for offline')
