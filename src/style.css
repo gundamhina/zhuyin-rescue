@@ -909,13 +909,16 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 /* 同一套畫法：深一階的描邊、硬陰影（不要模糊的影子）、紙紋，邊緣用 #wobble 微微抖動 */
 .bubble, .mole, .hole-front, .mcard-back, .mcard-front, .mword, .mpic, .fill-pic, .tile, .sign-board, .sign-post, .combo { filter: url(#wobble); }
 /* 釣魚的泡泡：還是透亮的水泡，外圈改成水藍色的筆線 */
-/* 不要玻璃球的漸層和反光：紙白底，右下一片水彩藍（邊緣是硬的，像一筆刷上去），外圈一條水藍筆線，
-   左上的反光改成淡藍色手畫的一撇弧線加一個小點 */
-.bubble { border: 6px solid #3F7A96; box-shadow: none;
-  background: var(--paper-tex), radial-gradient(circle at 36% 32%, #FBFDFB 0 52%, #CFE8EC 53% 68%, #A9D3DC 69%); }
-.bubble::after { left: 24px; top: 20px; width: 50px; height: 50px; background: none; border: 7px solid transparent; border-top-color: #8FC3D0; border-radius: 50%; transform: rotate(-38deg); box-sizing: border-box; }
-.bubble::before { content: ""; position: absolute; left: 64px; top: 22px; width: 10px; height: 10px; border-radius: 50%; background: #8FC3D0; }
-.bubble span { text-shadow: none; }
+/* 不要玻璃球的漸層和反光：淡淡的水色底加紙紋，外圈一條水藍筆線。
+   字縮小、顏色帶一點藍，周圍留出泡泡的邊；右下那片水彩藍和左上的反光放在 ::after，蓋在字的上面，
+   字才像在泡泡裡面，不是貼在上面 */
+.bubble { border: 6px solid #3F7A96; box-shadow: none; background: #E3F2F4 var(--paper-tex); }
+.bubble::after { left: 0; top: 0; width: 100%; height: 100%; border: 0; border-radius: 50%; transform: none; pointer-events: none;
+  background:
+    radial-gradient(ellipse 30px 15px at 30% 20%, rgba(255,255,255,.95) 0 96%, transparent 100%),
+    radial-gradient(circle 6px at 47% 14%, rgba(255,255,255,.95) 0 96%, transparent 100%),
+    radial-gradient(circle at 37% 33%, transparent 0 55%, rgba(150,205,218,.5) 56% 69%, rgba(105,178,200,.6) 70%); }
+.bubble span { text-shadow: none; font-size: 92px; color: #2A4A5E; }
 /* 打地鼠：冒出來的圓球和洞口的土堆 */
 .mole { border: 5px solid var(--ink); box-shadow: 0 6px 0 var(--ink); background: #FBF1DA var(--paper-tex); box-sizing: border-box; }
 .mole.hit { background: #F3D97E var(--paper-tex); border-color: #A8862B; box-shadow: 0 6px 0 #A8862B; }
