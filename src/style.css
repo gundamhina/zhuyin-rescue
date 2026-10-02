@@ -882,3 +882,25 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 /* 寫那一類有四張卡：各區照自己的寬度排，一排放得下兩區就兩區（聽＋看、寫＋說），不再兩欄等寬 */
 .cards.cat-grid { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; padding: 0 10px; }
 #stage.portrait .cards.cat-grid { flex-direction: column; align-items: center; flex-wrap: nowrap; justify-content: center; }
+
+/* ---- 手繪風：注音表、老師首頁那一條 ---- */
+/* 注音表的格子：描邊用各區自己的深色、硬陰影、紙紋（抖動在上面那一串已經有 .chart-tile） */
+.chart-tile { border: 4px solid var(--tile-dark); box-shadow: 0 5px 0 var(--tile-dark); background-image: var(--paper-tex); }
+.chart-tile:active { box-shadow: 0 1px 0 var(--tile-dark); }
+/* 每組的外框：跟首頁類別外框一樣放在 ::before 上抖，裡面的格子才不會抖兩次 */
+.chart-group { position: relative; background: none; box-shadow: none; }
+.chart-group::before { content: ''; position: absolute; inset: 0; border-radius: inherit; border: 4px solid color-mix(in srgb, var(--tile-dark) 75%, transparent); background: rgba(255,253,247,.6) var(--paper-tex); filter: url(#wobble); pointer-events: none; }
+.chart-group > * { position: relative; }
+/* 兩頁切換的按鈕：紙白底、咖啡色描邊；選到的那顆黃底金邊（跟商店分頁一樣） */
+.chart-tab { filter: url(#wobble); background: var(--paper) var(--paper-tex); border: 4px solid var(--wood); box-shadow: 0 5px 0 var(--wood); }
+.chart-tab.on { background-color: #FFF3B0; border-color: #C39A1E; box-shadow: 0 5px 0 #C39A1E; }
+.chart-tab:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--wood); }
+.round-btn.chart-close { border-color: #7E1F28; box-shadow: 0 7px 0 #7E1F28; }
+.round-btn.chart-close:active { box-shadow: 0 2px 0 #7E1F28; }
+/* 老師那一條：整條是紙白膠囊，裡面的圓鈕各自描邊；整條一起抖 */
+.teacher-bar { filter: url(#wobble); background: var(--paper) var(--paper-tex); border: 4px solid var(--wood); box-shadow: 0 5px 0 var(--wood); }
+.tier-btn { background: #F3EBDA var(--paper-tex); border: 3px solid var(--wood); box-shadow: 0 3px 0 var(--wood); }
+.tier-btn.on { background-color: #4A6FA5; border-color: #34507A; box-shadow: 0 3px 0 #34507A; }
+.tier-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--wood); }
+.range-btn { background-image: var(--paper-tex); border: 3px solid #C39A1E; box-shadow: 0 4px 0 #C39A1E; }
+.range-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #C39A1E; }
