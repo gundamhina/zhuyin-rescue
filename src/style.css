@@ -909,7 +909,12 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 /* 同一套畫法：深一階的描邊、硬陰影（不要模糊的影子）、紙紋，邊緣用 #wobble 微微抖動 */
 .bubble, .mole, .hole-front, .mcard-back, .mcard-front, .mword, .mpic, .fill-pic, .tile, .sign-board, .sign-post, .combo { filter: url(#wobble); }
 /* 釣魚的泡泡：還是透亮的水泡，外圈改成水藍色的筆線 */
-.bubble { border: 5px solid #4F8AA6; box-shadow: 0 8px 0 rgba(47,107,134,.55), inset 0 -14px 24px rgba(60,150,220,0.35); }
+/* 不要玻璃球的漸層和反光：紙白底，右下一片水彩藍（邊緣是硬的，像一筆刷上去），外圈一條水藍筆線，
+   左上的反光改成淡藍色手畫的一撇弧線加一個小點 */
+.bubble { border: 6px solid #3F7A96; box-shadow: none;
+  background: var(--paper-tex), radial-gradient(circle at 36% 32%, #FBFDFB 0 52%, #CFE8EC 53% 68%, #A9D3DC 69%); }
+.bubble::after { left: 24px; top: 20px; width: 50px; height: 50px; background: none; border: 7px solid transparent; border-top-color: #8FC3D0; border-radius: 50%; transform: rotate(-38deg); box-sizing: border-box; }
+.bubble::before { content: ""; position: absolute; left: 64px; top: 22px; width: 10px; height: 10px; border-radius: 50%; background: #8FC3D0; }
 .bubble span { text-shadow: none; }
 /* 打地鼠：冒出來的圓球和洞口的土堆 */
 .mole { border: 5px solid var(--ink); box-shadow: 0 6px 0 var(--ink); background: #FBF1DA var(--paper-tex); box-sizing: border-box; }
