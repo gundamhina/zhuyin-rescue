@@ -765,6 +765,23 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 #stage.portrait .chart-backdrop { left: 0; }
 #stage.portrait .chart-pad { left: 120px; top: calc((var(--H) - 560px) / 2); }
 #stage.portrait .chart-close { left: 60px; top: calc((var(--H) - 560px) / 2 - 30px); }
+/* 兩頁切換：上面中間兩顆按鈕（符號、結合韻） */
+.chart-tabs { position: absolute; left: 0; right: 0; top: 22px; display: flex; justify-content: center; gap: 16px; z-index: 2; }
+.chart-tab { height: 84px; min-width: 110px; padding: 10px 22px; border-radius: 42px; background: rgba(255,253,247,.85); border: 5px solid #C9D3DC; box-shadow: 0 6px 0 #A9BFCF; display: flex; align-items: center; justify-content: center; }
+.chart-tab .stroke-svg { width: 52px; height: 52px; }
+.chart-tab.on { background: #FFF3B0; border-color: #E8C86A; box-shadow: 0 6px 0 #D9AA1B; }
+/* 結合韻那一頁：一組一橫列，每格兩個符號上下直排 */
+.chart.compound { grid-template-columns: auto; }
+.chart-section.compound { flex-direction: column; --tile: #C7A6DC; --tile-dark: #9A76B3; }
+.chart-section.compound .chart-group { flex-direction: row; }
+.chart-tile.duo { height: 132px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; }
+.chart-tile.duo .stroke-svg { width: 56px; height: 56px; }
+.learn-guide.duo { display: flex; flex-direction: column; align-items: center; }
+.learn-guide.duo .stroke-svg { width: 240px; height: 240px; }
+#stage.portrait .chart-tabs { top: 30px; left: 130px; }
+#stage.portrait .chart.compound { grid-template-areas: none; grid-template-columns: auto; }
+#stage.portrait .chart-section.compound .chart-group { flex-wrap: wrap; width: 446px; }
+#stage.portrait .chart-tile.duo { height: 132px; }
 
 /* ================= 美術：手繪風介面 ================= */
 /* 跟首頁卡片同一種畫法：深一階的描邊、紙紋、硬陰影，邊緣用 #wobble 微微抖動，像用筆畫的；拿掉亮光和模糊陰影 */

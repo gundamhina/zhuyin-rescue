@@ -31,7 +31,8 @@ export function strokeTimes (symbol, { speed = 1 } = {}) {
 //   animate false 就直接畫好（不動）
 //   speed   動畫快慢，1 是正常
 //   upto    只畫前幾筆（教學一筆一筆來時用）；其他筆只有淡影
-export function strokeSvg (symbol, { color = '#E0955B', ghost = 'rgba(43,58,74,0.12)', animate = true, speed = 1, upto = null } = {}) {
+//   wait    動畫晚幾毫秒才開始（結合韻兩個符號接著寫時，第二個要等第一個寫完）
+export function strokeSvg (symbol, { color = '#E0955B', ghost = 'rgba(43,58,74,0.12)', animate = true, speed = 1, upto = null, wait = 0 } = {}) {
   const strokes = STROKES[symbol]
   if (!strokes) return { svg: '', duration: 0 }
   const id = 'stk' + (++uid)
@@ -44,10 +45,10 @@ export function strokeSvg (symbol, { color = '#E0955B', ghost = 'rgba(43,58,74,0
     const width = Math.max(...s.track.map(p => p[2])) * 1.6
     const pts = s.track.map(p => p[0] + ' ' + p[1]).join(' L')
     const { delay, dur } = times[i]
-    return `<path d="M${pts}" clip-path="url(#${id}-${i})" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 2" stroke-dashoffset="1" style="animation: strokeDraw ${Math.round(dur)}ms linear ${Math.round(delay)}ms forwards"/>`
+    return `<path d="M${pts}" clip-path="url(#${id}-${i})" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 2" stroke-dashoffset="1" style="animation: strokeDraw ${Math.round(dur)}ms linear ${Math.round(delay + wait)}ms forwards"/>`
   }).join('')
   const last = times[n - 1]
-  const duration = animate && last ? last.delay + last.dur : 0
+  const duration = animate && last ? wait + last.delay + last.dur : 0
   return {
     svg: `<svg class="stroke-svg" viewBox="0 0 2048 2048" xmlns="http://www.w3.org/2000/svg"><defs>${defs}</defs>${ghostSvg}${ink}</svg>`,
     duration,
