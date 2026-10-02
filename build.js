@@ -37,7 +37,9 @@ function imageVersion () {
   return h.digest('hex').slice(0, 8)
 }
 const imgVersion = imageVersion()
-const js = `const DOG_COPIES = ${JSON.stringify(dogCopies)}\n` + ORDER.map(f => strip(readFileSync(join(root, 'src', f), 'utf8'), f)).join('\n').replace(/__IMG_V__/g, imgVersion)
+// 有哪些錄音檔先寫進程式：不用每個音都上網試有沒有檔案，沒錄音的直接用語音合成
+const audioFiles = existsSync(join(root, 'audio')) ? readdirSync(join(root, 'audio')).filter(f => /\.(mp3|wav)$/i.test(f)) : []
+const js = `const DOG_COPIES = ${JSON.stringify(dogCopies)}\nconst AUDIO_FILES = ${JSON.stringify(audioFiles)}\n` + ORDER.map(f => strip(readFileSync(join(root, 'src', f), 'utf8'), f)).join('\n').replace(/__IMG_V__/g, imgVersion)
 // 各模組最外層的名稱不能撞：合成同一個範圍後，同名的 function 會靜靜地互相蓋掉，new Function 抓不到
 const seen = {}
 for (const f of ORDER) {

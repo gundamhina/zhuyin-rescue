@@ -75,17 +75,41 @@ export function createAudio (getSettings) {
   }
 
   const RECORDING_EXTS = ['wav', 'mp3']
+  // 打包時 build.js 把 audio/ 裡有的檔名寫進 AUDIO_FILES：有錄音的一開網頁就先載好，沒錄音的不用上網找。
+  // 單獨載入模組（沒經過打包）時沒有這份清單，照舊一個一個試。
+  // eslint-disable-next-line no-undef
+  const knownFiles = typeof AUDIO_FILES === 'undefined' ? null : AUDIO_FILES
+  const preloaded = {} // 網址 → 已經載好的 Audio，重複用
+  if (knownFiles && typeof Audio !== 'undefined') {
+    for (const f of knownFiles) {
+      const dot = f.lastIndexOf('.')
+      const url = 'audio/' + encodeURIComponent(f.slice(0, dot)) + f.slice(dot)
+      const el = new Audio()
+      el.preload = 'auto'
+      el.src = url
+      preloaded[url] = el
+    }
+  }
+  // 有清單時：這個符號的錄音網址，沒有就是 null
+  function knownUrl (symbol) {
+    for (const ext of RECORDING_EXTS) {
+      if (knownFiles.includes(symbol + '.' + ext)) return 'audio/' + encodeURIComponent(symbol) + '.' + ext
+    }
+    return null
+  }
   let currentEl = null // 正在播的錄音，換題時先停掉
 
   // onStart 在聲音真的開始出來時呼叫，讓遊戲可以提早開放點擊
   function playFile (url, onStart) {
     return new Promise(resolve => {
-      const el = new Audio(url)
+      const el = preloaded[url] || new Audio(url)
+      try { el.currentTime = 0 } catch (err) { /* 還沒載好就從頭播 */ }
       el.volume = vol('voiceVol')
       currentEl = el
       el.onplaying = () => { if (onStart) onStart() }
       el.onended = () => resolve(true)
-      el.onpause = () => resolve(true) // 被 stop() 中斷也要讓等待的人繼續
+      // 被 stop() 中斷也要讓等待的人繼續。同一個 Audio 重複用：上一次被停掉的 pause 事件晚一步才到，這時已經又在播了，不算
+      el.onpause = () => { if (el.paused) resolve(true) }
       el.onerror = () => resolve(false)
       el.play().catch(() => resolve(false))
     })
@@ -96,6 +120,11 @@ export function createAudio (getSettings) {
     const known = recordingExists[symbol]
     if (known === false) return false
     if (typeof known === 'string') return playFile(known, onStart)
+    if (knownFiles) {
+      const url = knownUrl(symbol)
+      recordingExists[symbol] = url || false
+      return url ? playFile(url, onStart) : false
+    }
     for (const ext of RECORDING_EXTS) {
       const url = 'audio/' + encodeURIComponent(symbol) + '.' + ext
       if (await playFile(url, onStart)) { recordingExists[symbol] = url; return true }
@@ -109,6 +138,10 @@ export function createAudio (getSettings) {
     const known = recordingExists[symbol]
     if (known === false) return Promise.resolve('tts')
     if (typeof known === 'string') return Promise.resolve('recording')
+    if (knownFiles) {
+      recordingExists[symbol] = knownUrl(symbol) || false
+      return Promise.resolve(recordingExists[symbol] ? 'recording' : 'tts')
+    }
     return new Promise(resolve => {
       const tryExt = i => {
         if (i >= RECORDING_EXTS.length) { recordingExists[symbol] = false; return resolve('tts') }
