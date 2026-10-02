@@ -218,7 +218,7 @@ export function renderProfiles (root, { profiles, onPick, onAdd, onGear }) {
 
 // 首頁：目前使用者的狗狗、三張玩法卡
 // daily = { rounds, claimed, streak, goal }；recommend = 推薦的玩法；musicOn = 背景音樂開著沒
-// teacher = { tier, range }：老師帳號，首頁上方換成難度和範圍，沒有骨頭、寶箱、商店、隊員
+// teacher = { tier, range, whack }：老師帳號，首頁上方換成難度、範圍和打地鼠速度，沒有骨頭、寶箱、商店、隊員
 // partner：出任務的隊員（顏色）；team：自己原本那位加上買回家的隊員，首頁下方一排，點誰誰出任務
 export function renderHome (root, { profile, speech = true, bones = 0, partner = null, team = [], daily = null, recommend = null, musicOn = true, teacher = null }) {
   const me = partner == null ? profile.color : partner
@@ -387,11 +387,13 @@ function rangeSummary (range) {
   const names = range.slice(0, 2).map(i => groupLabel(i, GROUPS[i]))
   return names.join('、') + (range.length > 2 ? ` 等 ${range.length} 組` : '')
 }
-function teacherBarHtml ({ tier, range }) {
+function teacherBarHtml ({ tier, range, whack = 1 }) {
   return `<div class="teacher-bar">
     <span class="tb-label">難度</span>
     ${[0, 1, 2, 3, 4, 5].map(t => `<button class="tier-btn ${t === tier ? 'on' : ''}" data-tier="${t}" title="${tierLabel(TIERS[t])}">${t + 1}</button>`).join('')}
     <button class="range-btn" id="btn-range"><span class="tb-label">範圍</span> ${escapeHtml(rangeSummary(range))}</button>
+    <span class="tb-label tb-whack">地鼠</span>
+    ${['慢', '中', '快'].map((name, i) => `<button class="tier-btn ${i === whack ? 'on' : ''}" data-whack="${i}" title="打地鼠速度">${name}</button>`).join('')}
   </div>`
 }
 

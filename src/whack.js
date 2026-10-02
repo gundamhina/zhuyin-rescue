@@ -8,6 +8,8 @@ import { STAGE, mountBgs } from './ui.js'
 const HOLES = [[330, 430], [600, 430], [870, 430], [460, 620], [730, 620], [1000, 620]]
 const UP_MS = 3200 // 每一個冒出來停多久（2026-09-25 使用者說太快，從 2100 放慢）
 const POP_MS = 1100 // 每隔多久冒下一個（UP_MS／POP_MS ≈ 3，同時最多三個在外面）
+// 老師首頁可以調的三種速度（慢、中、快）：兩個時間一起乘，同時在外面的數量不變
+export const WHACK_SPEEDS = [1.5, 1, 0.65]
 
 // 直的：兩欄三排，在狗狗下面、星星上面那段置中，排距 190～300
 function holesFor () {
@@ -28,7 +30,9 @@ function shuffleList (arr) {
   return a
 }
 
-export function createWhack (root, { color = 0 } = {}) {
+export function createWhack (root, { color = 0, slow = 1 } = {}) {
+  const upMs = UP_MS * slow
+  const popMs = POP_MS * slow
   root.innerHTML = bgHtml('garden') + '<div class="frame">' +
     '<div class="dog-wrap whack-dog">' + dogSvg(color) + '</div>' +
     '<div class="holes">' + HOLES.map(() => `
@@ -85,10 +89,10 @@ export function createWhack (root, { color = 0 } = {}) {
     queue.push(...seq)
   }
 
-  // 每 POP_MS 從空的洞冒一個出來；同一個符號不會同時出現兩個
+  // 每 popMs 從空的洞冒一個出來；同一個符號不會同時出現兩個
   function popNext () {
     if (!running) return
-    timer = setTimeout(popNext, POP_MS)
+    timer = setTimeout(popNext, popMs)
     if (queue.length < 3) refill()
     const free = moles.filter(m => !m.classList.contains('up'))
     if (!free.length) return
@@ -105,7 +109,7 @@ export function createWhack (root, { color = 0 } = {}) {
       glowOnce = false
     }
     mole.classList.add('up')
-    hideTimers.set(mole, setTimeout(() => hideMole(mole), UP_MS))
+    hideTimers.set(mole, setTimeout(() => hideMole(mole), upMs))
   }
 
   function stopLoop () {

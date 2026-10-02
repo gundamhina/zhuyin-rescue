@@ -4,7 +4,7 @@ import { addBones, buyItem, wearItem, teamOf, partnerOf, setPartner, recordRound
 import { createStore } from './store.js'
 import { createAudio } from './audio.js'
 import { createFishing } from './fishing.js'
-import { createWhack } from './whack.js'
+import { createWhack, WHACK_SPEEDS } from './whack.js'
 import { createMemory } from './memory.js'
 import { createSpeak, speechAvailable, createListener, matchesSymbol, openMicMeter } from './speak.js'
 import { createWrite } from './write.js'
@@ -150,10 +150,13 @@ function main () {
     return 'write'
   }
 
+  // 老師調的打地鼠速度：0 慢、1 中、2 快；沒調過是中
+  function whackSpeed () { return WHACK_SPEEDS[state.whackSpeed] ? state.whackSpeed : 1 }
+
   function goHome () {
     destroyGame()
     const daily = { ...dailyView(state, today()), goal: DAILY_GOAL }
-    const teacher = isTeacher() ? { tier: state.lockTier, range: state.rangeGroups || [], hidden: state.hiddenGames || [] } : null
+    const teacher = isTeacher() ? { tier: state.lockTier, range: state.rangeGroups || [], hidden: state.hiddenGames || [], whack: whackSpeed() } : null
     renderHome(homeEl, { profile, speech: canSpeak(), bones: state.bones, partner: myColor(), team: teamOf(state, profile.color), daily, recommend: recommendGame(), musicOn: !settings.musicOff, teacher })
     // 點下方的隊員：換牠出任務（配件跟著戴到牠身上）
     homeEl.querySelectorAll('[data-partner]').forEach(b => b.addEventListener('pointerdown', () => {
@@ -170,6 +173,11 @@ function main () {
     // 老師：點難度直接換；點範圍打開挑選
     homeEl.querySelectorAll('[data-tier]').forEach(b => b.addEventListener('pointerdown', () => {
       state = { ...state, lockTier: parseInt(b.dataset.tier, 10) }
+      store.save(profile.id, state)
+      goHome()
+    }))
+    homeEl.querySelectorAll('[data-whack]').forEach(b => b.addEventListener('pointerdown', () => {
+      state = { ...state, whackSpeed: parseInt(b.dataset.whack, 10) }
       store.save(profile.id, state)
       goHome()
     }))
@@ -494,7 +502,7 @@ function main () {
   }
 
   function runQuestions (which) {
-    if (which === 'whack') game = createWhack(playArea, { color: myColor() })
+    if (which === 'whack') game = createWhack(playArea, { color: myColor(), slow: isTeacher() ? WHACK_SPEEDS[whackSpeed()] : 1 })
     else if (which === 'write') game = createWrite(playArea, { color: myColor() })
     else game = createFishing(playArea, { color: myColor() })
     replayBtn.classList.remove('hidden')
