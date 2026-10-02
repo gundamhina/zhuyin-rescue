@@ -29,7 +29,7 @@ npm run build     # 把 src/ 合成 dist/index.html，並複製 audio/、img/
 `src/` 是分檔的原始碼，`dist/` 是 build 出來的交付物（不進 git，GitHub Pages 由 CI 自己 build）。發音檔在 `audio/`（教育部手冊官方錄音，CC BY 4.0），圖在 `img/`（生圖後用 `tools/prep_images.py` 整理）。設計文件在 `docs/superpowers/specs/`。
 
 資料來源：
-- 發音：教育部《國語注音符號手冊》錄音，CC BY 4.0。結合韻的 21 個音檔是用 Windows 內建語音預先產生的（見 `audio/README.md`）。
+- 發音：教育部《國語注音符號手冊》錄音，CC BY 4.0。結合韻的 21 個音檔是用微軟神經網路語音預先產生的（見 `audio/README.md`）。
 - 詞與拼讀字的讀音：教育部《國語辭典簡編本》，CC BY-ND 3.0 臺灣；用 `tools/check_moe.py` 核對。
 - 詞的圖：Twemoji（https://github.com/jdecked/twemoji），CC BY 4.0；`tools/fetch_twemoji.py` 下載到 `img/emoji/`。手繪詞圖放 `img/words/` 會優先顯示。
 - 注音筆順：教育部《國字標準字體筆順學習網》，CC BY-NC-ND 3.0 臺灣。原始資料原封不動存在 `tools/moe_strokes.json`，`tools/gen_strokes.py` 只換成 SVG 路徑寫法產生 `src/strokes.js`。
