@@ -1,8 +1,9 @@
-// 注音表：兩頁，37 個符號一頁、22 個結合韻一頁，上面兩顆按鈕切換。點一個就放大、照教育部筆順寫一次給她看，同時唸出來。
+// 注音表：三頁，37 個符號、22 個結合韻、5 個聲調，上面三顆按鈕切換。點一個就放大、照教育部筆順寫一次給她看，同時唸出來。
+// 聲調那頁：每格是一個調號，點了放大成例字 ㄇㄚ 的那個聲調（媽、麻、馬、罵、嗎），調號跳一下，唸例字。
 // 純看，不記進度、不給骨頭。符號本身也用筆順資料畫（教育部字形），不靠電腦字型。
 // 介面：createChart(root, { onPick }) 回 { destroy }；onPick(symbol) 在點到符號時呼叫（外面負責唸）。
 
-import { bgHtml } from './art.js'
+import { bgHtml, symbolMarkup, toneTileMarkup } from './art.js'
 import { mountBgs } from './ui.js'
 import { strokeSvg } from './strokeplay.js'
 import { GROUPS } from './data.js'
@@ -17,7 +18,10 @@ const CHART_SECTIONS = [
 const CHART_PAGES = [
   { key: 'single', icon: 'ㄅ', name: '注音符號', sections: CHART_SECTIONS },
   { key: 'compound', icon: 'ㄧㄚ', name: '結合韻', sections: [{ cls: 'compound', groups: GROUPS.slice(10, 13) }] },
+  { key: 'tone', tone: 'ˇ', name: '聲調', sections: [{ cls: 'tone', groups: [['ㄇㄚ', 'ㄇㄚˊ', 'ㄇㄚˇ', 'ㄇㄚˋ', '˙ㄇㄚ']] }] },
 ]
+// 聲調那頁每格的調號（一聲課本不標，格子上畫一條橫線）
+const CHART_TONE_OF = { ㄇㄚ: '1', 'ㄇㄚˊ': 'ˊ', 'ㄇㄚˇ': 'ˇ', 'ㄇㄚˋ': 'ˋ', '˙ㄇㄚ': '˙' }
 // 一個符號或一個結合韻畫出來：每個符號一個 SVG；要動的話一個寫完才寫下一個
 function chartGlyphs (sym, opts) {
   let wait = 0
@@ -32,9 +36,11 @@ const CHART_REPLAY_SVG = '<svg viewBox="0 0 24 24" width="44" height="44" fill="
 const CHART_CLOSE_SVG = '<svg viewBox="0 0 24 24" width="40" height="40" fill="#fff"><path d="M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12z"/></svg>'
 
 export function createChart (root, { onPick = () => {} } = {}) {
-  const tile = s => `<button class="chart-tile ${s.length > 1 ? 'duo' : ''}" data-sym="${s}" aria-label="${s}">${chartGlyphs(s, CHART_STILL)}</button>`
+  const tile = s => CHART_TONE_OF[s]
+    ? `<button class="chart-tile tone" data-sym="${s}" aria-label="${s}">${toneTileMarkup(CHART_TONE_OF[s])}</button>`
+    : `<button class="chart-tile ${s.length > 1 ? 'duo' : ''}" data-sym="${s}" aria-label="${s}">${chartGlyphs(s, CHART_STILL)}</button>`
   root.innerHTML = bgHtml('room') + `<div class="frame">
-    <div class="chart-tabs">${CHART_PAGES.map((p, i) => `<button class="chart-tab ${i ? '' : 'on'}" data-page="${p.key}" aria-label="${p.name}">${chartGlyphs(p.icon, CHART_STILL)}</button>`).join('')}</div>
+    <div class="chart-tabs">${CHART_PAGES.map((p, i) => `<button class="chart-tab ${i ? '' : 'on'}" data-page="${p.key}" aria-label="${p.name}">${p.tone ? toneTileMarkup(p.tone) : chartGlyphs(p.icon, CHART_STILL)}</button>`).join('')}</div>
     ${CHART_PAGES.map((p, i) => `<div class="chart ${p.key} ${i ? 'hidden' : ''}" data-page="${p.key}">${p.sections.map(sec => `<div class="chart-section ${sec.cls}">${sec.groups.map(g => `<div class="chart-group">${g.map(tile).join('')}</div>`).join('')}</div>`).join('')}</div>`).join('')}
     <div class="chart-pop hidden">
       <div class="chart-backdrop"></div>
@@ -51,8 +57,11 @@ export function createChart (root, { onPick = () => {} } = {}) {
   // 放大這個符號：照筆順寫一次，同時唸
   function play (sym) {
     current = sym
-    guide.classList.toggle('duo', sym.length > 1)
-    guide.innerHTML = chartGlyphs(sym, { speed: 0.8 })
+    const tone = CHART_TONE_OF[sym]
+    guide.classList.toggle('duo', !tone && sym.length > 1)
+    guide.classList.toggle('tone', !!tone)
+    // 聲調：放大成例字的注音（調號跳一下），不寫筆順；其他照筆順寫
+    guide.innerHTML = tone ? `<div class="chart-tone-big">${symbolMarkup(sym)}</div>` : chartGlyphs(sym, { speed: 0.8 })
     pop.classList.remove('hidden')
     onPick(sym)
   }
