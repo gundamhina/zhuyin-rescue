@@ -948,7 +948,8 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 .combo { background: #EE7B3F var(--paper-tex); border: 4px solid #A8401F; box-shadow: 0 5px 0 #A8401F; }
 
 /* ---- 手繪風：說明頁（每個玩法的小手示範） ---- */
-/* 場景裡每樣東西的描邊在 tutorial.js；這裡讓整張場景微微抖、卡片紙紋 */
-.tut-scene { filter: url(#wobble); }
-.tut-card { background: var(--paper) var(--paper-tex); }
+/* 場景裡每樣東西的描邊在 tutorial.js。整張卡片（外框、場景、播放鍵）一起抖一次，不要各抖各的；
+   外框改成較粗的咖啡色描邊加硬陰影，拿掉模糊的影子 */
+.tut > .tut-card { filter: url(#wobble); background: var(--paper) var(--paper-tex); border: 9px solid var(--ink); box-shadow: 0 12px 0 #5E4630; }
+.tut > .tut-card .tut-go { filter: none; }
 .tut { background: rgba(43,35,25,.5); }
