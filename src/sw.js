@@ -41,10 +41,11 @@ self.addEventListener('install', e => {
 })
 
 // 新版接手：丟掉舊版的網頁，錄音和圖只留這版清單上的。
-// 如果原本有舊版（是更新、不是第一次裝），把開著的遊戲頁面重新整理一次，馬上換成新版
+// 如果原本有舊版（是更新、不是第一次裝），接手完成「之後」把開著的遊戲頁面重新整理一次，馬上換成新版。
+// 不能在 waitUntil 裡面等重新整理：接手結束前頁面的請求都會卡住，兩邊互等就整個卡死
 self.addEventListener('activate', e => {
-  e.waitUntil((async () => {
-    let updated = false
+  let updated = false
+  const done = (async () => {
     for (const name of await caches.keys()) {
       if (name.startsWith('zhuyin-shell-') && name !== SHELL_CACHE) { await caches.delete(name); updated = true }
     }
@@ -55,13 +56,15 @@ self.addEventListener('activate', e => {
       if (!keep.has(u.pathname + u.search)) await cache.delete(req)
     }
     await self.clients.claim()
-    if (updated) {
-      for (const client of await self.clients.matchAll({ type: 'window' })) {
-        try { await client.navigate(client.url) } catch (err) { /* 不給重新整理就等她下次打開 */ }
-      }
+    // 錄音和圖不在這裡補：重新整理後打開網頁時會在背景補（下面 fetch 那段）
+  })()
+  e.waitUntil(done)
+  done.then(async () => {
+    if (!updated) return
+    for (const client of await self.clients.matchAll({ type: 'window' })) {
+      client.navigate(client.url).catch(() => {}) // 不給重新整理就等她下次打開
     }
-    // 錄音和圖不在這裡補：接手還沒結束前，頁面的請求都會卡著等；重新整理後打開網頁時會在背景補（下面 fetch 那段）
-  })())
+  })
 })
 
 // 網頁：先問網路，3 秒沒回或沒網路就用存著的
