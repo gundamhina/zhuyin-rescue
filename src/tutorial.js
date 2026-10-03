@@ -1,3 +1,4 @@
+// 畫法跟遊戲裡一樣是手繪風：每樣東西都有深一階的描邊，整張場景用 #wobble 微微抖動（style.css 的 .tut-scene）。
 // 教學：每個玩法第一次玩之前，先放一段小手示範怎麼操作。全是圖、不用字，她看得懂就好。
 // 示範只教「怎麼操作」（點、拖、畫、按），不教答案。動畫在 style.css 的 .tut-* 那一段，一輪 3.6 秒一直重播。
 // showTutorial(root, kind, onGo)：蓋在遊戲畫面上，按綠色播放鍵才開始；回傳一個關掉它的函式。
@@ -19,29 +20,29 @@ const sparks = (cls, x, y) => [[-60, -30], [55, -40], [-40, 45], [60, 35], [0, -
   `<text class="tut-spark ${cls}" x="${x + dx}" y="${y + dy}" font-size="34" fill="${['#E8C86A', '#E39AA8', '#6B9E6B', '#4A6FA5', '#E0955B'][i]}" text-anchor="middle" dominant-baseline="central">★</text>`).join('')
 
 // 喇叭：先「聽」
-const SPEAKER = `<g class="tut-speaker"><path d="M60 70 h22 l26 -22 v68 l-26 -22 h-22 z" fill="#E0955B"/>
+const SPEAKER = `<g class="tut-speaker"><path d="M60 70 h22 l26 -22 v68 l-26 -22 h-22 z" fill="#E0955B" stroke="#A8683A" stroke-width="5" stroke-linejoin="round"/>
   <path class="tut-wave w1" d="M122 68 q10 14 0 28" stroke="#E0955B" stroke-width="6" fill="none" stroke-linecap="round"/>
   <path class="tut-wave w2" d="M136 58 q18 24 0 48" stroke="#E0955B" stroke-width="6" fill="none" stroke-linecap="round"/></g>`
 
 const SCENES = {
   // 聽音，點泡泡
   fishing: `
-    <rect x="0" y="210" width="640" height="190" fill="#8FC7D2"/>
-    <path d="M0 214 q40 -12 80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0" stroke="#CFEAF0" stroke-width="6" fill="none"/>
+    <path d="M0 214 V370 a30 30 0 0 0 30 30 H610 a30 30 0 0 0 30 -30 V214 z" fill="#8FC7D2"/>
+    <path d="M0 214 q40 -12 80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0" stroke="#3F7A96" stroke-width="5" fill="none"/>
     ${SPEAKER}
-    <g class="tut-fish-b1"><circle cx="250" cy="262" r="54" fill="#F6F3E6" stroke="#fff" stroke-width="6"/><text x="250" y="264" font-size="62" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄅ</text></g>
-    <g><circle cx="420" cy="276" r="54" fill="#F6F3E6" stroke="#fff" stroke-width="6"/><text x="420" y="278" font-size="62" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄆ</text></g>
+    <g class="tut-fish-b1"><circle cx="250" cy="262" r="54" fill="#E3F2F4" stroke="#3F7A96" stroke-width="6"/><text x="250" y="264" font-size="62" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄅ</text></g>
+    <g><circle cx="420" cy="276" r="54" fill="#E3F2F4" stroke="#3F7A96" stroke-width="6"/><text x="420" y="278" font-size="62" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄆ</text></g>
     ${ripple('tut-fish-r', 250, 262)}${sparks('tut-fish-s', 250, 262)}
     ${hand('tut-fish-hand')}`,
 
   // 聽音，拍冒出來的
   whack: `
-    <rect x="0" y="250" width="640" height="150" fill="#9BC47F"/>
+    <path d="M0 250 V370 a30 30 0 0 0 30 30 H610 a30 30 0 0 0 30 -30 V250 z" fill="#9BC47F"/>
     ${SPEAKER}
-    ${[180, 320, 460].map(x => `<ellipse cx="${x}" cy="300" rx="64" ry="22" fill="#3E2A1A"/>`).join('')}
+    ${[180, 320, 460].map(x => `<ellipse cx="${x}" cy="300" rx="64" ry="22" fill="#3E2A1A" stroke="#2B1D12" stroke-width="4"/>`).join('')}
     <clipPath id="tut-hole"><rect x="240" y="100" width="160" height="202"/></clipPath>
-    <g clip-path="url(#tut-hole)"><g class="tut-mole"><circle cx="320" cy="250" r="50" fill="#F6E7C8" stroke="#E2C89A" stroke-width="5"/><text x="320" y="252" font-size="60" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄅ</text></g></g>
-    ${[180, 320, 460].map(x => `<path d="M${x - 66} 300 a66 22 0 0 0 132 0" fill="#6E9C58"/>`).join('')}
+    <g clip-path="url(#tut-hole)"><g class="tut-mole"><circle cx="320" cy="250" r="50" fill="#FBF1DA" stroke="#8A6A4C" stroke-width="5"/><text x="320" y="252" font-size="60" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄅ</text></g></g>
+    ${[180, 320, 460].map(x => `<path d="M${x - 66} 300 a66 22 0 0 0 132 0" fill="#B98D5E" stroke="#7A5636" stroke-width="4"/>`).join('')}
     ${ripple('tut-whack-r', 320, 250)}${sparks('tut-whack-s', 320, 240)}
     ${hand('tut-whack-hand')}`,
 
@@ -49,9 +50,9 @@ const SCENES = {
   memory: `
     ${[130, 250, 370, 490].map((x, i) => `
       <g class="tut-card c${i}">
-        <rect class="back" x="${x - 10}" y="130" width="100" height="130" rx="18" fill="#6B9E6B" stroke="#F6F3E6" stroke-width="5"/>
+        <rect class="back" x="${x - 10}" y="130" width="100" height="130" rx="18" fill="#5F8F5F" stroke="#3F6A3F" stroke-width="5"/>
         <text class="back" x="${x + 40}" y="198" font-size="40" fill="#F6E7C8" text-anchor="middle" dominant-baseline="central">🐾</text>
-        <rect class="front" x="${x - 10}" y="130" width="100" height="130" rx="18" fill="#FFFDF7" stroke="#E8C86A" stroke-width="5"/>
+        <rect class="front" x="${x - 10}" y="130" width="100" height="130" rx="18" fill="#FFFDF7" stroke="#C39A1E" stroke-width="5"/>
         <text class="front" x="${x + 40}" y="198" font-size="62" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄇ</text>
       </g>`).join('')}
     ${sparks('tut-mem-s', 300, 200)}
@@ -61,7 +62,7 @@ const SCENES = {
   match: `
     <rect x="60" y="148" width="190" height="110" rx="20" fill="#FFFDF7" stroke="${WOOD}" stroke-width="6"/>
     <text x="155" y="205" font-size="58" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄇㄠ</text>
-    <g class="tut-match-pic"><rect x="430" y="143" width="120" height="120" rx="22" fill="#FFFDF7" stroke="#fff" stroke-width="6"/>
+    <g class="tut-match-pic"><rect x="430" y="143" width="120" height="120" rx="22" fill="#FFFDF7" stroke="${WOOD}" stroke-width="5"/>
     <text x="490" y="205" font-size="70" text-anchor="middle" dominant-baseline="central">🐱</text></g>
     <line class="tut-match-line" x1="252" y1="203" x2="428" y2="203" stroke="#6B9E6B" stroke-width="10" stroke-linecap="round" stroke-dasharray="176" stroke-dashoffset="176"/>
     ${sparks('tut-match-s', 490, 203)}
@@ -72,9 +73,9 @@ const SCENES = {
     <rect x="150" y="60" width="340" height="140" rx="24" fill="#FFFDF7" stroke="${WOOD}" stroke-width="8"/>
     <text x="255" y="132" font-size="80" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄚ</text>
     <rect class="tut-fill-blank" x="336" y="88" width="70" height="88" rx="14" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="10 8"/>
-    <g class="tut-fill-tile"><rect x="285" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#F6F3E6" stroke-width="5"/>
+    <g class="tut-fill-tile"><rect x="285" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#C39A1E" stroke-width="5"/>
     <text x="325" y="304" font-size="56" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄧ</text></g>
-    <rect x="435" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#F6F3E6" stroke-width="5"/>
+    <rect x="435" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#C39A1E" stroke-width="5"/>
     <text x="475" y="304" font-size="56" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄨ</text>
     ${sparks('tut-fill-s', 371, 132)}
     ${hand('tut-fill-hand')}`,
@@ -86,9 +87,9 @@ const SCENES = {
     <text x="310" y="90" font-size="58" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄇ</text>
     <text x="310" y="148" font-size="58" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄚ</text>
     <rect class="tut-fill-blank" x="351" y="106" width="40" height="52" rx="8" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="8 6"/>
-    <g class="tut-fill-tile"><rect x="285" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#F6F3E6" stroke-width="5"/>
+    <g class="tut-fill-tile"><rect x="285" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#C39A1E" stroke-width="5"/>
     <path d="M309 292 L325 314 L341 292" stroke="${INK}" stroke-width="7" fill="none"/></g>
-    <rect x="435" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#F6F3E6" stroke-width="5"/>
+    <rect x="435" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#C39A1E" stroke-width="5"/>
     <path d="M465 316 L485 288" stroke="${INK}" stroke-width="7" fill="none"/>
     ${sparks('tut-fill-s', 371, 132)}
     ${hand('tut-fill-hand')}`,
@@ -99,9 +100,9 @@ const SCENES = {
     <rect x="290" y="6" width="162" height="196" rx="22" fill="#FFFDF7" stroke="${WOOD}" stroke-width="8"/>
     <text x="371" y="46" font-size="50" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄇ</text>
     <rect class="tut-fill-blank" x="336" y="92" width="70" height="80" rx="14" fill="none" stroke="#E0955B" stroke-width="5" stroke-dasharray="10 8"/>
-    <g class="tut-fill-tile"><rect x="285" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#F6F3E6" stroke-width="5"/>
+    <g class="tut-fill-tile"><rect x="285" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#C39A1E" stroke-width="5"/>
     <text x="325" y="304" font-size="56" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄠ</text></g>
-    <rect x="435" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#F6F3E6" stroke-width="5"/>
+    <rect x="435" y="262" width="80" height="80" rx="16" fill="#FFF3B0" stroke="#C39A1E" stroke-width="5"/>
     <text x="475" y="304" font-size="56" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄡ</text>
     ${sparks('tut-fill-s', 371, 132)}
     ${hand('tut-fill-hand')}`,
@@ -110,7 +111,7 @@ const SCENES = {
   write: `
     <rect x="170" y="70" width="300" height="280" rx="26" fill="#FFFDF7" stroke="${WOOD}" stroke-width="8"/>
     <path class="tut-write-ink" d="M250 130 L250 280 L400 280" stroke="${INK}" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-dasharray="300" stroke-dashoffset="300"/>
-    <g class="tut-write-ok"><circle cx="470" cy="340" r="36" fill="#6B9E6B" stroke="#F6F3E6" stroke-width="5"/><path d="M454 340 l11 11 l20 -22" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <g class="tut-write-ok"><circle cx="470" cy="340" r="36" fill="#6B9E6B" stroke="#466E46" stroke-width="5"/><path d="M454 340 l11 11 l20 -22" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
     ${hand('tut-write-hand')}`,
 
   // 學寫字：板子上一筆淡淡的，起點有圓點，小手從圓點照箭頭寫過去
@@ -120,19 +121,19 @@ const SCENES = {
     <path class="tut-write-ink" d="M250 130 L250 280 L400 280" stroke="#E0955B" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-dasharray="300" stroke-dashoffset="300"/>
     <path d="M236 168 L250 190 L264 168 Z" fill="#E0955B"/>
     <circle cx="250" cy="130" r="16" fill="#E0955B" stroke="#FFFDF7" stroke-width="5"/>
-    <g class="tut-write-ok"><circle cx="470" cy="340" r="36" fill="#6B9E6B" stroke="#F6F3E6" stroke-width="5"/><path d="M454 340 l11 11 l20 -22" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <g class="tut-write-ok"><circle cx="470" cy="340" r="36" fill="#6B9E6B" stroke="#466E46" stroke-width="5"/><path d="M454 340 l11 11 l20 -22" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
     ${hand('tut-write-hand')}`,
 
   // 看牌子、按麥克風、唸出來
   speak: `
     <rect x="245" y="40" width="150" height="150" rx="22" fill="#FFFDF7" stroke="${WOOD}" stroke-width="8"/>
     <text x="320" y="118" font-size="96" ${FONT} fill="${INK}" text-anchor="middle" dominant-baseline="central">ㄚ</text>
-    <circle cx="170" cy="300" r="56" fill="#F6E7C8" stroke="#D9A86C" stroke-width="5"/>
+    <circle cx="170" cy="300" r="56" fill="#F6E7C8" stroke="#8A6A4C" stroke-width="5"/>
     <circle cx="150" cy="286" r="6" fill="${INK}"/><circle cx="190" cy="286" r="6" fill="${INK}"/>
     <ellipse class="tut-speak-mouth" cx="170" cy="318" rx="14" ry="10" fill="#C8553D"/>
     <path class="tut-wave s1" d="M244 282 q14 18 0 36" stroke="#E0955B" stroke-width="6" fill="none" stroke-linecap="round"/>
     <path class="tut-wave s2" d="M262 268 q24 32 0 64" stroke="#E0955B" stroke-width="6" fill="none" stroke-linecap="round"/>
-    <g class="tut-speak-mic"><circle cx="480" cy="300" r="52" fill="#C8553D" stroke="#F6F3E6" stroke-width="6"/>
+    <g class="tut-speak-mic"><circle cx="480" cy="300" r="52" fill="#C8553D" stroke="#8A3A2A" stroke-width="6"/>
     <rect x="468" y="272" width="24" height="40" rx="12" fill="#fff"/><path d="M458 302 a22 22 0 0 0 44 0 M480 324 v12" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/></g>
     ${sparks('tut-speak-s', 320, 115)}
     ${hand('tut-speak-hand')}`,
@@ -148,7 +149,7 @@ export function showTutorial (root, kind, onGo) {
   wrap.innerHTML = `
     <div class="tut-card">
       <svg class="tut-scene tut-${kind}" viewBox="0 0 640 400" xmlns="http://www.w3.org/2000/svg">
-        <rect width="640" height="400" rx="30" fill="#EAF4F6"/>
+        <rect x="2" y="2" width="636" height="396" rx="30" fill="#F7F1E3" stroke="#B08A63" stroke-width="4"/>
         ${SCENES[kind] || ''}
       </svg>
       <button class="tut-go" aria-label="開始">${GO_SVG}</button>
