@@ -953,3 +953,10 @@ svg.syl.solo.n3 { height: 1.26em; margin-block: -0.13em; }
 .tut > .tut-card { filter: url(#wobble); background: var(--paper) var(--paper-tex); border: 9px solid var(--ink); box-shadow: 0 12px 0 #5E4630; }
 .tut > .tut-card .tut-go { filter: none; }
 .tut { background: rgba(43,35,25,.5); }
+
+/* ---- 手繪風：寫字板（學寫字、寫寫看、注音表放大）的框 ---- */
+/* 板子裡是她寫的筆跡，整塊抖會歪；框改畫在 ::before 那一層，只有框在抖。板子本身的邊變透明、紙只鋪在框裡面 */
+.pad-wrap { border-color: transparent; box-shadow: none; background-clip: padding-box; }
+.pad-wrap::before { content: ''; position: absolute; inset: -9px; border: 9px solid var(--ink); border-radius: 38px; box-shadow: 0 10px 0 #5E4630; filter: url(#wobble); pointer-events: none; }
+.pad-wrap.glow { box-shadow: none; }
+.pad-wrap.glow::before { box-shadow: 0 0 0 16px rgba(232,200,106,.8), 0 10px 0 #5E4630; }
