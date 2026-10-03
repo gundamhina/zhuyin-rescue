@@ -59,7 +59,9 @@ async function shellFirstNetwork (req, file) {
   const cache = await caches.open(SHELL_CACHE)
   try {
     const res = await Promise.race([
-      fetch(req, { cache: 'no-cache' }),
+      // 用網址抓，不要拿瀏覽器的請求加參數再轉送：打開網頁的請求（mode: navigate）加了參數，Chrome 會直接拒絕，
+      // 結果每次都掉到下面用存著的舊版
+      fetch(BASE + file, { cache: 'no-cache' }),
       new Promise((resolve, reject) => setTimeout(() => reject(new Error('timeout')), 3000)),
     ])
     if (res.ok) { await cache.put(BASE + file, res.clone()); return res }
